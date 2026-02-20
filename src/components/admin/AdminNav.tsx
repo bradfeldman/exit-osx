@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { cn } from '@/lib/utils'
 import {
   Users,
   Building,
@@ -27,6 +26,7 @@ import {
   BarChart3,
   Radio,
 } from 'lucide-react'
+import styles from '@/components/admin/admin.module.css'
 
 interface NavItem {
   label: string
@@ -130,16 +130,11 @@ export function AdminNav() {
   }
 
   return (
-    <nav className="flex flex-col gap-1">
+    <nav className={styles.adminNav}>
       {/* Dashboard link */}
       <Link
         href="/admin"
-        className={cn(
-          'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-          pathname === '/admin'
-            ? 'bg-primary text-primary-foreground'
-            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-        )}
+        className={`${styles.adminNavLink} ${pathname === '/admin' ? styles.adminNavLinkActive : ''}`}
       >
         <Home className="h-4 w-4" />
         Dashboard
@@ -152,37 +147,24 @@ export function AdminNav() {
         const isActive = isSectionActive(section)
 
         return (
-          <div key={section.label} className="mt-2">
+          <div key={section.label} className={styles.adminNavSection}>
             {hasItems ? (
               <button
                 onClick={() => toggleSection(section.label)}
-                className={cn(
-                  'flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                  isActive
-                    ? 'text-foreground'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                )}
+                className={`${styles.adminNavSectionToggle} ${isActive ? styles.adminNavSectionToggleActive : ''}`}
               >
-                <div className="flex items-center gap-3">
+                <span className={styles.adminNavSectionToggleInner}>
                   <section.icon className="h-4 w-4" />
                   {section.label}
-                </div>
+                </span>
                 <ChevronDown
-                  className={cn(
-                    'h-4 w-4 transition-transform',
-                    isExpanded ? 'rotate-180' : ''
-                  )}
+                  className={`${styles.adminNavChevron} ${isExpanded ? styles.adminNavChevronOpen : ''}`}
                 />
               </button>
             ) : (
               <Link
                 href={section.href || '/admin'}
-                className={cn(
-                  'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                  pathname === section.href
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                )}
+                className={`${styles.adminNavLink} ${pathname === section.href ? styles.adminNavLinkActive : ''}`}
               >
                 <section.icon className="h-4 w-4" />
                 {section.label}
@@ -190,7 +172,7 @@ export function AdminNav() {
             )}
 
             {hasItems && isExpanded && (
-              <div className="ml-4 mt-1 flex flex-col gap-1 border-l pl-3">
+              <div className={styles.adminNavSubList}>
                 {section.items.map((item) => {
                   const isItemActive =
                     pathname === item.href || pathname.startsWith(item.href + '/')
@@ -199,12 +181,7 @@ export function AdminNav() {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={cn(
-                        'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
-                        isItemActive
-                          ? 'bg-primary text-primary-foreground'
-                          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                      )}
+                      className={`${styles.adminNavSubLink} ${isItemActive ? styles.adminNavSubLinkActive : ''}`}
                     >
                       <item.icon className="h-4 w-4" />
                       {item.label}
@@ -222,21 +199,18 @@ export function AdminNav() {
 
 export function AdminSidebar() {
   return (
-    <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 flex-col border-r bg-background lg:flex">
-      <div className="flex h-16 items-center gap-2 border-b px-6">
-        <Shield className="h-6 w-6 text-primary" />
-        <span className="text-lg font-semibold">Admin Panel</span>
+    <aside className={styles.adminSidebar}>
+      <div className={styles.adminSidebarBrand}>
+        <Shield className={styles.adminSidebarBrandIcon} />
+        <span className={styles.adminSidebarBrandText}>Admin Panel</span>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className={styles.adminSidebarScroll}>
         <AdminNav />
       </div>
 
-      <div className="border-t p-4">
-        <Link
-          href="/dashboard"
-          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
-        >
+      <div className={styles.adminSidebarFooter}>
+        <Link href="/dashboard" className={styles.adminSidebarBackLink}>
           <LogOut className="h-4 w-4" />
           Back to App
         </Link>

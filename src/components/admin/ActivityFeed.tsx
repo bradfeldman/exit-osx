@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { ChevronLeft, ChevronRight, Download, Filter, X } from 'lucide-react'
+import styles from '@/components/admin/admin-misc.module.css'
 
 interface AuditLog {
   id: string
@@ -67,7 +68,6 @@ export function ActivityFeed({ initialLogs, initialPagination }: ActivityFeedPro
   const [isLoading, setIsLoading] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
 
-  // Filters
   const [filters, setFilters] = useState({
     action: '',
     targetType: '',
@@ -132,9 +132,9 @@ export function ActivityFeed({ initialLogs, initialPagination }: ActivityFeedPro
   const hasActiveFilters = Object.values(filters).some(v => v !== '')
 
   return (
-    <div className="space-y-4">
+    <div className={styles.page}>
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className={styles.filterBar}>
         <Button
           variant="outline"
           size="sm"
@@ -163,9 +163,9 @@ export function ActivityFeed({ initialLogs, initialPagination }: ActivityFeedPro
 
       {/* Filters Panel */}
       {showFilters && (
-        <div className="rounded-lg border bg-muted/50 p-4">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="space-y-2">
+        <div className={styles.filterPanel}>
+          <div className={`${styles.filterGrid} ${styles.filterGrid4}`}>
+            <div className={styles.filterField}>
               <Label htmlFor="action">Action</Label>
               <Input
                 id="action"
@@ -174,7 +174,7 @@ export function ActivityFeed({ initialLogs, initialPagination }: ActivityFeedPro
                 onChange={(e) => setFilters({ ...filters, action: e.target.value })}
               />
             </div>
-            <div className="space-y-2">
+            <div className={styles.filterField}>
               <Label htmlFor="targetType">Target Type</Label>
               <Select
                 value={filters.targetType}
@@ -193,7 +193,7 @@ export function ActivityFeed({ initialLogs, initialPagination }: ActivityFeedPro
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
+            <div className={styles.filterField}>
               <Label htmlFor="startDate">Start Date</Label>
               <Input
                 id="startDate"
@@ -202,7 +202,7 @@ export function ActivityFeed({ initialLogs, initialPagination }: ActivityFeedPro
                 onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
               />
             </div>
-            <div className="space-y-2">
+            <div className={styles.filterField}>
               <Label htmlFor="endDate">End Date</Label>
               <Input
                 id="endDate"
@@ -212,7 +212,7 @@ export function ActivityFeed({ initialLogs, initialPagination }: ActivityFeedPro
               />
             </div>
           </div>
-          <div className="mt-4 flex justify-end">
+          <div className={styles.filterActions}>
             <Button onClick={handleApplyFilters} disabled={isLoading}>
               Apply Filters
             </Button>
@@ -221,7 +221,7 @@ export function ActivityFeed({ initialLogs, initialPagination }: ActivityFeedPro
       )}
 
       {/* Table */}
-      <div className="rounded-md border">
+      <div className={styles.tableWrap}>
         <Table>
           <TableHeader>
             <TableRow>
@@ -235,22 +235,22 @@ export function ActivityFeed({ initialLogs, initialPagination }: ActivityFeedPro
           <TableBody>
             {logs.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                <TableCell colSpan={5} className={styles.emptyCell}>
                   No activity logs found
                 </TableCell>
               </TableRow>
             ) : (
               logs.map((log) => (
                 <TableRow key={log.id}>
-                  <TableCell className="whitespace-nowrap">
+                  <TableCell style={{ whiteSpace: 'nowrap' }}>
                     {new Date(log.createdAt).toLocaleString()}
                   </TableCell>
                   <TableCell>
                     <div>
-                      <div className="font-medium">
+                      <div className={styles.cellPrimary}>
                         {log.actor.name || 'Unknown'}
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className={styles.cellSecondary}>
                         {log.actorEmail}
                       </div>
                     </div>
@@ -265,15 +265,15 @@ export function ActivityFeed({ initialLogs, initialPagination }: ActivityFeedPro
                   </TableCell>
                   <TableCell>
                     <div>
-                      <div className="text-sm">{log.targetType}</div>
+                      <div className={styles.cellSecondary}>{log.targetType}</div>
                       {log.targetId && (
-                        <div className="font-mono text-xs text-muted-foreground">
+                        <div className={styles.cellMono}>
                           {log.targetId.slice(0, 12)}...
                         </div>
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="font-mono text-sm">
+                  <TableCell className={styles.cellMono}>
                     {log.ipAddress || '-'}
                   </TableCell>
                 </TableRow>
@@ -284,13 +284,13 @@ export function ActivityFeed({ initialLogs, initialPagination }: ActivityFeedPro
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
+      <div className={styles.pagination}>
+        <p className={styles.paginationInfo}>
           Showing {(pagination.page - 1) * pagination.limit + 1} to{' '}
           {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
           {pagination.total} entries
         </p>
-        <div className="flex gap-2">
+        <div className={styles.paginationButtons}>
           <Button
             variant="outline"
             size="sm"

@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import styles from '@/components/admin/admin-tools-2.module.css'
 
 interface BRIWeights {
   FINANCIAL: number
@@ -141,8 +141,8 @@ export default function AdminBRIWeightingPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className={styles.loadingCenter}>
+        <div className={styles.spinner} />
       </div>
     )
   }
@@ -151,105 +151,82 @@ export default function AdminBRIWeightingPage() {
   const isValidTotal = totalWeight === 100
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Global BRI Weighting</h1>
-        <p className="text-muted-foreground">
-          Configure the default weights for Buyer Readiness Index categories
-        </p>
+    <div className={styles.page}>
+      <div className={styles.pageHeader}>
+        <h1>Global BRI Weighting</h1>
+        <p>Configure the default weights for Buyer Readiness Index categories</p>
       </div>
 
-      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <p className="text-sm text-blue-800">
-          <strong>Note:</strong> These are the system-wide default weights. Individual companies
-          can override these with custom weights if needed.
-        </p>
+      <div className={styles.noticeInfo}>
+        <strong>Note:</strong> These are the system-wide default weights. Individual companies
+        can override these with custom weights if needed.
       </div>
 
-      {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-          {error}
-        </div>
-      )}
-      {success && (
-        <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
-          {success}
-        </div>
-      )}
+      {error && <div className={styles.noticeError}>{error}</div>}
+      {success && <div className={styles.noticeSuccess}>{success}</div>}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Category Weights</CardTitle>
-          <CardDescription>
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2>Category Weights</h2>
+          <p className={styles.cardDescription}>
             Adjust the percentage weight for each BRI category. Total must equal 100%.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+          </p>
+        </div>
+        <div className={styles.cardBody}>
+          <div className={styles.categoryList}>
             {(Object.keys(weights) as Array<keyof BRIWeights>).map((category) => (
-              <div key={category} className="grid grid-cols-12 gap-4 items-center">
-                <div className="col-span-5">
-                  <p className="font-medium">{CATEGORY_LABELS[category]}</p>
-                  <p className="text-sm text-muted-foreground">{CATEGORY_DESCRIPTIONS[category]}</p>
+              <div key={category} className={styles.categoryRow}>
+                <div>
+                  <p className={styles.categoryLabel}>{CATEGORY_LABELS[category]}</p>
+                  <p className={styles.categoryDescription}>{CATEGORY_DESCRIPTIONS[category]}</p>
                 </div>
-                <div className="col-span-3">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="range"
-                      min="0"
-                      max="50"
-                      value={weights[category]}
-                      onChange={(e) => handleChange(category, e.target.value)}
-                      className="flex-1"
-                    />
-                  </div>
+                <div className={styles.sliderWrapper}>
+                  <input
+                    type="range"
+                    min="0"
+                    max="50"
+                    value={weights[category]}
+                    onChange={(e) => handleChange(category, e.target.value)}
+                  />
                 </div>
-                <div className="col-span-2">
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={weights[category]}
-                      onChange={(e) => handleChange(category, e.target.value)}
-                      className="w-16 px-2 py-1 text-center border rounded"
-                    />
-                    <span className="text-muted-foreground">%</span>
-                  </div>
+                <div className={styles.numberInputWrapper}>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={weights[category]}
+                    onChange={(e) => handleChange(category, e.target.value)}
+                    className={styles.numberInput}
+                  />
+                  <span className={styles.percentSymbol}>%</span>
                 </div>
-                <div className="col-span-2">
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-primary transition-all"
-                      style={{ width: `${weights[category]}%` }}
-                    />
-                  </div>
+                <div className={styles.progressBar}>
+                  <div
+                    className={styles.progressBarFill}
+                    style={{ width: `${weights[category]}%` }}
+                  />
                 </div>
               </div>
             ))}
 
-            <div className="pt-4 border-t">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-semibold">Total</p>
-                </div>
-                <div className={`text-xl font-bold ${isValidTotal ? 'text-green-600' : 'text-red-600'}`}>
-                  {totalWeight}%
-                  {!isValidTotal && (
-                    <span className="text-sm font-normal ml-2">
-                      ({totalWeight > 100 ? '+' : ''}{totalWeight - 100}%)
-                    </span>
-                  )}
-                </div>
-              </div>
+            <div className={styles.totalRow}>
+              <span className={styles.totalLabel}>Total</span>
+              <span className={isValidTotal ? styles.totalValueValid : styles.totalValueInvalid}>
+                {totalWeight}%
+                {!isValidTotal && (
+                  <span className={styles.totalOffsetHint}>
+                    ({totalWeight > 100 ? '+' : ''}{totalWeight - 100}%)
+                  </span>
+                )}
+              </span>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
+      <div className={styles.card}>
+        <div className={styles.cardBodyFlush}>
+          <div className={styles.cardActions}>
             <Button variant="outline" onClick={handleReset}>
               Reset to Defaults
             </Button>
@@ -257,28 +234,28 @@ export default function AdminBRIWeightingPage() {
               {saving ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Understanding BRI Weights</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-muted-foreground space-y-3">
-          <p>
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2>Understanding BRI Weights</h2>
+        </div>
+        <div className={styles.cardBody}>
+          <p className={styles.infoText}>
             The Buyer Readiness Index (BRI) is a weighted score that reflects how prepared
             a company is for acquisition from a buyer&apos;s perspective.
           </p>
-          <p>
+          <p className={styles.infoText}>
             <strong>Weight Distribution:</strong> The default weights (25-20-20-15-10-10)
             reflect typical buyer priorities, with Financial factors carrying the most weight.
           </p>
-          <p>
+          <p className={styles.infoText}>
             <strong>Impact:</strong> Adjusting weights will affect how the BRI score is
             calculated for all companies, which in turn affects valuation discounts.
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

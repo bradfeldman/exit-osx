@@ -1,6 +1,6 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Scale, TrendingUp, Calculator, SlidersHorizontal, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import styles from '@/components/admin/admin-misc.module.css'
 
 const tools = [
   {
@@ -31,88 +31,90 @@ const tools = [
 
 export default function VariablesPage() {
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold">Variable Management</h1>
-        <p className="text-muted-foreground">
+    <div className={styles.page}>
+      <div className={styles.pageHeader}>
+        <h1 className={styles.pageTitle}>Variable Management</h1>
+        <p className={styles.pageSubtitle}>
           Configure BRI weights, industry multiples, and valuation adjustments
         </p>
       </div>
 
       {/* Info Banner */}
-      <Card className="bg-gradient-to-r from-purple-50 to-violet-50 border-purple-200">
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-500 rounded-lg">
-              <SlidersHorizontal className="h-6 w-6 text-white" />
+      <div className={`${styles.bannerCard} ${styles.bannerCardPurple}`}>
+        <div className={styles.bannerHeader}>
+          <div className={styles.bannerHeaderInner}>
+            <div className={`${styles.bannerIconWrap} ${styles.bannerIconPurple}`}>
+              <SlidersHorizontal className="h-6 w-6" />
             </div>
             <div>
-              <CardTitle>System Variables</CardTitle>
-              <CardDescription>
+              <p className={styles.bannerTitle}>System Variables</p>
+              <p className={styles.bannerDescription}>
                 These settings affect valuation calculations and BRI scores across all companies
-              </CardDescription>
+              </p>
             </div>
           </div>
-        </CardHeader>
-      </Card>
+        </div>
+      </div>
 
       {/* Tools Grid */}
       <div>
-        <h2 className="text-lg font-semibold mb-4">Configuration Tools</h2>
-        <div className="grid gap-4 md:grid-cols-2">
+        <h2 className={styles.sectionHeading}>Configuration Tools</h2>
+        <div className={`${styles.toolsGrid} ${styles.toolsGrid2}`}>
           {tools.map((tool) => (
-            <Link key={tool.title} href={tool.href}>
-              <Card className="h-full transition-shadow hover:shadow-lg">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <tool.icon className="h-8 w-8 text-purple-500" />
-                    <ArrowRight className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <CardTitle className="mt-4">{tool.title}</CardTitle>
-                  <CardDescription>{tool.description}</CardDescription>
-                </CardHeader>
-              </Card>
+            <Link key={tool.title} href={tool.href} className={styles.toolCard}>
+              <div className={styles.toolCardHeader}>
+                <div className={styles.toolCardIconRow}>
+                  <tool.icon className={`h-8 w-8 ${styles.toolCardIconPurple}`} />
+                  <ArrowRight className={`h-5 w-5 ${styles.toolCardIconGray}`} />
+                </div>
+                <p className={styles.toolCardTitle}>{tool.title}</p>
+                <p className={styles.toolCardDescription}>{tool.description}</p>
+              </div>
             </Link>
           ))}
         </div>
       </div>
 
       {/* Documentation */}
-      <Card>
-        <CardHeader>
-          <CardTitle>How Variables Affect Calculations</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 text-sm text-muted-foreground">
-          <div>
-            <h3 className="font-medium text-foreground">BRI Weights</h3>
-            <p>
-              Define how each category (Financial Health, Growth, Operations, etc.) contributes to the overall
-              Business Readiness Index score. Weights must sum to 100%.
-            </p>
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <div className={styles.cardHeaderInner}>
+            <p className={styles.cardTitle}>How Variables Affect Calculations</p>
           </div>
-          <div>
-            <h3 className="font-medium text-foreground">Industry Multiples</h3>
-            <p>
-              Set baseline valuation multiples (revenue, EBITDA, etc.) for each industry sector.
-              These form the foundation of company valuations.
-            </p>
+        </div>
+        <div className={styles.cardContent}>
+          <div className={styles.docSection}>
+            <div className={styles.docItem}>
+              <h3 className={styles.docItemTitle}>BRI Weights</h3>
+              <p>
+                Define how each category (Financial Health, Growth, Operations, etc.) contributes to the overall
+                Business Readiness Index score. Weights must sum to 100%.
+              </p>
+            </div>
+            <div className={styles.docItem}>
+              <h3 className={styles.docItemTitle}>Industry Multiples</h3>
+              <p>
+                Set baseline valuation multiples (revenue, EBITDA, etc.) for each industry sector.
+                These form the foundation of company valuations.
+              </p>
+            </div>
+            <div className={styles.docItem}>
+              <h3 className={styles.docItemTitle}>Multiple Adjustments</h3>
+              <p>
+                Configure how various factors (growth rate, profitability, risk) adjust the base
+                industry multiple up or down.
+              </p>
+            </div>
+            <div className={styles.docItem}>
+              <h3 className={styles.docItemTitle}>Global BRI Weighting</h3>
+              <p>
+                System-wide settings that affect how BRI scores are calculated and displayed
+                across all companies.
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-medium text-foreground">Multiple Adjustments</h3>
-            <p>
-              Configure how various factors (growth rate, profitability, risk) adjust the base
-              industry multiple up or down.
-            </p>
-          </div>
-          <div>
-            <h3 className="font-medium text-foreground">Global BRI Weighting</h3>
-            <p>
-              System-wide settings that affect how BRI scores are calculated and displayed
-              across all companies.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

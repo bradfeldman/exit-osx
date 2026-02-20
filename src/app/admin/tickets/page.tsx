@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { TicketTable } from '@/components/admin/TicketTable'
+import styles from '@/components/admin/admin-misc.module.css'
 
 async function getTickets() {
   const limit = 20
@@ -59,53 +59,54 @@ export default async function AdminTicketsPage() {
   ])
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Support Tickets</h1>
-        <p className="text-muted-foreground">
-          Manage customer support requests
-        </p>
+    <div className={styles.page}>
+      <div className={styles.pageHeader}>
+        <h1 className={styles.pageTitle}>Support Tickets</h1>
+        <p className={styles.pageSubtitle}>Manage customer support requests</p>
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Open</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.open}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">In Progress</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{stats.inProgress}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Waiting</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-600">{stats.waiting}</div>
-          </CardContent>
-        </Card>
+      <div className={`${styles.statsGrid} ${styles.statsGrid3}`}>
+        <div className={styles.statCard}>
+          <div className={styles.statCardHeader}>
+            <p className={styles.statCardLabel}>Open</p>
+          </div>
+          <div className={styles.statCardContent}>
+            <div className={`${styles.statValue} ${styles.statValueBlue}`}>{stats.open}</div>
+          </div>
+        </div>
+        <div className={styles.statCard}>
+          <div className={styles.statCardHeader}>
+            <p className={styles.statCardLabel}>In Progress</p>
+          </div>
+          <div className={styles.statCardContent}>
+            <div className={`${styles.statValue} ${styles.statValueYellow}`}>{stats.inProgress}</div>
+          </div>
+        </div>
+        <div className={styles.statCard}>
+          <div className={styles.statCardHeader}>
+            <p className={styles.statCardLabel}>Waiting</p>
+          </div>
+          <div className={styles.statCardContent}>
+            <div className={`${styles.statValue} ${styles.statValuePurple}`}>{stats.waiting}</div>
+          </div>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>All Tickets</CardTitle>
-          <CardDescription>
-            {pagination.total} tickets in the system
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      {/* Table card */}
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <div className={styles.cardHeaderInner}>
+            <p className={styles.cardTitle}>All Tickets</p>
+            <p className={styles.cardDescription}>
+              {pagination.total} tickets in the system
+            </p>
+          </div>
+        </div>
+        <div className={styles.cardContent}>
           <TicketTable initialTickets={tickets} initialPagination={pagination} />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

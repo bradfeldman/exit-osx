@@ -1,0 +1,558 @@
+/* Admin Tables — CSS Module
+ * Design system: globals.css variables
+ * Used by: users/page, users/[id]/UserDetailClient, companies/page, CompanyTable, UserTable
+ */
+
+/* ============================================================
+   Page Layout
+   ============================================================ */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pageHeader h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.pageHeader p {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   Page title bar (detail page — back arrow + title + action)
+   ============================================================ */
+.pageTitleBar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.pageTitleBarContent {
+  flex: 1;
+}
+
+.pageTitleBarContent h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.pageTitleBarContent p {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   Card — replaces shadcn Card / CardContent / CardHeader
+   ============================================================ */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.cardHeader {
+  padding: 24px 24px 0;
+}
+
+.cardTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cardDescription {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.cardContent {
+  padding: 20px 24px 24px;
+}
+
+/* ============================================================
+   Table wrapper (replaces rounded-md border div)
+   ============================================================ */
+.tableWrapper {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+/* ============================================================
+   Search bar
+   ============================================================ */
+.searchForm {
+  display: flex;
+  gap: 8px;
+}
+
+.searchInputWrapper {
+  position: relative;
+  flex: 1;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+/* Targets the shadcn Input inside .searchInputWrapper to add left padding */
+.searchInputWrapper > * {
+  padding-left: 36px !important;
+}
+
+/* ============================================================
+   Pagination
+   ============================================================ */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.paginationInfo {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.paginationButtons {
+  display: flex;
+  gap: 8px;
+}
+
+/* ============================================================
+   Table cell content helpers
+   ============================================================ */
+.cellPrimary {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.cellSecondary {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.cellMuted {
+  color: var(--text-secondary);
+}
+
+/* Clickable row */
+.clickableRow {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+/* ============================================================
+   Badge overrides for plan tiers and statuses
+   (applied as className on shadcn Badge)
+   ============================================================ */
+.badgeGrowth {
+  background-color: #DBEAFE;
+  color: #1E40AF;
+}
+
+.badgeGrowth:hover {
+  background-color: #DBEAFE;
+}
+
+.badgeDealRoom {
+  background-color: #DCFCE7;
+  color: #166534;
+}
+
+.badgeDealRoom:hover {
+  background-color: #DCFCE7;
+}
+
+.badgeQbConnected {
+  background-color: #DCFCE7;
+  color: #166534;
+}
+
+.badgeQbConnected:hover {
+  background-color: #DCFCE7;
+}
+
+.badgeStatusActive {
+  background-color: #DCFCE7;
+  color: #166534;
+}
+
+.badgeStatusActive:hover {
+  background-color: #DCFCE7;
+}
+
+.badgeStatusTrialing {
+  background-color: #FEF3C7;
+  color: #92400E;
+}
+
+.badgeStatusTrialing:hover {
+  background-color: #FEF3C7;
+}
+
+.badgeStatusPastDue {
+  background-color: var(--red-light);
+  color: #991B1B;
+}
+
+.badgeStatusPastDue:hover {
+  background-color: var(--red-light);
+}
+
+.badgeStatusCancelled {
+  background-color: #F3F4F6;
+  color: #374151;
+}
+
+.badgeStatusCancelled:hover {
+  background-color: #F3F4F6;
+}
+
+/* ============================================================
+   User detail — tab content
+   ============================================================ */
+.tabContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+/* ============================================================
+   Detail list (dl rows inside cards)
+   ============================================================ */
+.detailList {
+  display: grid;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.detailTerm {
+  color: var(--text-secondary);
+}
+
+.detailValue {
+  font-family: ui-monospace, monospace;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.detailValueNormal {
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   Activity / impersonation / workspace item rows
+   ============================================================ */
+.listStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.listItem {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.listItem:last-child {
+  border-bottom: none;
+}
+
+.listItemBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.listItemTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.listItemMeta {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.listItemRight {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.listItemTime {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.listItemLink {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.listItemLink:hover {
+  text-decoration: underline;
+}
+
+.emptyText {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   Admin toggle row (Super Admin switch)
+   ============================================================ */
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+.toggleRowContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.toggleRowLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.toggleRowDesc {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   Form grid (profile edit 2-col)
+   ============================================================ */
+.formGrid {
+  display: grid;
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .formGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ============================================================
+   Danger Zone
+   ============================================================ */
+.dangerCard {
+  background: color-mix(in srgb, var(--red) 4%, var(--surface));
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--red) 20%, transparent);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.dangerCardHeader {
+  padding: 24px 24px 0;
+}
+
+.dangerCardTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--red);
+}
+
+.dangerCardDescription {
+  font-size: 13px;
+  color: color-mix(in srgb, var(--red) 80%, transparent);
+  margin-top: 4px;
+}
+
+.dangerCardContent {
+  padding: 20px 24px 24px;
+}
+
+.dangerInner {
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--red) 20%, transparent);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dangerInner h3 {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.dangerInner p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+/* Warning box (amber — sole workspace notice) */
+.warningBox {
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--orange) 35%, transparent);
+  background: var(--orange-light);
+  padding: 16px;
+}
+
+.warningBoxInner {
+  display: flex;
+  gap: 12px;
+}
+
+.warningBoxIcon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--orange);
+}
+
+.warningBoxBody {
+  font-size: 13px;
+  color: #92400E;
+}
+
+.warningBoxBody p {
+  font-weight: 500;
+}
+
+.warningBoxBody ul {
+  margin-top: 8px;
+  padding-left: 16px;
+  list-style: disc;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.warningBoxNote {
+  margin-top: 8px;
+}
+
+/* Error inline message */
+.errorMessage {
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  background: var(--red-light);
+  color: #991B1B;
+  border: 1px solid color-mix(in srgb, var(--red) 30%, transparent);
+}
+
+/* Delete confirmation fields */
+.deleteFields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.deleteFieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.deleteFieldLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.deleteEmailHighlight {
+  font-weight: 600;
+  color: var(--red);
+}
+
+.deleteFullWidth {
+  width: 100%;
+}
+
+/* ============================================================
+   Table container used in UserTable / CompanyTable
+   ============================================================ */
+.tableContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 768px) {
+  .cardHeader,
+  .cardContent,
+  .dangerCardHeader,
+  .dangerCardContent {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .pageTitleBar {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}

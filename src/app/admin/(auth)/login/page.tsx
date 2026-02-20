@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Captcha, resetCaptcha } from '@/components/ui/captcha'
 import { Eye, EyeOff, Shield, Loader2 } from 'lucide-react'
 import { secureLogin } from '@/app/actions/auth'
+import styles from '@/components/admin/admin-auth.module.css'
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -34,7 +35,7 @@ export default function AdminLoginPage() {
 
 function AdminLoginLoading() {
   return (
-    <div className="min-h-[100dvh] flex items-center justify-center bg-background">
+    <div className={styles.authPageLoading}>
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
     </div>
   )
@@ -133,77 +134,73 @@ function AdminLoginContent() {
   const isLocked = !!lockedUntil && lockedUntil > Date.now()
 
   return (
-    <div className="min-h-[100dvh] flex">
+    <div className={styles.authPage}>
       {/* Left side - Admin Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-slate-900 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-slate-800" />
-        <div className="absolute top-20 right-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-10 w-48 h-48 bg-primary/10 rounded-full blur-2xl" />
+      <div className={styles.brandPanel}>
+        <div className={styles.brandOverlay} />
+        <div className={styles.brandBlobTop} />
+        <div className={styles.brandBlobBottom} />
         <motion.div
-          className="relative z-10 flex flex-col justify-between p-12 text-white"
+          className={styles.brandContent}
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="flex items-center gap-3">
+          <div className={styles.brandLogo}>
             <Shield className="h-8 w-8 text-primary" />
-            <span className="text-xl font-semibold">Exit OSx Admin</span>
+            <span className={styles.brandLogoText}>Exit OSx Admin</span>
           </div>
 
-          <div className="space-y-6">
-            <h1 className="text-4xl font-bold font-display leading-tight tracking-tight">
+          <div className={styles.brandBody}>
+            <h1 className={styles.brandHeadline}>
               Administration<br />Portal
             </h1>
-            <p className="text-lg text-slate-300 max-w-md">
+            <p className={styles.brandSubtitle}>
               Manage users, organizations, support tickets, and system configuration.
             </p>
-            <div className="flex items-center gap-2 text-sm text-slate-400">
+            <div className={styles.brandBadge}>
               <Shield className="h-4 w-4" />
               <span>Super admin access required</span>
             </div>
           </div>
 
-          <p className="text-sm text-slate-500">
+          <p className={styles.brandFooter}>
             Restricted Access - Authorized Personnel Only
           </p>
         </motion.div>
       </div>
 
       {/* Right side - Login Form */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-background">
+      <div className={styles.formPanel}>
         <motion.div
-          className="w-full max-w-md space-y-8"
+          className={styles.formInner}
           variants={staggerContainer}
           initial="hidden"
           animate="visible"
         >
           {/* Mobile header */}
-          <motion.div variants={fadeInUp} className="lg:hidden text-center">
-            <div className="inline-flex items-center gap-2">
-              <Shield className="h-8 w-8 text-primary" />
-              <span className="text-xl font-semibold">Exit OSx Admin</span>
-            </div>
+          <motion.div variants={fadeInUp} className={styles.mobileLogo}>
+            <Shield className="h-8 w-8 text-primary" />
+            <span className={styles.mobileLogoText}>Exit OSx Admin</span>
           </motion.div>
 
-          <motion.div variants={fadeInUp} className="text-center">
-            <h2 className="text-3xl font-bold font-display text-foreground tracking-tight">
-              Admin Sign In
-            </h2>
-            <p className="mt-2 text-muted-foreground">
+          <motion.div variants={fadeInUp} className={styles.heading}>
+            <h2 className={styles.title}>Admin Sign In</h2>
+            <p className={styles.subtitle}>
               Enter your credentials to access the admin portal
             </p>
           </motion.div>
 
-          <motion.form variants={fadeInUp} onSubmit={handleLogin} className="space-y-6">
+          <motion.form variants={fadeInUp} onSubmit={handleLogin} className={styles.form}>
             {(error || getLockoutMessage()) && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg space-y-1"
+                className={styles.errorBanner}
               >
-                <p>{getLockoutMessage() || error}</p>
+                <p className={styles.errorMain}>{getLockoutMessage() || error}</p>
                 {attemptsRemaining !== null && attemptsRemaining > 0 && (
-                  <p className="text-xs text-red-500">
+                  <p className={styles.errorSub}>
                     {attemptsRemaining} attempt{attemptsRemaining > 1 ? 's' : ''} remaining before account lockout
                   </p>
                 )}
@@ -212,7 +209,7 @@ function AdminLoginContent() {
 
             {!requiresTwoFactor ? (
               <>
-                <div className="space-y-2">
+                <div className={styles.field}>
                   <Label htmlFor="email">Email address</Label>
                   <Input
                     id="email"
@@ -227,17 +224,14 @@ function AdminLoginContent() {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
+                <div className={styles.field}>
+                  <div className={styles.fieldLabelRow}>
                     <Label htmlFor="password">Password</Label>
-                    <Link
-                      href="/admin/forgot-password"
-                      className="text-sm text-primary hover:underline"
-                    >
+                    <Link href="/admin/forgot-password" className={styles.forgotLink}>
                       Forgot password?
                     </Link>
                   </div>
-                  <div className="relative">
+                  <div className={styles.passwordWrapper}>
                     <Input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
@@ -252,9 +246,9 @@ function AdminLoginContent() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors -m-2 p-2 rounded-md"
+                      className={styles.passwordToggle}
                       tabIndex={-1}
-                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
                     >
                       {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
@@ -262,14 +256,14 @@ function AdminLoginContent() {
                 </div>
 
                 {showCaptcha && (
-                  <div className="space-y-2">
+                  <div className={styles.captchaField}>
                     <Captcha
                       onVerify={handleCaptchaVerify}
                       onExpire={handleCaptchaExpire}
                       onError={(err) => setError(err)}
                     />
                     {!captchaToken && (
-                      <p className="text-xs text-muted-foreground text-center">
+                      <p className={styles.captchaHint}>
                         Please complete the verification above
                       </p>
                     )}
@@ -277,17 +271,17 @@ function AdminLoginContent() {
                 )}
               </>
             ) : (
-              <div className="space-y-4">
-                <div className="text-center space-y-2">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                    <Shield className="w-6 h-6 text-primary" />
+              <div className={styles.twoFactor}>
+                <div className={styles.twoFactorHeader}>
+                  <div className={styles.twoFactorIcon}>
+                    <Shield className="w-6 h-6" />
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className={styles.twoFactorHint}>
                     Enter the 6-digit code from your authenticator app
                   </p>
                 </div>
 
-                <div className="space-y-2">
+                <div className={styles.field}>
                   <Label htmlFor="twoFactorCode">Verification code</Label>
                   <Input
                     id="twoFactorCode"
@@ -304,7 +298,7 @@ function AdminLoginContent() {
                     className="h-12 text-center text-lg tracking-widest font-mono"
                     autoFocus
                   />
-                  <p className="text-xs text-muted-foreground text-center">
+                  <p className={styles.twoFactorBackupHint}>
                     You can also use a backup code (format: XXXX-XXXX)
                   </p>
                 </div>
@@ -312,7 +306,7 @@ function AdminLoginContent() {
                 <button
                   type="button"
                   onClick={handleBackFromTwoFactor}
-                  className="w-full text-sm text-muted-foreground hover:text-foreground"
+                  className={styles.backButton}
                 >
                   &larr; Back to login
                 </button>
@@ -329,8 +323,8 @@ function AdminLoginContent() {
             </Button>
           </motion.form>
 
-          <motion.div variants={fadeInUp} className="text-center">
-            <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-block">
+          <motion.div variants={fadeInUp} className={styles.footer}>
+            <Link href="/" className={styles.footerLink}>
               &larr; Back to main site
             </Link>
           </motion.div>

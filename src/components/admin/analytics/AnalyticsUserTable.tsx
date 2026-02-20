@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { ChevronLeft, ChevronRight, Search, ExternalLink } from 'lucide-react'
+import styles from '@/components/admin/admin-misc.module.css'
 
 interface AnalyticsUser {
   id: string
@@ -51,7 +52,7 @@ interface AnalyticsUserTableProps {
   }
 }
 
-const statusColors: Record<string, string> = {
+const statusBadgeClass: Record<string, string> = {
   active: 'bg-green-100 text-green-800',
   stalled: 'bg-yellow-100 text-yellow-800',
   dormant: 'bg-red-100 text-red-800',
@@ -113,10 +114,10 @@ export function AnalyticsUserTable({ initialUsers, initialPagination }: Analytic
   }
 
   return (
-    <div className="space-y-4">
+    <div className={styles.page}>
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-2">
+      <div className={styles.filterBar}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <Input
             placeholder="Search by name or email..."
             value={search}
@@ -148,13 +149,13 @@ export function AnalyticsUserTable({ initialUsers, initialPagination }: Analytic
             <SelectItem value="newest">Newest</SelectItem>
           </SelectContent>
         </Select>
-        <span className="ml-auto text-sm text-muted-foreground">
+        <span className={styles.filterBarSpacer}>
           {pagination.total} users
         </span>
       </div>
 
       {/* Table */}
-      <div className="rounded-md border">
+      <div className={styles.tableWrap}>
         <Table>
           <TableHeader>
             <TableRow>
@@ -171,7 +172,7 @@ export function AnalyticsUserTable({ initialUsers, initialPagination }: Analytic
           <TableBody>
             {users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground">
+                <TableCell colSpan={8} className={styles.emptyCell}>
                   No users found
                 </TableCell>
               </TableRow>
@@ -180,26 +181,26 @@ export function AnalyticsUserTable({ initialUsers, initialPagination }: Analytic
                 <TableRow key={user.id}>
                   <TableCell>
                     <div>
-                      <div className="font-medium">{user.name || 'No name'}</div>
-                      <div className="text-xs text-muted-foreground">{user.email}</div>
+                      <div className={styles.cellPrimary}>{user.name || 'No name'}</div>
+                      <div className={styles.cellMono}>{user.email}</div>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary" className={statusColors[user.engagementStatus]}>
+                    <Badge variant="secondary" className={statusBadgeClass[user.engagementStatus]}>
                       {user.engagementStatus}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-sm">
+                  <TableCell className={styles.cellSecondary}>
                     {user.planTier || '-'}
                   </TableCell>
-                  <TableCell className="text-sm tabular-nums">{user.eventCount}</TableCell>
-                  <TableCell className="text-sm tabular-nums">{user.sessionCount}</TableCell>
-                  <TableCell className="text-sm">
+                  <TableCell className={`${styles.cellSecondary} ${styles.tabularNum}`}>{user.eventCount}</TableCell>
+                  <TableCell className={`${styles.cellSecondary} ${styles.tabularNum}`}>{user.sessionCount}</TableCell>
+                  <TableCell className={styles.cellSecondary}>
                     <span title={new Date(user.lastActiveAt).toLocaleString()}>
                       {timeAgo(user.lastActiveAt)}
                     </span>
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
+                  <TableCell className={styles.cellSecondary}>
                     {user.lastDevice || '-'}
                   </TableCell>
                   <TableCell>
@@ -218,11 +219,11 @@ export function AnalyticsUserTable({ initialUsers, initialPagination }: Analytic
 
       {/* Pagination */}
       {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
+        <div className={styles.pagination}>
+          <p className={styles.paginationInfo}>
             Page {pagination.page} of {pagination.totalPages}
           </p>
-          <div className="flex gap-2">
+          <div className={styles.paginationButtons}>
             <Button
               variant="outline"
               size="sm"

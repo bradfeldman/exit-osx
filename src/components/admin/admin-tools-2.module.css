@@ -1,0 +1,748 @@
+/* Admin Tools 2 — CSS Module
+ * Covers: bri-weighting, bri-weights, industry-multiples
+ * Design system: globals.css variables
+ */
+
+/* ============================================================
+   Shared Page Layout
+   ============================================================ */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pageHeader h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.pageHeader p {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   Card (replaces shadcn Card/CardContent/CardHeader)
+   ============================================================ */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.cardHeader {
+  padding: 20px 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cardHeader h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.cardHeader h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.cardDescription {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.cardBody {
+  padding: 20px 24px 24px;
+}
+
+.cardBodyFlush {
+  padding: 24px;
+}
+
+/* ============================================================
+   Notice Banners
+   ============================================================ */
+
+.noticeInfo {
+  padding: 12px 16px;
+  background: var(--accent-light);
+  border: 1px solid #93C5FD;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: #1D4ED8;
+  line-height: 1.5;
+}
+
+.noticeWarning {
+  padding: 12px 16px;
+  background: var(--orange-light);
+  border: 1px solid #FCD34D;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: #92400E;
+  line-height: 1.5;
+}
+
+.noticeSuccess {
+  padding: 12px 16px;
+  background: var(--green-light);
+  border: 1px solid #86EFAC;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: #166534;
+  line-height: 1.5;
+}
+
+.noticeError {
+  padding: 12px 16px;
+  background: var(--red-light);
+  border: 1px solid #FCA5A5;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: #991B1B;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   Loading Spinner
+   ============================================================ */
+
+.loadingCenter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.loadingInline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 0;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--border);
+  border-bottom-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+.spinnerSm {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border);
+  border-bottom-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loadingRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   BRI Weighting — Category Rows
+   ============================================================ */
+
+.categoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.categoryRow {
+  display: grid;
+  grid-template-columns: 5fr 3fr 2fr 2fr;
+  align-items: center;
+  gap: 16px;
+}
+
+.categoryLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.categoryDescription {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.sliderWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sliderWrapper input[type="range"] {
+  flex: 1;
+  accent-color: var(--primary);
+  height: 6px;
+  cursor: pointer;
+}
+
+.numberInputWrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.numberInput {
+  width: 56px;
+  padding: 4px 8px;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--surface);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.numberInput:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.15);
+}
+
+.percentSymbol {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.progressBar {
+  height: 6px;
+  background: var(--muted);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progressBarFill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 99px;
+  transition: width 0.2s ease;
+}
+
+/* ============================================================
+   Total Row
+   ============================================================ */
+
+.totalRow {
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.totalLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.totalValueValid {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--green);
+}
+
+.totalValueInvalid {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--red);
+}
+
+.totalOffsetHint {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--red);
+  margin-left: 8px;
+}
+
+.totalError {
+  font-size: 12px;
+  color: var(--red);
+  margin-top: 6px;
+}
+
+/* ============================================================
+   Card Actions Row
+   ============================================================ */
+
+.cardActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ============================================================
+   Info Card (Understanding BRI / formula display)
+   ============================================================ */
+
+.infoText {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.infoText + .infoText {
+  margin-top: 12px;
+}
+
+.codeBlock {
+  padding: 16px;
+  background: var(--surface-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: ui-monospace, monospace;
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.7;
+}
+
+.codeComment {
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.codeIndent {
+  margin-left: 24px;
+}
+
+.codeHighlight {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* ============================================================
+   BRI Weights — Company Selector
+   ============================================================ */
+
+.selectNative {
+  width: 100%;
+  max-width: 400px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--surface);
+  outline: none;
+  appearance: auto;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.selectNative:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.15);
+}
+
+/* ============================================================
+   BRI Weights — Status Badge
+   ============================================================ */
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.badgeNeutral {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--muted);
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.badgeWarning {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--orange-light);
+  color: var(--orange);
+  white-space: nowrap;
+}
+
+.statusDescription {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   BRI Weights — Per-category row (wider label, default hint)
+   ============================================================ */
+
+.weightsRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.weightsLabel {
+  width: 160px;
+  flex-shrink: 0;
+}
+
+.weightsLabelTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.weightsLabelDesc {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+.weightsSliderGroup {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.weightsSlider {
+  flex: 1;
+  accent-color: var(--primary);
+  height: 6px;
+  cursor: pointer;
+}
+
+.weightsNumberInput {
+  width: 72px;
+  padding: 4px 8px;
+  text-align: right;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--surface);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.weightsNumberInput:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.15);
+}
+
+.weightsDefaultHint {
+  width: 80px;
+  text-align: right;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Industry Multiples — Top Bar (source info + CSV buttons)
+   ============================================================ */
+
+.dataSourceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dataSourceMeta p {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.dataSourceMeta .dataSourceName {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin: 2px 0;
+}
+
+.csvButtons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ============================================================
+   Industry Multiples — Search Bar
+   ============================================================ */
+
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.searchInput {
+  flex: 1;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--surface);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.searchInput:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.15);
+}
+
+.searchCount {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* ============================================================
+   Industry Multiples — Accordion (industry group)
+   ============================================================ */
+
+.industryList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.industryCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.industryCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.industryCardHeader:hover {
+  background: var(--surface-secondary);
+}
+
+.industryCardHeaderLeft h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.industryCardHeaderLeft p {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.industryCardToggle {
+  font-size: 20px;
+  color: var(--text-tertiary);
+  line-height: 1;
+}
+
+.industryCardBody {
+  padding: 0 24px 24px;
+}
+
+/* ============================================================
+   Industry Multiples — Table Grid Header
+   ============================================================ */
+
+.tableHeaderRow {
+  display: grid;
+  grid-template-columns: 4fr 4fr 4fr;
+  gap: 8px;
+  padding: 0 8px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ============================================================
+   Industry Multiples — Subsector Row
+   ============================================================ */
+
+.subsectorRows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.subsectorRow {
+  display: grid;
+  grid-template-columns: 4fr 4fr 4fr;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  transition: background 0.12s;
+}
+
+.subsectorRow:hover {
+  background: var(--surface-secondary);
+}
+
+.subsectorRowModified {
+  background: var(--orange-light);
+  border: 1px solid #FCD34D;
+}
+
+.subsectorRowModified:hover {
+  background: #FEF3C7;
+}
+
+.subsectorName {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.subsectorPath {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.multipleInputGroup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.multipleInput {
+  width: 60px;
+  padding: 4px 6px;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--text-primary);
+  background: var(--surface);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.multipleInput:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.15);
+}
+
+.multipleSeparator {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.multipleSuffix {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   Industry Multiples — Empty State
+   ============================================================ */
+
+.emptyState {
+  text-align: center;
+  padding: 32px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   Industry Multiples — Bottom Actions Bar
+   ============================================================ */
+
+.bottomActionsCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 20px 24px;
+}
+
+.bottomActionsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bottomActionsLeft p {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+}
+
+.bottomActionsRight {
+  text-align: right;
+}
+
+.bottomActionsRight p {
+  font-size: 11px;
+  color: var(--orange);
+  margin-top: 4px;
+}
+
+/* ============================================================
+   Empty Placeholder (no company selected)
+   ============================================================ */
+
+.emptyPlaceholder {
+  text-align: center;
+  padding: 48px 24px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}

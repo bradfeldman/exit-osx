@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import styles from '@/components/admin/admin-tools.module.css'
 
 interface Company {
   id: string
@@ -73,41 +73,51 @@ interface TaskStats {
   recoverableValue: number
 }
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
-  PENDING: { label: 'Pending', color: 'text-gray-600', bgColor: 'bg-gray-100' },
-  IN_PROGRESS: { label: 'In Progress', color: 'text-blue-600', bgColor: 'bg-blue-100' },
-  COMPLETED: { label: 'Completed', color: 'text-green-600', bgColor: 'bg-green-100' },
-  DEFERRED: { label: 'Deferred', color: 'text-yellow-600', bgColor: 'bg-yellow-100' },
-  BLOCKED: { label: 'Blocked', color: 'text-red-600', bgColor: 'bg-red-100' },
-  CANCELLED: { label: 'Cancelled', color: 'text-gray-400', bgColor: 'bg-gray-50' },
+const STATUS_CONFIG: Record<string, { label: string; statCard: string; statNumber: string }> = {
+  PENDING:     { label: 'Pending',     statCard: styles.statCardPending,    statNumber: styles.statNumberPending    },
+  IN_PROGRESS: { label: 'In Progress', statCard: styles.statCardInProgress, statNumber: styles.statNumberInProgress },
+  COMPLETED:   { label: 'Completed',   statCard: styles.statCardCompleted,  statNumber: styles.statNumberCompleted  },
+  DEFERRED:    { label: 'Deferred',    statCard: styles.statCardDeferred,   statNumber: styles.statNumberDeferred   },
+  BLOCKED:     { label: 'Blocked',     statCard: styles.statCardBlocked,    statNumber: styles.statNumberBlocked    },
+  CANCELLED:   { label: 'Cancelled',   statCard: styles.statCardCancelled,  statNumber: styles.statNumberCancelled  },
+}
+
+// Badge color classes (Tailwind — retained since Badge is a kept shadcn component)
+const STATUS_BADGE: Record<string, { color: string; bgColor: string }> = {
+  PENDING:     { color: 'text-gray-600',   bgColor: 'bg-gray-100'   },
+  IN_PROGRESS: { color: 'text-blue-600',   bgColor: 'bg-blue-100'   },
+  COMPLETED:   { color: 'text-green-600',  bgColor: 'bg-green-100'  },
+  DEFERRED:    { color: 'text-yellow-600', bgColor: 'bg-yellow-100' },
+  BLOCKED:     { color: 'text-red-600',    bgColor: 'bg-red-100'    },
+  CANCELLED:   { color: 'text-gray-400',   bgColor: 'bg-gray-50'    },
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
-  FINANCIAL: 'Financial',
+  FINANCIAL:      'Financial',
   TRANSFERABILITY: 'Transferability',
-  OPERATIONAL: 'Operational',
-  MARKET: 'Market',
-  LEGAL_TAX: 'Legal & Tax',
-  PERSONAL: 'Personal',
+  OPERATIONAL:    'Operational',
+  MARKET:         'Market',
+  LEGAL_TAX:      'Legal & Tax',
+  PERSONAL:       'Personal',
 }
 
 const ACTION_TYPE_LABELS: Record<string, string> = {
-  TYPE_I_EVIDENCE: 'I. Evidence',
-  TYPE_II_DOCUMENTATION: 'II. Documentation',
-  TYPE_III_OPERATIONAL_CHANGE: 'III. Operational',
+  TYPE_I_EVIDENCE:              'I. Evidence',
+  TYPE_II_DOCUMENTATION:        'II. Documentation',
+  TYPE_III_OPERATIONAL_CHANGE:  'III. Operational',
   TYPE_IV_INSTITUTIONALIZATION: 'IV. Institutionalization',
-  TYPE_V_RISK_REDUCTION: 'V. Risk Reduction',
-  TYPE_VI_ALIGNMENT: 'VI. Alignment',
-  TYPE_VII_READINESS: 'VII. Readiness',
-  TYPE_VIII_SIGNALING: 'VIII. Signaling',
-  TYPE_IX_OPTION_CREATION: 'IX. Option Creation',
-  TYPE_X_DEFER: 'X. Defer',
+  TYPE_V_RISK_REDUCTION:        'V. Risk Reduction',
+  TYPE_VI_ALIGNMENT:            'VI. Alignment',
+  TYPE_VII_READINESS:           'VII. Readiness',
+  TYPE_VIII_SIGNALING:          'VIII. Signaling',
+  TYPE_IX_OPTION_CREATION:      'IX. Option Creation',
+  TYPE_X_DEFER:                 'X. Defer',
 }
 
-function getScoreColor(score: number): string {
-  if (score >= 0.8) return 'text-green-600'
-  if (score >= 0.5) return 'text-yellow-600'
-  return 'text-red-600'
+function getScoreClass(score: number): string {
+  if (score >= 0.8) return styles.scoreGreen
+  if (score >= 0.5) return styles.scoreYellow
+  return styles.scoreRed
 }
 
 export default function AdminTaskViewerPage() {
@@ -187,33 +197,33 @@ export default function AdminTaskViewerPage() {
     }).format(value)
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Task Viewer</h1>
-        <p className="text-muted-foreground">
+    <div className={styles.page}>
+      <div className={styles.pageHeader}>
+        <h1 className={styles.pageTitle}>Task Viewer</h1>
+        <p className={styles.pageDescription}>
           View and debug tasks for any company
         </p>
       </div>
 
       {/* Company Selector */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Select Company</CardTitle>
-          <CardDescription>
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>Select Company</h2>
+          <p className={styles.cardDescription}>
             Choose a company to view its tasks
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+        <div className={styles.cardContent}>
           {loading ? (
-            <div className="flex items-center gap-2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
-              <span className="text-sm text-muted-foreground">Loading companies...</span>
+            <div className={styles.loadingRow}>
+              <div className={styles.spinner} />
+              <span className={styles.loadingText}>Loading companies...</span>
             </div>
           ) : (
             <select
               value={selectedCompanyId}
               onChange={(e) => setSelectedCompanyId(e.target.value)}
-              className="w-full max-w-md px-3 py-2 border rounded-lg text-sm"
+              className={styles.companySelect}
             >
               <option value="">Select a company...</option>
               {companies.map((company) => (
@@ -223,100 +233,80 @@ export default function AdminTaskViewerPage() {
               ))}
             </select>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {selectedCompanyId && (
         <>
           {/* Stats Summary */}
           {stats && (
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-              <Card className="p-3">
-                <div className="text-2xl font-bold">{stats.total}</div>
-                <div className="text-xs text-muted-foreground">Total</div>
-              </Card>
-              <Card className={`p-3 ${STATUS_CONFIG.PENDING.bgColor}`}>
-                <div className={`text-2xl font-bold ${STATUS_CONFIG.PENDING.color}`}>
-                  {stats.pending}
-                </div>
-                <div className="text-xs text-muted-foreground">Pending</div>
-              </Card>
-              <Card className={`p-3 ${STATUS_CONFIG.IN_PROGRESS.bgColor}`}>
-                <div className={`text-2xl font-bold ${STATUS_CONFIG.IN_PROGRESS.color}`}>
-                  {stats.inProgress}
-                </div>
-                <div className="text-xs text-muted-foreground">In Progress</div>
-              </Card>
-              <Card className={`p-3 ${STATUS_CONFIG.COMPLETED.bgColor}`}>
-                <div className={`text-2xl font-bold ${STATUS_CONFIG.COMPLETED.color}`}>
-                  {stats.completed}
-                </div>
-                <div className="text-xs text-muted-foreground">Completed</div>
-              </Card>
-              <Card className={`p-3 ${STATUS_CONFIG.DEFERRED.bgColor}`}>
-                <div className={`text-2xl font-bold ${STATUS_CONFIG.DEFERRED.color}`}>
-                  {stats.deferred}
-                </div>
-                <div className="text-xs text-muted-foreground">Deferred</div>
-              </Card>
-              <Card className={`p-3 ${STATUS_CONFIG.BLOCKED.bgColor}`}>
-                <div className={`text-2xl font-bold ${STATUS_CONFIG.BLOCKED.color}`}>
-                  {stats.blocked}
-                </div>
-                <div className="text-xs text-muted-foreground">Blocked</div>
-              </Card>
-              <Card className={`p-3 ${STATUS_CONFIG.CANCELLED.bgColor}`}>
-                <div className={`text-2xl font-bold ${STATUS_CONFIG.CANCELLED.color}`}>
-                  {stats.cancelled}
-                </div>
-                <div className="text-xs text-muted-foreground">Cancelled</div>
-              </Card>
+            <div className={styles.statCardsGrid}>
+              <div className={styles.statCard}>
+                <div className={styles.statNumber}>{stats.total}</div>
+                <div className={styles.statLabel}>Total</div>
+              </div>
+              <div className={STATUS_CONFIG.PENDING.statCard}>
+                <div className={STATUS_CONFIG.PENDING.statNumber}>{stats.pending}</div>
+                <div className={styles.statLabel}>Pending</div>
+              </div>
+              <div className={STATUS_CONFIG.IN_PROGRESS.statCard}>
+                <div className={STATUS_CONFIG.IN_PROGRESS.statNumber}>{stats.inProgress}</div>
+                <div className={styles.statLabel}>In Progress</div>
+              </div>
+              <div className={STATUS_CONFIG.COMPLETED.statCard}>
+                <div className={STATUS_CONFIG.COMPLETED.statNumber}>{stats.completed}</div>
+                <div className={styles.statLabel}>Completed</div>
+              </div>
+              <div className={STATUS_CONFIG.DEFERRED.statCard}>
+                <div className={STATUS_CONFIG.DEFERRED.statNumber}>{stats.deferred}</div>
+                <div className={styles.statLabel}>Deferred</div>
+              </div>
+              <div className={STATUS_CONFIG.BLOCKED.statCard}>
+                <div className={STATUS_CONFIG.BLOCKED.statNumber}>{stats.blocked}</div>
+                <div className={styles.statLabel}>Blocked</div>
+              </div>
+              <div className={STATUS_CONFIG.CANCELLED.statCard}>
+                <div className={STATUS_CONFIG.CANCELLED.statNumber}>{stats.cancelled}</div>
+                <div className={styles.statLabel}>Cancelled</div>
+              </div>
             </div>
           )}
 
           {/* Value Summary */}
           {stats && (
-            <Card>
-              <CardContent className="py-4">
-                <div className="flex flex-wrap gap-6 justify-center text-center">
-                  <div>
-                    <div className="text-xl font-bold">
-                      {formatCurrency(stats.totalValue)}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Total Task Value</div>
+            <div className={styles.card}>
+              <div className={styles.cardContentPy}>
+                <div className={styles.valueSummary}>
+                  <div className={styles.valueSummaryItem}>
+                    <div className={styles.valueSummaryAmount}>{formatCurrency(stats.totalValue)}</div>
+                    <div className={styles.valueSummaryLabel}>Total Task Value</div>
                   </div>
-                  <div>
-                    <div className="text-xl font-bold text-green-600">
-                      {formatCurrency(stats.completedValue)}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Value Captured</div>
+                  <div className={styles.valueSummaryItem}>
+                    <div className={styles.valueSummaryAmountGreen}>{formatCurrency(stats.completedValue)}</div>
+                    <div className={styles.valueSummaryLabel}>Value Captured</div>
                   </div>
-                  <div>
-                    <div className="text-xl font-bold text-blue-600">
-                      {formatCurrency(stats.recoverableValue)}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Recoverable Value</div>
+                  <div className={styles.valueSummaryItem}>
+                    <div className={styles.valueSummaryAmountBlue}>{formatCurrency(stats.recoverableValue)}</div>
+                    <div className={styles.valueSummaryLabel}>Recoverable Value</div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
 
           {/* Filters */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Filters</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-4">
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground block mb-1">
-                    Status
-                  </label>
+          <div className={styles.card}>
+            <div className={styles.cardHeaderCompact}>
+              <h2 className={styles.cardTitle}>Filters</h2>
+            </div>
+            <div className={styles.cardContent}>
+              <div className={styles.filtersRow}>
+                <div className={styles.filterGroup}>
+                  <label className={styles.filterLabel}>Status</label>
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="border rounded-md px-3 py-1.5 text-sm"
+                    className={styles.filterSelect}
                   >
                     <option value="ALL">All Statuses</option>
                     <option value="PENDING">Pending</option>
@@ -327,141 +317,128 @@ export default function AdminTaskViewerPage() {
                     <option value="CANCELLED">Cancelled</option>
                   </select>
                 </div>
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground block mb-1">
-                    Category
-                  </label>
+                <div className={styles.filterGroup}>
+                  <label className={styles.filterLabel}>Category</label>
                   <select
                     value={categoryFilter}
                     onChange={(e) => setCategoryFilter(e.target.value)}
-                    className="border rounded-md px-3 py-1.5 text-sm"
+                    className={styles.filterSelect}
                   >
                     <option value="ALL">All Categories</option>
                     <option value="FINANCIAL">Financial</option>
                     <option value="TRANSFERABILITY">Transferability</option>
                     <option value="OPERATIONAL">Operational</option>
                     <option value="MARKET">Market</option>
-                    <option value="LEGAL_TAX">Legal & Tax</option>
+                    <option value="LEGAL_TAX">Legal &amp; Tax</option>
                     <option value="PERSONAL">Personal</option>
                   </select>
                 </div>
-                <div className="flex items-end">
+                <div>
                   <Button onClick={loadTasks} variant="outline" disabled={loadingTasks}>
                     {loadingTasks ? 'Loading...' : 'Refresh'}
                   </Button>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Error Display */}
           {error && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-              {error}
-            </div>
+            <div className={styles.bannerError}>{error}</div>
           )}
 
           {/* Task List */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <h2 className={styles.cardTitle}>
                 Tasks ({tasks.length})
-              </CardTitle>
-              <CardDescription>
+              </h2>
+              <p className={styles.cardDescription}>
                 Click on a task to see full details
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+              </p>
+            </div>
+            <div className={styles.cardContent}>
               {loadingTasks ? (
-                <div className="py-8 text-center text-muted-foreground">
-                  Loading tasks...
-                </div>
+                <div className={styles.emptyStateText}>Loading tasks...</div>
               ) : tasks.length === 0 ? (
-                <div className="py-8 text-center text-muted-foreground">
+                <div className={styles.emptyStateText}>
                   No tasks found matching the selected filters.
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className={styles.taskList}>
                   {tasks.map((task) => {
                     const statusConfig = STATUS_CONFIG[task.status] || STATUS_CONFIG.PENDING
+                    const badgeConfig = STATUS_BADGE[task.status] || STATUS_BADGE.PENDING
                     const isExpanded = expandedTaskId === task.id
 
                     return (
                       <div
                         key={task.id}
-                        className={`border rounded-lg transition-all ${
-                          isExpanded ? 'ring-2 ring-primary' : 'hover:border-gray-300'
-                        }`}
+                        className={isExpanded ? styles.taskItemExpanded : styles.taskItem}
                       >
                         {/* Task Summary Row */}
                         <button
                           onClick={() => setExpandedTaskId(isExpanded ? null : task.id)}
-                          className="w-full p-3 text-left"
+                          className={styles.taskSummaryButton}
                         >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
+                          <div className={styles.taskSummaryInner}>
+                            <div className={styles.taskMeta}>
+                              <div className={styles.taskBadges}>
                                 <Badge
                                   variant="outline"
-                                  className={`${statusConfig.bgColor} ${statusConfig.color} border-0`}
+                                  className={`${badgeConfig.bgColor} ${badgeConfig.color} border-0`}
                                 >
                                   {statusConfig.label}
                                 </Badge>
                                 <Badge variant="outline" className="text-xs">
                                   {CATEGORY_LABELS[task.briCategory] || task.briCategory}
                                 </Badge>
-                                <span className="text-xs text-muted-foreground">
+                                <span className={styles.taskActionType}>
                                   {ACTION_TYPE_LABELS[task.actionType] || task.actionType}
                                 </span>
                               </div>
-                              <h3 className="font-medium mt-1 truncate">
-                                {task.title}
-                              </h3>
+                              <h3 className={styles.taskTitle}>{task.title}</h3>
                             </div>
-                            <div className="text-right shrink-0">
-                              <div className="font-semibold">
-                                {formatCurrency(task.rawImpact)}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                {task.effortLevel}
-                              </div>
+                            <div className={styles.taskRight}>
+                              <div className={styles.taskImpact}>{formatCurrency(task.rawImpact)}</div>
+                              <div className={styles.taskEffort}>{task.effortLevel}</div>
                             </div>
                           </div>
                         </button>
 
                         {/* Expanded Details */}
                         {isExpanded && (
-                          <div className="px-3 pb-3 pt-0 border-t bg-muted/50">
+                          <div className={styles.taskDetails}>
                             {/* Upgrade Path Section */}
                             {task.upgradePath && task.upgradePath.from && task.upgradePath.to && (
-                              <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-                                <h4 className="font-medium text-emerald-800 mb-2 flex items-center gap-2">
-                                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                              <div className={styles.upgradePath}>
+                                <h4 className={styles.upgradePathTitle}>
+                                  <svg className={styles.upgradePathIcon} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
                                   </svg>
                                   Answer Upgrade Path
                                 </h4>
-                                <div className="flex items-center gap-2">
-                                  <div className="flex-1 p-2 bg-white rounded border border-emerald-200">
-                                    <div className="text-xs text-emerald-600 mb-1">Current Answer</div>
-                                    <div className="text-sm">{task.upgradePath.from.text}</div>
-                                    <div className="text-xs font-mono text-emerald-700 mt-1">
+                                <div className={styles.upgradePathRow}>
+                                  <div className={styles.upgradeBox}>
+                                    <div className={styles.upgradeBoxLabel}>Current Answer</div>
+                                    <div className={styles.upgradeBoxText}>{task.upgradePath.from.text}</div>
+                                    <div className={styles.upgradeBoxScore}>
                                       Score: {task.upgradePath.from.score.toFixed(2)}
                                     </div>
                                   </div>
-                                  <div className="flex flex-col items-center text-emerald-600">
-                                    <span className="text-lg">→</span>
-                                    <span className="text-[10px]">upgrades to</span>
+                                  <div className={styles.upgradeArrow}>
+                                    <span style={{ fontSize: '1.125rem' }}>→</span>
+                                    <span className={styles.upgradeArrowLabel}>upgrades to</span>
                                   </div>
-                                  <div className="flex-1 p-2 bg-emerald-100 rounded border-2 border-emerald-300">
-                                    <div className="text-xs text-emerald-600 mb-1">Target Answer</div>
-                                    <div className="text-sm font-medium text-emerald-900">{task.upgradePath.to.text}</div>
-                                    <div className="text-xs font-mono text-emerald-700 mt-1">
+                                  <div className={styles.upgradeBoxTarget}>
+                                    <div className={styles.upgradeBoxLabel}>Target Answer</div>
+                                    <div className={styles.upgradeBoxTextTarget}>{task.upgradePath.to.text}</div>
+                                    <div className={styles.upgradeBoxScore}>
                                       Score: {task.upgradePath.to.score.toFixed(2)}
                                     </div>
                                   </div>
                                 </div>
-                                <p className="mt-2 text-xs text-emerald-700">
+                                <p className={styles.upgradePathNote}>
                                   Completing this task will upgrade the effective answer from {task.upgradePath.from.score.toFixed(2)} to {task.upgradePath.to.score.toFixed(2)}, improving the BRI score.
                                 </p>
                               </div>
@@ -469,90 +446,86 @@ export default function AdminTaskViewerPage() {
 
                             {/* Linked Question Section */}
                             {task.linkedQuestionDetails && (
-                              <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                <h4 className="font-medium text-blue-800 mb-2 flex items-center gap-2">
-                                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                              <div className={styles.linkedQuestion}>
+                                <h4 className={styles.linkedQuestionTitle}>
+                                  <svg className={styles.linkedQuestionIcon} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
                                   </svg>
                                   Triggering Assessment Response
                                 </h4>
-                                <p className="text-sm text-blue-900 font-medium mb-2">
+                                <p className={styles.linkedQuestionText}>
                                   {task.linkedQuestionDetails.questionText}
                                 </p>
                                 {task.linkedQuestionDetails.helpText && (
-                                  <p className="text-xs text-blue-700 italic mb-3">
+                                  <p className={styles.linkedQuestionHelp}>
                                     {task.linkedQuestionDetails.helpText}
                                   </p>
                                 )}
-                                <div className="space-y-1">
+                                <div className={styles.linkedQuestionOptions}>
                                   {task.linkedQuestionDetails.options.map((option, idx) => (
                                     <div
                                       key={option.id}
-                                      className={`flex items-center justify-between text-xs p-2 rounded ${
-                                        option.isSelected
-                                          ? 'bg-blue-200 border-2 border-blue-400 font-medium'
-                                          : 'bg-white border border-blue-100'
-                                      }`}
+                                      className={option.isSelected ? styles.linkedQuestionOptionSelected : styles.linkedQuestionOption}
                                     >
-                                      <span className={option.isSelected ? 'text-blue-900' : 'text-gray-600'}>
+                                      <span>
                                         {idx + 1}. {option.text}
                                         {option.isSelected && (
-                                          <span className="ml-2 text-blue-600">← User&apos;s Response</span>
+                                          <span className={styles.linkedQuestionUserTag}>← User&apos;s Response</span>
                                         )}
                                       </span>
-                                      <span className={`${getScoreColor(option.score)} font-mono`}>
+                                      <span className={getScoreClass(option.score)}>
                                         {option.score.toFixed(2)}
                                       </span>
                                     </div>
                                   ))}
                                 </div>
                                 {task.linkedQuestionDetails.selectedResponse && (
-                                  <p className="mt-2 text-xs text-blue-700">
+                                  <p className={styles.linkedQuestionNote}>
                                     This task was generated because the response score ({task.linkedQuestionDetails.selectedResponse.score.toFixed(2)}) indicates risk that can be mitigated.
                                   </p>
                                 )}
                               </div>
                             )}
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3 text-sm">
+                            <div className={styles.taskDetailsGrid}>
                               <div>
-                                <h4 className="font-medium mb-1">Description</h4>
-                                <p className="text-muted-foreground">{task.description}</p>
+                                <h4 className={styles.taskDetailSectionTitle}>Description</h4>
+                                <p className={styles.taskDetailDesc}>{task.description}</p>
                               </div>
-                              <div className="space-y-2">
-                                <div>
-                                  <span className="text-muted-foreground">Normalized Value:</span>{' '}
-                                  <span className="font-medium">{formatCurrency(task.normalizedValue)}</span>
+                              <div className={styles.taskDetailMeta}>
+                                <div className={styles.taskDetailRow}>
+                                  <span className={styles.taskDetailRowLabel}>Normalized Value:</span>
+                                  <span className={styles.taskDetailRowValue}>{formatCurrency(task.normalizedValue)}</span>
                                 </div>
-                                <div>
-                                  <span className="text-muted-foreground">Complexity:</span>{' '}
-                                  <span className="font-medium">{task.complexity}</span>
+                                <div className={styles.taskDetailRow}>
+                                  <span className={styles.taskDetailRowLabel}>Complexity:</span>
+                                  <span className={styles.taskDetailRowValue}>{task.complexity}</span>
                                 </div>
                                 {task.estimatedHours && (
-                                  <div>
-                                    <span className="text-muted-foreground">Est. Hours:</span>{' '}
-                                    <span className="font-medium">{task.estimatedHours}h</span>
+                                  <div className={styles.taskDetailRow}>
+                                    <span className={styles.taskDetailRowLabel}>Est. Hours:</span>
+                                    <span className={styles.taskDetailRowValue}>{task.estimatedHours}h</span>
                                   </div>
                                 )}
                                 {task.deferredUntil && (
-                                  <div>
-                                    <span className="text-muted-foreground">Deferred Until:</span>{' '}
-                                    <span className="font-medium">
+                                  <div className={styles.taskDetailRow}>
+                                    <span className={styles.taskDetailRowLabel}>Deferred Until:</span>
+                                    <span className={styles.taskDetailRowValue}>
                                       {new Date(task.deferredUntil).toLocaleDateString()}
                                     </span>
                                   </div>
                                 )}
                                 {task.completedAt && (
-                                  <div>
-                                    <span className="text-muted-foreground">Completed:</span>{' '}
-                                    <span className="font-medium">
+                                  <div className={styles.taskDetailRow}>
+                                    <span className={styles.taskDetailRowLabel}>Completed:</span>
+                                    <span className={styles.taskDetailRowValue}>
                                       {new Date(task.completedAt).toLocaleDateString()}
                                     </span>
                                   </div>
                                 )}
                               </div>
                             </div>
-                            <div className="mt-3 pt-3 border-t text-xs text-muted-foreground">
+                            <div className={styles.taskIdRow}>
                               ID: {task.id}
                             </div>
                           </div>
@@ -562,17 +535,17 @@ export default function AdminTaskViewerPage() {
                   })}
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </>
       )}
 
       {!selectedCompanyId && (
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
+        <div className={styles.card}>
+          <div className={styles.emptyState}>
             Select a company above to view its tasks.
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </div>
   )

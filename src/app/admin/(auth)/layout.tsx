@@ -1,10 +1,12 @@
+import styles from '@/components/admin/admin.module.css'
+
 export default function AdminAuthLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className={styles.adminAuthLayout}>
       {children}
     </div>
   )

@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { WorkspaceTable } from '@/components/admin/WorkspaceTable'
+import styles from '@/components/admin/admin-misc.module.css'
 
 async function getWorkspaces() {
   const limit = 20
@@ -41,25 +41,25 @@ export default async function AdminWorkspacesPage() {
   const { workspaces, pagination } = await getWorkspaces()
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Workspaces</h1>
-        <p className="text-muted-foreground">
-          Manage workspaces and their members
-        </p>
+    <div className={styles.page}>
+      <div className={styles.pageHeader}>
+        <h1 className={styles.pageTitle}>Workspaces</h1>
+        <p className={styles.pageSubtitle}>Manage workspaces and their members</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>All Workspaces</CardTitle>
-          <CardDescription>
-            {pagination.total} workspaces in the system
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <div className={styles.cardHeaderInner}>
+            <p className={styles.cardTitle}>All Workspaces</p>
+            <p className={styles.cardDescription}>
+              {pagination.total} workspaces in the system
+            </p>
+          </div>
+        </div>
+        <div className={styles.cardContent}>
           <WorkspaceTable initialWorkspaces={workspaces} initialPagination={pagination} />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

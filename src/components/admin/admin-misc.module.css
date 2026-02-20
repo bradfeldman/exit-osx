@@ -1,0 +1,908 @@
+/* Admin Misc Pages — CSS Module
+ * Shared across: workspaces, tickets, variables, activity, customer-service,
+ *   sales-marketing, rd, analytics pages and their components.
+ * Design tokens: globals.css custom properties
+ */
+
+/* ============================================================
+   Page shell — shared by every admin page
+   ============================================================ */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.pageSubtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   Card — replaces shadcn Card/CardHeader/CardContent
+   ============================================================ */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.cardHeader {
+  padding: 20px 24px 0;
+}
+
+.cardHeaderInner {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cardTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cardDescription {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.cardContent {
+  padding: 20px 24px 24px;
+}
+
+/* ============================================================
+   Stats grid — small metric cards
+   ============================================================ */
+.statsGrid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .statsGrid2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .statsGrid3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .statsGrid4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .statsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.statCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.statCardHeader {
+  padding: 16px 20px 8px;
+}
+
+.statCardLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.statCardContent {
+  padding: 0 20px 16px;
+}
+
+.statValue {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.statValueBlue {
+  color: #2563EB;
+}
+
+.statValueYellow {
+  color: #D97706;
+}
+
+.statValuePurple {
+  color: #7C3AED;
+}
+
+/* ============================================================
+   Hero/info banner cards (gradient)
+   ============================================================ */
+.bannerCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.bannerCardPurple {
+  background: linear-gradient(to right, #FAF5FF, #F5F3FF);
+  border-color: #DDD6FE;
+}
+
+.bannerCardGreen {
+  background: linear-gradient(to right, #F0FDF4, #ECFDF5);
+  border-color: #BBF7D0;
+}
+
+.bannerCardRed {
+  background: linear-gradient(to right, #FEF2F2, #FFF7ED);
+  border-color: #FECACA;
+}
+
+.bannerHeader {
+  padding: 20px 24px;
+}
+
+.bannerHeaderInner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bannerIconWrap {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #ffffff;
+}
+
+.bannerIconPurple {
+  background: #7C3AED;
+}
+
+.bannerIconGreen {
+  background: #16A34A;
+}
+
+.bannerIconRed {
+  background: #DC2626;
+}
+
+.bannerTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.bannerDescription {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ============================================================
+   Section heading (h2 above a grid)
+   ============================================================ */
+.sectionHeading {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+/* ============================================================
+   Tool/feature cards grid
+   ============================================================ */
+.toolsGrid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .toolsGrid2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .toolsGrid3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.toolCard {
+  display: block;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  text-decoration: none;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  height: 100%;
+}
+
+.toolCard:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.10);
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+}
+
+.toolCardDisabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.toolCardDimmed {
+  opacity: 0.75;
+}
+
+.toolCardHeader {
+  padding: 20px 24px;
+}
+
+.toolCardIconRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.toolCardIconBlue {
+  color: #2563EB;
+}
+
+.toolCardIconPurple {
+  color: #7C3AED;
+}
+
+.toolCardIconGreen {
+  color: #16A34A;
+}
+
+.toolCardIconRed {
+  color: #DC2626;
+}
+
+.toolCardIconGray {
+  color: var(--text-secondary);
+}
+
+.toolCardTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.toolCardDescription {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ============================================================
+   Detail page header (back arrow + title)
+   ============================================================ */
+.detailHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.detailHeaderText {
+  flex: 1;
+}
+
+.detailTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.detailSubtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.detailHeaderBadges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ============================================================
+   Tabs content spacing
+   ============================================================ */
+.tabContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 4px;
+}
+
+/* ============================================================
+   Table wrapper (adds border + radius)
+   ============================================================ */
+.tableWrap {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+/* ============================================================
+   Search / filter bar
+   ============================================================ */
+.filterBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.filterBarSpacer {
+  margin-left: auto;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.searchWrapper {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+/* padding-left to clear the icon; applied via inline style on Input */
+/* (Input component is kept as shadcn — use className="pl-9" on it) */
+
+/* ============================================================
+   Filter panel (collapsible)
+   ============================================================ */
+.filterPanel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--muted) 50%, transparent);
+  padding: 16px;
+}
+
+.filterGrid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .filterGrid2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .filterGrid4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .filterGrid5 {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.filterField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filterActions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ============================================================
+   Pagination row
+   ============================================================ */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.paginationInfo {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.paginationButtons {
+  display: flex;
+  gap: 8px;
+}
+
+/* ============================================================
+   Detail view — two-column layout (main + sidebar)
+   ============================================================ */
+.detailGrid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+  .detailGrid {
+    grid-template-columns: 1fr 320px;
+  }
+}
+
+.detailMain {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detailSidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ============================================================
+   Message thread (ticket conversation)
+   ============================================================ */
+.messageList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.message {
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  background: var(--muted);
+}
+
+.messageInternal {
+  background: #FEFCE8;
+  border: 1px solid #FEF08A;
+}
+
+.messageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.messageAuthorRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.messageAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.messageAuthorName {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.messageTimestamp {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.messageBody {
+  font-size: 14px;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+/* Reply form */
+.replyForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.replyFormFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.replyFormCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ============================================================
+   Info definition list (workspace/ticket details)
+   ============================================================ */
+.infoList {
+  display: grid;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.infoLabel {
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.infoValue {
+  color: var(--text-primary);
+  text-align: right;
+}
+
+.infoValueMono {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   Form field group (label + input stacked)
+   ============================================================ */
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formGrid2 {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .formGrid2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.trialNote {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   Recent tickets list (customer-service page)
+   ============================================================ */
+.recentTicketItem {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+  padding: 10px 8px;
+  margin: 0 -8px;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.recentTicketItem:last-child {
+  border-bottom: none;
+}
+
+.recentTicketItem:hover {
+  background: color-mix(in srgb, var(--muted) 50%, transparent);
+}
+
+.recentTicketInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.recentTicketSubject {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.recentTicketUser {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.ticketStatusPill {
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 9999px;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ticketStatusOpen {
+  background: #FEF9C3;
+  color: #854D0E;
+}
+
+.ticketStatusInProgress {
+  background: #DBEAFE;
+  color: #1E40AF;
+}
+
+.ticketStatusResolved {
+  background: #DCFCE7;
+  color: #166534;
+}
+
+.ticketStatusDefault {
+  background: var(--muted);
+  color: var(--text-secondary);
+}
+
+.viewAllLink {
+  display: inline-block;
+  margin-top: 16px;
+  font-size: 14px;
+  color: var(--accent);
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+.viewAllLink:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+/* ============================================================
+   Doc section (variables page)
+   ============================================================ */
+.docSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.docItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.docItemTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   Analytics: device/browser breakdown
+   ============================================================ */
+.breakdownList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.breakdownRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.breakdownLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  text-transform: capitalize;
+}
+
+.breakdownCount {
+  font-size: 14px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+   Analytics: account details grid
+   ============================================================ */
+.accountGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .accountGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.accountField {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.accountFieldLabel {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.accountFieldValue {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.accountFieldMono {
+  font-family: ui-monospace, monospace;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   Analytics summary cards (4-up grid)
+   ============================================================ */
+.summaryGrid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (min-width: 768px) {
+  .summaryGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.summaryCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.summaryCardContent {
+  padding: 20px;
+}
+
+.summaryValue {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.summaryLabel {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ============================================================
+   Company state card (analytics user detail)
+   ============================================================ */
+.companyMetrics {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (min-width: 768px) {
+  .companyMetrics {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.companyMetric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.companyMetricValue {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.companyMetricLabel {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   Cell sub-text helpers (used in tables)
+   ============================================================ */
+.cellPrimary {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.cellSecondary {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.cellMono {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.cellTruncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
+}
+
+.tabularNum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+   Empty state (inside table cell)
+   ============================================================ */
+.emptyCell {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 14px;
+  padding: 24px;
+}

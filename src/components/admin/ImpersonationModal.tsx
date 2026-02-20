@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { AlertTriangle } from 'lucide-react'
+import styles from '@/components/admin/admin.module.css'
 
 interface ImpersonationModalProps {
   open: boolean
@@ -79,8 +80,8 @@ export function ImpersonationModal({ open, onOpenChange, user }: ImpersonationMo
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
+          <div className={styles.adminModalFormBody}>
+            <div className={styles.adminModalFieldGroup}>
               <Label htmlFor="reason">Reason for impersonation *</Label>
               <Textarea
                 id="reason"
@@ -89,20 +90,20 @@ export function ImpersonationModal({ open, onOpenChange, user }: ImpersonationMo
                 placeholder="e.g., Investigating user-reported bug in assessment flow..."
                 className="min-h-24"
               />
-              <p className="text-xs text-muted-foreground">
+              <p className={styles.adminModalHint}>
                 Minimum 10 characters. This will be recorded in the audit log.
               </p>
             </div>
 
             {error && (
-              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+              <div className={styles.adminModalError}>
                 {error}
               </div>
             )}
 
-            <div className="rounded-md bg-yellow-500/10 p-3 text-sm text-yellow-600">
-              <p className="font-medium">Important:</p>
-              <ul className="mt-1 list-inside list-disc">
+            <div className={styles.adminModalWarning}>
+              <p className={styles.adminModalWarningTitle}>Important:</p>
+              <ul className={styles.adminModalWarningList}>
                 <li>Session will expire after 1 hour</li>
                 <li>All actions will be logged</li>
                 <li>A yellow banner will indicate impersonation mode</li>

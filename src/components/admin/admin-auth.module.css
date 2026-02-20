@@ -1,0 +1,443 @@
+/* Admin Auth Pages — CSS Module
+ * Shared across admin login and admin forgot-password pages
+ * Design system: globals.css variables
+ * Pattern: Split-panel layout (dark slate branding left / form right)
+ * Differs from auth.module.css: brand panel uses slate-900 dark theme
+ */
+
+/* ============================================================
+   Root layout — full viewport split panel
+   ============================================================ */
+.authPage {
+  display: flex;
+  min-height: 100dvh;
+}
+
+/* Loading state (centered single column) */
+.authPageLoading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  background: var(--background);
+}
+
+/* ============================================================
+   Left panel — admin branding (hidden on mobile)
+   ============================================================ */
+.brandPanel {
+  display: none;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #0F172A; /* slate-900 */
+}
+
+@media (min-width: 1024px) {
+  .brandPanel {
+    display: flex;
+    width: 50%;
+  }
+}
+
+.brandOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); /* slate-900 → slate-800 */
+}
+
+/* Decorative blobs */
+.brandBlobTop {
+  position: absolute;
+  top: 80px;
+  right: 80px;
+  width: 256px;
+  height: 256px;
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  border-radius: 50%;
+  filter: blur(48px);
+}
+
+.brandBlobBottom {
+  position: absolute;
+  bottom: 80px;
+  left: 40px;
+  width: 192px;
+  height: 192px;
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  border-radius: 50%;
+  filter: blur(32px);
+}
+
+.brandContent {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 48px;
+  color: #ffffff;
+  width: 100%;
+}
+
+.brandLogo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #ffffff;
+}
+
+.brandLogoText {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.brandBody {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.brandHeadline {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+
+.brandSubtitle {
+  font-size: 18px;
+  color: #CBD5E1; /* slate-300 */
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+.brandBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #94A3B8; /* slate-400 */
+}
+
+.brandFooter {
+  font-size: 14px;
+  color: #64748B; /* slate-500 */
+}
+
+/* ============================================================
+   Right panel — form area
+   ============================================================ */
+.formPanel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  background: var(--background);
+}
+
+@media (min-width: 640px) {
+  .formPanel {
+    padding: 32px 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .formPanel {
+    padding: 32px;
+  }
+}
+
+.formInner {
+  width: 100%;
+  max-width: 448px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* ============================================================
+   Mobile logo (shown only below lg breakpoint)
+   ============================================================ */
+.mobileLogo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (min-width: 1024px) {
+  .mobileLogo {
+    display: none;
+  }
+}
+
+.mobileLogoText {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   Page heading block
+   ============================================================ */
+.heading {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.title {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.subtitle {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ============================================================
+   Form — field spacing & layout
+   ============================================================ */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fieldLabelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.forgotLink {
+  font-size: 14px;
+  color: var(--accent);
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+.forgotLink:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+/* Password toggle wrapper */
+.passwordWrapper {
+  position: relative;
+}
+
+.passwordToggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 8px;
+  margin: -8px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s ease;
+  line-height: 0;
+}
+
+.passwordToggle:hover {
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   Error banner
+   ============================================================ */
+.errorBanner {
+  padding: 16px;
+  background: var(--red-light);
+  border: 1px solid color-mix(in srgb, var(--red) 25%, transparent);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.errorMain {
+  font-size: 14px;
+  color: #DC2626;
+}
+
+.errorSub {
+  font-size: 12px;
+  color: #EF4444;
+}
+
+/* ============================================================
+   Captcha area
+   ============================================================ */
+.captchaField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.captchaHint {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* ============================================================
+   2FA section
+   ============================================================ */
+.twoFactor {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.twoFactorHeader {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.twoFactorIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+}
+
+.twoFactorHint {
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.twoFactorBackupHint {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.backButton {
+  width: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-secondary);
+  transition: color 0.15s ease;
+  text-align: center;
+  padding: 4px 0;
+}
+
+.backButton:hover {
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   Footer link
+   ============================================================ */
+.footer {
+  text-align: center;
+}
+
+.footerLink {
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.15s ease;
+  display: inline-block;
+}
+
+.footerLink:hover {
+  color: var(--text-primary);
+}
+
+.footerLinkInline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ============================================================
+   Success state (check email sent)
+   ============================================================ */
+.success {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.successIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #DCFCE7;
+  color: #16A34A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.successBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.successTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.successText {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.successNote {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.tryAgainButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--primary);
+  font-size: 14px;
+  padding: 0;
+  transition: opacity 0.15s ease;
+}
+
+.tryAgainButton:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}

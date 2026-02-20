@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Download, Upload } from 'lucide-react'
+import styles from '@/components/admin/admin-tools-2.module.css'
 
 interface IndustryMultiple {
   id: string
@@ -306,34 +306,31 @@ export default function AdminIndustryMultiplesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className={styles.loadingCenter}>
+        <div className={styles.spinner} />
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Industry Multiples</h1>
-        <p className="text-muted-foreground">
-          Configure EBITDA and Revenue multiple ranges by industry classification
-        </p>
+    <div className={styles.page}>
+      <div className={styles.pageHeader}>
+        <h1>Industry Multiples</h1>
+        <p>Configure EBITDA and Revenue multiple ranges by industry classification</p>
       </div>
 
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Data Source</p>
-              <p className="font-medium">
+      {/* Data Source + CSV Controls */}
+      <div className={styles.card}>
+        <div className={styles.cardBodyFlush}>
+          <div className={styles.dataSourceRow}>
+            <div className={styles.dataSourceMeta}>
+              <p>Data Source</p>
+              <p className={styles.dataSourceName}>
                 {latestMultiple?.source || 'No source specified'}
               </p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Last Updated: {latestMultiple ? formatDate(latestMultiple.effectiveDate) : 'N/A'}
-              </p>
+              <p>Last Updated: {latestMultiple ? formatDate(latestMultiple.effectiveDate) : 'N/A'}</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className={styles.csvButtons}>
               <Button
                 variant="outline"
                 onClick={handleDownloadCSV}
@@ -348,7 +345,7 @@ export default function AdminIndustryMultiplesPage() {
                   type="file"
                   accept=".csv"
                   onChange={handleUploadCSV}
-                  className="hidden"
+                  style={{ display: 'none' }}
                   id="csv-upload"
                 />
                 <Button
@@ -362,67 +359,55 @@ export default function AdminIndustryMultiplesPage() {
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-        <p className="text-sm text-yellow-800">
-          <strong>Note:</strong> Changes to industry multiples will automatically create new snapshots
-          for all affected companies. The dashboard will reflect updated valuations immediately.
-        </p>
+        </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className={styles.noticeWarning}>
+        <strong>Note:</strong> Changes to industry multiples will automatically create new snapshots
+        for all affected companies. The dashboard will reflect updated valuations immediately.
+      </div>
+
+      {/* Search */}
+      <div className={styles.searchRow}>
         <input
           type="text"
           placeholder="Search industries..."
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+          className={styles.searchInput}
         />
-        <span className="text-sm text-muted-foreground">
-          {multiples.length} total multiples
-        </span>
+        <span className={styles.searchCount}>{multiples.length} total multiples</span>
       </div>
 
-      {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-          {error}
-        </div>
-      )}
-      {success && (
-        <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
-          {success}
-        </div>
-      )}
+      {error && <div className={styles.noticeError}>{error}</div>}
+      {success && <div className={styles.noticeSuccess}>{success}</div>}
 
-      <div className="space-y-4">
+      {/* Industry Accordion */}
+      <div className={styles.industryList}>
         {filteredIndustries.map(([industry, items]) => (
-          <Card key={industry}>
-            <CardHeader
-              className="cursor-pointer hover:bg-muted/50 transition-colors"
+          <div key={industry} className={styles.industryCard}>
+            <div
+              className={styles.industryCardHeader}
               onClick={() => setExpandedIndustry(expandedIndustry === industry ? null : industry)}
             >
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg">{formatLabel(industry)}</CardTitle>
-                  <CardDescription>{items.length} subsector(s)</CardDescription>
-                </div>
-                <span className="text-2xl text-muted-foreground">
-                  {expandedIndustry === industry ? '−' : '+'}
-                </span>
+              <div className={styles.industryCardHeaderLeft}>
+                <h3>{formatLabel(industry)}</h3>
+                <p>{items.length} subsector(s)</p>
               </div>
-            </CardHeader>
+              <span className={styles.industryCardToggle}>
+                {expandedIndustry === industry ? '−' : '+'}
+              </span>
+            </div>
 
             {expandedIndustry === industry && (
-              <CardContent>
-                <div className="space-y-6">
-                  <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide px-2">
-                    <div className="col-span-4">Classification</div>
-                    <div className="col-span-4 text-center">EBITDA Multiple</div>
-                    <div className="col-span-4 text-center">Revenue Multiple</div>
-                  </div>
+              <div className={styles.industryCardBody}>
+                <div className={styles.tableHeaderRow}>
+                  <div>Classification</div>
+                  <div style={{ textAlign: 'center' }}>EBITDA Multiple</div>
+                  <div style={{ textAlign: 'center' }}>Revenue Multiple</div>
+                </div>
 
+                <div className={styles.subsectorRows}>
                   {items.map((m) => {
                     const edited = editedMultiples[m.id] || {
                       ebitdaMultipleLow: m.ebitdaMultipleLow,
@@ -439,111 +424,100 @@ export default function AdminIndustryMultiplesPage() {
                     return (
                       <div
                         key={m.id}
-                        className={`grid grid-cols-12 gap-2 items-center p-2 rounded-lg ${
-                          isModified ? 'bg-yellow-50 border border-yellow-200' : 'hover:bg-muted/50'
-                        }`}
+                        className={isModified ? styles.subsectorRowModified : styles.subsectorRow}
                       >
-                        <div className="col-span-4">
-                          <p className="font-medium text-sm">
+                        <div>
+                          <p className={styles.subsectorName}>
                             {formatLabel(m.icbSubSector)}
                           </p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className={styles.subsectorPath}>
                             {formatLabel(m.icbSuperSector)} / {formatLabel(m.icbSector)}
                           </p>
                         </div>
 
-                        <div className="col-span-4">
-                          <div className="flex items-center justify-center gap-1">
-                            <input
-                              type="number"
-                              step="0.1"
-                              min="0"
-                              value={edited.ebitdaMultipleLow}
-                              onChange={(e) => handleChange(m.id, 'ebitdaMultipleLow', e.target.value)}
-                              className="w-16 px-2 py-1 text-center border rounded text-sm"
-                            />
-                            <span className="text-muted-foreground">-</span>
-                            <input
-                              type="number"
-                              step="0.1"
-                              min="0"
-                              value={edited.ebitdaMultipleHigh}
-                              onChange={(e) => handleChange(m.id, 'ebitdaMultipleHigh', e.target.value)}
-                              className="w-16 px-2 py-1 text-center border rounded text-sm"
-                            />
-                            <span className="text-muted-foreground text-sm">x</span>
-                          </div>
+                        <div className={styles.multipleInputGroup}>
+                          <input
+                            type="number"
+                            step="0.1"
+                            min="0"
+                            value={edited.ebitdaMultipleLow}
+                            onChange={(e) => handleChange(m.id, 'ebitdaMultipleLow', e.target.value)}
+                            className={styles.multipleInput}
+                          />
+                          <span className={styles.multipleSeparator}>-</span>
+                          <input
+                            type="number"
+                            step="0.1"
+                            min="0"
+                            value={edited.ebitdaMultipleHigh}
+                            onChange={(e) => handleChange(m.id, 'ebitdaMultipleHigh', e.target.value)}
+                            className={styles.multipleInput}
+                          />
+                          <span className={styles.multipleSuffix}>x</span>
                         </div>
 
-                        <div className="col-span-4">
-                          <div className="flex items-center justify-center gap-1">
-                            <input
-                              type="number"
-                              step="0.1"
-                              min="0"
-                              value={edited.revenueMultipleLow}
-                              onChange={(e) => handleChange(m.id, 'revenueMultipleLow', e.target.value)}
-                              className="w-16 px-2 py-1 text-center border rounded text-sm"
-                            />
-                            <span className="text-muted-foreground">-</span>
-                            <input
-                              type="number"
-                              step="0.1"
-                              min="0"
-                              value={edited.revenueMultipleHigh}
-                              onChange={(e) => handleChange(m.id, 'revenueMultipleHigh', e.target.value)}
-                              className="w-16 px-2 py-1 text-center border rounded text-sm"
-                            />
-                            <span className="text-muted-foreground text-sm">x</span>
-                          </div>
+                        <div className={styles.multipleInputGroup}>
+                          <input
+                            type="number"
+                            step="0.1"
+                            min="0"
+                            value={edited.revenueMultipleLow}
+                            onChange={(e) => handleChange(m.id, 'revenueMultipleLow', e.target.value)}
+                            className={styles.multipleInput}
+                          />
+                          <span className={styles.multipleSeparator}>-</span>
+                          <input
+                            type="number"
+                            step="0.1"
+                            min="0"
+                            value={edited.revenueMultipleHigh}
+                            onChange={(e) => handleChange(m.id, 'revenueMultipleHigh', e.target.value)}
+                            className={styles.multipleInput}
+                          />
+                          <span className={styles.multipleSuffix}>x</span>
                         </div>
                       </div>
                     )
                   })}
                 </div>
-              </CardContent>
+              </div>
             )}
-          </Card>
+          </div>
         ))}
       </div>
 
       {filteredIndustries.length === 0 && (
-        <div className="text-center py-8 text-muted-foreground">
+        <div className={styles.emptyState}>
           No industries match your search
         </div>
       )}
 
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <Button
-                variant="outline"
-                onClick={handleRestoreDefaults}
-                disabled={restoring || saving}
-              >
-                {restoring ? 'Restoring...' : 'Restore Defaults'}
-              </Button>
-              <p className="text-xs text-muted-foreground mt-1">
-                Reset all multiples to seed data values
-              </p>
-            </div>
-            <div className="text-right">
-              <Button
-                onClick={handleSave}
-                disabled={saving || restoring || !hasChanges()}
-              >
-                {saving ? 'Saving...' : `Save Changes${hasChanges() ? ` (${getChangedMultiples().length})` : ''}`}
-              </Button>
-              {hasChanges() && (
-                <p className="text-xs text-yellow-600 mt-1">
-                  {getChangedMultiples().length} multiple(s) modified
-                </p>
-              )}
-            </div>
+      {/* Bottom Actions */}
+      <div className={styles.bottomActionsCard}>
+        <div className={styles.bottomActionsRow}>
+          <div className={styles.bottomActionsLeft}>
+            <Button
+              variant="outline"
+              onClick={handleRestoreDefaults}
+              disabled={restoring || saving}
+            >
+              {restoring ? 'Restoring...' : 'Restore Defaults'}
+            </Button>
+            <p>Reset all multiples to seed data values</p>
           </div>
-        </CardContent>
-      </Card>
+          <div className={styles.bottomActionsRight}>
+            <Button
+              onClick={handleSave}
+              disabled={saving || restoring || !hasChanges()}
+            >
+              {saving ? 'Saving...' : `Save Changes${hasChanges() ? ` (${getChangedMultiples().length})` : ''}`}
+            </Button>
+            {hasChanges() && (
+              <p>{getChangedMultiples().length} multiple(s) modified</p>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { formatIcbName } from '@/lib/utils/format-icb'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -20,6 +19,7 @@ import {
 } from '@/components/ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ArrowLeft, Users, Building2, Save, CreditCard } from 'lucide-react'
+import styles from '@/components/admin/admin-misc.module.css'
 
 interface WorkspaceDetailClientProps {
   workspace: {
@@ -119,16 +119,16 @@ export function WorkspaceDetailClient({ workspace }: WorkspaceDetailClientProps)
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
+    <div className={styles.page}>
+      <div className={styles.detailHeader}>
         <Button variant="ghost" size="icon" asChild>
           <Link href="/admin/workspaces">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold">{workspace.name}</h1>
-          <p className="text-muted-foreground">
+        <div className={styles.detailHeaderText}>
+          <h1 className={styles.detailTitle}>{workspace.name}</h1>
+          <p className={styles.detailSubtitle}>
             {workspace.members.length} members, {workspace.companies.length} companies
           </p>
         </div>
@@ -145,16 +145,17 @@ export function WorkspaceDetailClient({ workspace }: WorkspaceDetailClientProps)
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="details" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Workspace Details</CardTitle>
-              <CardDescription>
-                Edit workspace information
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
+        <TabsContent value="details" className={styles.tabContent}>
+          {/* Workspace details card */}
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <div className={styles.cardHeaderInner}>
+                <p className={styles.cardTitle}>Workspace Details</p>
+                <p className={styles.cardDescription}>Edit workspace information</p>
+              </div>
+            </div>
+            <div className={styles.cardContent}>
+              <div className={styles.fieldGroup}>
                 <Label htmlFor="name">Workspace Name</Label>
                 <Input
                   id="name"
@@ -162,29 +163,31 @@ export function WorkspaceDetailClient({ workspace }: WorkspaceDetailClientProps)
                   onChange={(e) => setName(e.target.value)}
                 />
               </div>
-
-              <div className="flex justify-end">
+              <div className={styles.formActions} style={{ marginTop: 16 }}>
                 <Button onClick={handleSave} disabled={!hasChanges || isSaving}>
                   <Save className="mr-2 h-4 w-4" />
                   {isSaving ? 'Saving...' : 'Save Changes'}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                Subscription Management
-              </CardTitle>
-              <CardDescription>
-                Change plan tier and subscription status
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+          {/* Subscription management card */}
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <div className={styles.cardHeaderInner}>
+                <p className={styles.cardTitle}>
+                  <CreditCard className="h-5 w-5" />
+                  Subscription Management
+                </p>
+                <p className={styles.cardDescription}>
+                  Change plan tier and subscription status
+                </p>
+              </div>
+            </div>
+            <div className={styles.cardContent}>
+              <div className={styles.formGrid2}>
+                <div className={styles.fieldGroup}>
                   <Label>Plan Tier</Label>
                   <Select value={planTier} onValueChange={setPlanTier}>
                     <SelectTrigger>
@@ -198,7 +201,7 @@ export function WorkspaceDetailClient({ workspace }: WorkspaceDetailClientProps)
                   </Select>
                 </div>
 
-                <div className="space-y-2">
+                <div className={styles.fieldGroup}>
                   <Label>Subscription Status</Label>
                   <Select value={subscriptionStatus} onValueChange={setSubscriptionStatus}>
                     <SelectTrigger>
@@ -216,138 +219,147 @@ export function WorkspaceDetailClient({ workspace }: WorkspaceDetailClientProps)
               </div>
 
               {workspace.trialEndsAt && (
-                <div className="text-sm text-muted-foreground">
+                <p className={styles.trialNote} style={{ marginTop: 12 }}>
                   Trial ends: {new Date(workspace.trialEndsAt).toLocaleString()}
-                </div>
+                </p>
               )}
 
-              <div className="flex justify-end">
+              <div className={styles.formActions} style={{ marginTop: 16 }}>
                 <Button onClick={handleSavePlan} disabled={!hasPlanChanges || isSavingPlan}>
                   <Save className="mr-2 h-4 w-4" />
                   {isSavingPlan ? 'Saving...' : 'Update Plan'}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Workspace Info</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <dl className="grid gap-2 text-sm">
-                <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Workspace ID</dt>
-                  <dd className="font-mono">{workspace.id}</dd>
+          {/* Workspace info card */}
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <div className={styles.cardHeaderInner}>
+                <p className={styles.cardTitle}>Workspace Info</p>
+              </div>
+            </div>
+            <div className={styles.cardContent}>
+              <dl className={styles.infoList}>
+                <div className={styles.infoRow}>
+                  <dt className={styles.infoLabel}>Workspace ID</dt>
+                  <dd className={styles.infoValueMono}>{workspace.id}</dd>
                 </div>
-                <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Created</dt>
-                  <dd>{new Date(workspace.createdAt).toLocaleString()}</dd>
+                <div className={styles.infoRow}>
+                  <dt className={styles.infoLabel}>Created</dt>
+                  <dd className={styles.infoValue}>{new Date(workspace.createdAt).toLocaleString()}</dd>
                 </div>
-                <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Last Updated</dt>
-                  <dd>{new Date(workspace.updatedAt).toLocaleString()}</dd>
+                <div className={styles.infoRow}>
+                  <dt className={styles.infoLabel}>Last Updated</dt>
+                  <dd className={styles.infoValue}>{new Date(workspace.updatedAt).toLocaleString()}</dd>
                 </div>
               </dl>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="members">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Members
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Joined</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {workspace.members.map((wm) => (
-                    <TableRow key={wm.id}>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">
-                            {wm.user.name || 'No name'}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {wm.user.email}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">{wm.workspaceRole}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        {new Date(wm.joinedAt).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="sm" asChild>
-                          <Link href={`/admin/users/${wm.user.id}`}>
-                            View
-                          </Link>
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="companies">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
-                Companies
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {workspace.companies.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  No companies in this workspace
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <div className={styles.cardHeaderInner}>
+                <p className={styles.cardTitle}>
+                  <Users className="h-5 w-5" />
+                  Members
                 </p>
-              ) : (
+              </div>
+            </div>
+            <div className={styles.cardContent}>
+              <div className={styles.tableWrap}>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Company</TableHead>
-                      <TableHead>Industry</TableHead>
-                      <TableHead>Annual Revenue</TableHead>
-                      <TableHead>Created</TableHead>
+                      <TableHead>User</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Joined</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {workspace.companies.map((company) => (
-                      <TableRow key={company.id}>
+                    {workspace.members.map((wm) => (
+                      <TableRow key={wm.id}>
                         <TableCell>
-                          <div className="font-medium">{company.name}</div>
+                          <div>
+                            <div className={styles.cellPrimary}>
+                              {wm.user.name || 'No name'}
+                            </div>
+                            <div className={styles.cellSecondary}>
+                              {wm.user.email}
+                            </div>
+                          </div>
                         </TableCell>
-                        <TableCell>{formatIcbName(company.icbIndustry)}</TableCell>
                         <TableCell>
-                          {formatCurrency(company.annualRevenue)}
+                          <Badge variant="secondary">{wm.workspaceRole}</Badge>
                         </TableCell>
                         <TableCell>
-                          {new Date(company.createdAt).toLocaleDateString()}
+                          {new Date(wm.joinedAt).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>
+                          <Button variant="ghost" size="sm" asChild>
+                            <Link href={`/admin/users/${wm.user.id}`}>
+                              View
+                            </Link>
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="companies">
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <div className={styles.cardHeaderInner}>
+                <p className={styles.cardTitle}>
+                  <Building2 className="h-5 w-5" />
+                  Companies
+                </p>
+              </div>
+            </div>
+            <div className={styles.cardContent}>
+              {workspace.companies.length === 0 ? (
+                <p className={styles.pageSubtitle}>No companies in this workspace</p>
+              ) : (
+                <div className={styles.tableWrap}>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Company</TableHead>
+                        <TableHead>Industry</TableHead>
+                        <TableHead>Annual Revenue</TableHead>
+                        <TableHead>Created</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {workspace.companies.map((company) => (
+                        <TableRow key={company.id}>
+                          <TableCell>
+                            <div className={styles.cellPrimary}>{company.name}</div>
+                          </TableCell>
+                          <TableCell>{formatIcbName(company.icbIndustry)}</TableCell>
+                          <TableCell>
+                            {formatCurrency(company.annualRevenue)}
+                          </TableCell>
+                          <TableCell>
+                            {new Date(company.createdAt).toLocaleDateString()}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

@@ -1,0 +1,508 @@
+/* Admin Layout — CSS Module
+ * Mirrors the app design system using CSS custom properties from globals.css
+ * See: src/app/globals.css for token definitions
+ */
+
+/* ─── Root Shell ─────────────────────────────────────────────────────────── */
+
+.adminLayout {
+  min-height: 100vh;
+  background: var(--background);
+}
+
+.adminContent {
+  /* offset for fixed 256px sidebar on lg+ */
+  padding-left: 0;
+}
+
+@media (min-width: 1024px) {
+  .adminContent {
+    padding-left: 256px;
+  }
+}
+
+.adminMain {
+  padding: 24px;
+}
+
+/* ─── Sidebar ────────────────────────────────────────────────────────────── */
+
+.adminSidebar {
+  display: none;
+  position: fixed;
+  inset-block: 0;
+  left: 0;
+  z-index: 50;
+  width: 256px;
+  flex-direction: column;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+}
+
+@media (min-width: 1024px) {
+  .adminSidebar {
+    display: flex;
+  }
+}
+
+.adminSidebarBrand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 64px;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.adminSidebarBrandIcon {
+  width: 24px;
+  height: 24px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.adminSidebarBrandText {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
+}
+
+.adminSidebarScroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.adminSidebarFooter {
+  border-top: 1px solid var(--border);
+  padding: 16px;
+  flex-shrink: 0;
+}
+
+.adminSidebarBackLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.adminSidebarBackLink:hover {
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+}
+
+/* ─── Header ─────────────────────────────────────────────────────────────── */
+
+.adminHeader {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 64px;
+  padding: 0 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.adminHeaderMobileMenu {
+  display: flex;
+}
+
+@media (min-width: 1024px) {
+  .adminHeaderMobileMenu {
+    display: none;
+  }
+}
+
+.adminHeaderMobileBrand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (min-width: 1024px) {
+  .adminHeaderMobileBrand {
+    display: none;
+  }
+}
+
+.adminHeaderMobileBrandIcon {
+  width: 20px;
+  height: 20px;
+  color: var(--accent);
+}
+
+.adminHeaderMobileBrandText {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.adminHeaderSpacer {
+  flex: 1;
+}
+
+/* User avatar button inner wrapper */
+.adminHeaderAvatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.adminHeaderUserName {
+  display: none;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+@media (min-width: 768px) {
+  .adminHeaderUserName {
+    display: inline-block;
+  }
+}
+
+/* ─── Navigation ─────────────────────────────────────────────────────────── */
+
+.adminNav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Dashboard home link + section-level link-as-button */
+.adminNavLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+  cursor: pointer;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+}
+
+.adminNavLink:hover {
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+}
+
+.adminNavLinkActive {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.adminNavLinkActive:hover {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+/* Section header button (collapsible) */
+.adminNavSection {
+  margin-top: 8px;
+}
+
+.adminNavSectionToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.adminNavSectionToggle:hover {
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+}
+
+.adminNavSectionToggleActive {
+  color: var(--text-primary);
+}
+
+.adminNavSectionToggleInner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.adminNavChevron {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.adminNavChevronOpen {
+  transform: rotate(180deg);
+}
+
+/* Sub-items */
+.adminNavSubList {
+  margin-left: 16px;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-left: 1px solid var(--border);
+  padding-left: 12px;
+}
+
+.adminNavSubLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.adminNavSubLink:hover {
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+}
+
+.adminNavSubLinkActive {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.adminNavSubLinkActive:hover {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+/* ─── Impersonation Banner ───────────────────────────────────────────────── */
+
+.adminBanner {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 24px;
+  background: #F59E0B; /* amber-400 — warning yellow */
+  color: #451A03;      /* amber-950 */
+}
+
+.adminBannerContent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.adminBannerIcon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.adminBannerText {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.adminBannerTimer {
+  margin-left: 8px;
+  color: #92400E; /* amber-800 */
+}
+
+/* ─── Auth Layout ────────────────────────────────────────────────────────── */
+
+.adminAuthLayout {
+  min-height: 100vh;
+  background: var(--background);
+}
+
+/* ─── Error Page ─────────────────────────────────────────────────────────── */
+
+.adminErrorPage {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+}
+
+.adminErrorCard {
+  max-width: 448px;
+  width: 100%;
+  text-align: center;
+}
+
+.adminErrorIconWrap {
+  margin: 0 auto 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--red-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.adminErrorIcon {
+  width: 28px;
+  height: 28px;
+  color: var(--red);
+}
+
+.adminErrorTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.adminErrorMessage {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.adminErrorDigest {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-bottom: 16px;
+}
+
+.adminErrorActions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
+}
+
+@media (min-width: 640px) {
+  .adminErrorActions {
+    flex-direction: row;
+  }
+}
+
+.adminErrorRetryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--accent);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+  text-decoration: none;
+}
+
+.adminErrorRetryBtn:hover {
+  opacity: 0.88;
+}
+
+.adminErrorBackLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s ease, color 0.15s ease;
+  text-decoration: none;
+}
+
+.adminErrorBackLink:hover {
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+}
+
+/* ─── ImpersonationModal content helpers ─────────────────────────────────── */
+
+.adminModalFormBody {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 0;
+}
+
+.adminModalFieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.adminModalHint {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.adminModalError {
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--destructive) 10%, transparent);
+  padding: 12px;
+  font-size: 14px;
+  color: var(--destructive);
+}
+
+.adminModalWarning {
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, #F59E0B 10%, transparent);
+  padding: 12px;
+  font-size: 14px;
+  color: #92400E;
+}
+
+.adminModalWarningTitle {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.adminModalWarningList {
+  margin-top: 4px;
+  margin-left: 16px;
+  list-style: disc;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}

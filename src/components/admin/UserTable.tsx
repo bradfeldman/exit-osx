@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import styles from '@/components/admin/admin-tables.module.css'
 
 interface User {
   id: string
@@ -39,18 +40,18 @@ interface UserTableProps {
   }
 }
 
-const planTierConfig: Record<string, { label: string; variant: 'secondary' | 'default' | 'outline' ; className?: string }> = {
+const planTierConfig: Record<string, { label: string; variant: 'secondary' | 'default' | 'outline'; badgeClass?: string }> = {
   FOUNDATION: { label: 'Foundation', variant: 'secondary' },
-  GROWTH: { label: 'Growth', variant: 'default', className: 'bg-blue-100 text-blue-800 hover:bg-blue-100 dark:bg-blue-900 dark:text-blue-300' },
-  DEAL_ROOM: { label: 'Deal Room', variant: 'default', className: 'bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900 dark:text-green-300' },
+  GROWTH: { label: 'Growth', variant: 'default', badgeClass: styles.badgeGrowth },
+  DEAL_ROOM: { label: 'Deal Room', variant: 'default', badgeClass: styles.badgeDealRoom },
 }
 
-const statusConfig: Record<string, { label: string; className: string }> = {
-  ACTIVE: { label: 'Active', className: 'bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900 dark:text-green-300' },
-  TRIALING: { label: 'Trial', className: 'bg-amber-100 text-amber-800 hover:bg-amber-100 dark:bg-amber-900 dark:text-amber-300' },
-  PAST_DUE: { label: 'Past Due', className: 'bg-red-100 text-red-800 hover:bg-red-100 dark:bg-red-900 dark:text-red-300' },
-  CANCELLED: { label: 'Cancelled', className: 'bg-gray-100 text-gray-800 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300' },
-  EXPIRED: { label: 'Expired', className: 'bg-gray-100 text-gray-800 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300' },
+const statusConfig: Record<string, { label: string; badgeClass: string }> = {
+  ACTIVE: { label: 'Active', badgeClass: styles.badgeStatusActive },
+  TRIALING: { label: 'Trial', badgeClass: styles.badgeStatusTrialing },
+  PAST_DUE: { label: 'Past Due', badgeClass: styles.badgeStatusPastDue },
+  CANCELLED: { label: 'Cancelled', badgeClass: styles.badgeStatusCancelled },
+  EXPIRED: { label: 'Expired', badgeClass: styles.badgeStatusCancelled },
 }
 
 export function UserTable({ initialUsers, initialPagination }: UserTableProps) {
@@ -93,10 +94,10 @@ export function UserTable({ initialUsers, initialPagination }: UserTableProps) {
   }
 
   return (
-    <div className="space-y-4">
-      <form onSubmit={handleSearch} className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+    <div className={styles.tableContainer}>
+      <form onSubmit={handleSearch} className={styles.searchForm}>
+        <div className={styles.searchInputWrapper}>
+          <Search className={styles.searchIcon} />
           <Input
             type="search"
             placeholder="Search by email or name..."
@@ -110,7 +111,7 @@ export function UserTable({ initialUsers, initialPagination }: UserTableProps) {
         </Button>
       </form>
 
-      <div className="rounded-md border">
+      <div className={styles.tableWrapper}>
         <Table>
           <TableHeader>
             <TableRow>
@@ -137,31 +138,29 @@ export function UserTable({ initialUsers, initialPagination }: UserTableProps) {
                 return (
                   <TableRow
                     key={user.id}
-                    className="cursor-pointer hover:bg-muted/50 transition-colors"
+                    className={styles.clickableRow}
                     onClick={() => router.push(`/admin/users/${user.id}`)}
                   >
                     <TableCell>
-                      <div>
-                        <div className="font-medium">{user.name || 'No name'}</div>
-                        <div className="text-sm text-muted-foreground">{user.email}</div>
-                      </div>
+                      <div className={styles.cellPrimary}>{user.name || 'No name'}</div>
+                      <div className={styles.cellSecondary}>{user.email}</div>
                     </TableCell>
                     <TableCell>
                       {tierCfg ? (
-                        <Badge variant={tierCfg.variant} className={tierCfg.className}>
+                        <Badge variant={tierCfg.variant} className={tierCfg.badgeClass}>
                           {tierCfg.label}
                         </Badge>
                       ) : (
-                        <span className="text-muted-foreground">&mdash;</span>
+                        <span className={styles.cellMuted}>&mdash;</span>
                       )}
                     </TableCell>
                     <TableCell>
                       {statusCfg ? (
-                        <Badge variant="default" className={statusCfg.className}>
+                        <Badge variant="default" className={statusCfg.badgeClass}>
                           {statusCfg.label}
                         </Badge>
                       ) : (
-                        <span className="text-muted-foreground">&mdash;</span>
+                        <span className={styles.cellMuted}>&mdash;</span>
                       )}
                     </TableCell>
                     <TableCell>
@@ -180,14 +179,13 @@ export function UserTable({ initialUsers, initialPagination }: UserTableProps) {
         </Table>
       </div>
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
+      <div className={styles.pagination}>
+        <p className={styles.paginationInfo}>
           Showing {(pagination.page - 1) * pagination.limit + 1} to{' '}
           {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
           {pagination.total} users
         </p>
-        <div className="flex gap-2">
+        <div className={styles.paginationButtons}>
           <Button
             variant="outline"
             size="sm"

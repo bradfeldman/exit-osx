@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react'
+import styles from '@/components/admin/admin-misc.module.css'
 
 interface Ticket {
   id: string
@@ -55,7 +56,7 @@ interface TicketTableProps {
   }
 }
 
-const statusColors: Record<string, string> = {
+const statusBadgeClass: Record<string, string> = {
   open: 'bg-blue-100 text-blue-800',
   in_progress: 'bg-yellow-100 text-yellow-800',
   waiting: 'bg-purple-100 text-purple-800',
@@ -63,7 +64,7 @@ const statusColors: Record<string, string> = {
   closed: 'bg-gray-100 text-gray-800',
 }
 
-const priorityColors: Record<string, string> = {
+const priorityBadgeClass: Record<string, string> = {
   low: 'bg-gray-100 text-gray-800',
   normal: 'bg-blue-100 text-blue-800',
   high: 'bg-orange-100 text-orange-800',
@@ -113,9 +114,9 @@ export function TicketTable({ initialTickets, initialPagination }: TicketTablePr
   }
 
   return (
-    <div className="space-y-4">
+    <div className={styles.page}>
       {/* Filters */}
-      <div className="flex gap-4">
+      <div className={styles.filterBar}>
         <Select
           value={filters.status || 'all'}
           onValueChange={(value) => handleFilterChange('status', value)}
@@ -150,7 +151,7 @@ export function TicketTable({ initialTickets, initialPagination }: TicketTablePr
       </div>
 
       {/* Table */}
-      <div className="rounded-md border">
+      <div className={styles.tableWrap}>
         <Table>
           <TableHeader>
             <TableRow>
@@ -166,7 +167,7 @@ export function TicketTable({ initialTickets, initialPagination }: TicketTablePr
           <TableBody>
             {tickets.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground">
+                <TableCell colSpan={7} className={styles.emptyCell}>
                   No tickets found
                 </TableCell>
               </TableRow>
@@ -175,44 +176,44 @@ export function TicketTable({ initialTickets, initialPagination }: TicketTablePr
                 <TableRow key={ticket.id}>
                   <TableCell>
                     <div>
-                      <div className="font-medium">
+                      <div className={styles.cellPrimary}>
                         #{ticket.ticketNumber}
                       </div>
-                      <div className="text-sm text-muted-foreground line-clamp-1">
+                      <div className={`${styles.cellSecondary} ${styles.cellTruncate}`}>
                         {ticket.subject}
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div>
-                      <div className="text-sm">
+                      <div className={styles.cellSecondary}>
                         {ticket.user?.name || 'Unknown'}
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className={styles.cellMono}>
                         {ticket.userEmail}
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge className={statusColors[ticket.status]}>
+                    <Badge className={statusBadgeClass[ticket.status]}>
                       {ticket.status.replace('_', ' ')}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge className={priorityColors[ticket.priority]}>
+                    <Badge className={priorityBadgeClass[ticket.priority]}>
                       {ticket.priority}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     {ticket.assignedTo ? (
-                      <span className="text-sm">
+                      <span className={styles.cellSecondary}>
                         {ticket.assignedTo.name || ticket.assignedTo.email}
                       </span>
                     ) : (
-                      <span className="text-sm text-muted-foreground">Unassigned</span>
+                      <span className={styles.cellSecondary}>Unassigned</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-sm">
+                  <TableCell className={styles.cellSecondary}>
                     {new Date(ticket.createdAt).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
@@ -231,13 +232,13 @@ export function TicketTable({ initialTickets, initialPagination }: TicketTablePr
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
+      <div className={styles.pagination}>
+        <p className={styles.paginationInfo}>
           Showing {(pagination.page - 1) * pagination.limit + 1} to{' '}
           {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
           {pagination.total} tickets
         </p>
-        <div className="flex gap-2">
+        <div className={styles.paginationButtons}>
           <Button
             variant="outline"
             size="sm"

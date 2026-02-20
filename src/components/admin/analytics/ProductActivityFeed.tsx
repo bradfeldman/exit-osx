@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { ChevronLeft, ChevronRight, Filter, X, RefreshCw } from 'lucide-react'
+import styles from '@/components/admin/admin-misc.module.css'
 
 interface ProductEvent {
   id: string
@@ -51,7 +52,7 @@ interface ProductActivityFeedProps {
   }
 }
 
-const categoryColors: Record<string, string> = {
+const categoryBadgeClass: Record<string, string> = {
   auth: 'bg-purple-100 text-purple-800',
   navigation: 'bg-blue-100 text-blue-800',
   onboarding: 'bg-green-100 text-green-800',
@@ -126,9 +127,9 @@ export function ProductActivityFeed({ initialEvents, initialPagination }: Produc
   const hasActiveFilters = Object.values(filters).some((v) => v !== '')
 
   return (
-    <div className="space-y-4">
+    <div className={styles.page}>
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className={styles.filterBar}>
         <Button
           variant="outline"
           size="sm"
@@ -151,16 +152,16 @@ export function ProductActivityFeed({ initialEvents, initialPagination }: Produc
             Clear
           </Button>
         )}
-        <span className="ml-auto text-sm text-muted-foreground">
+        <span className={styles.filterBarSpacer}>
           {pagination.total} events
         </span>
       </div>
 
       {/* Filters Panel */}
       {showFilters && (
-        <div className="rounded-lg border bg-muted/50 p-4">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            <div className="space-y-2">
+        <div className={styles.filterPanel}>
+          <div className={`${styles.filterGrid} ${styles.filterGrid5}`}>
+            <div className={styles.filterField}>
               <Label>Category</Label>
               <Select
                 value={filters.eventCategory}
@@ -177,7 +178,7 @@ export function ProductActivityFeed({ initialEvents, initialPagination }: Produc
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
+            <div className={styles.filterField}>
               <Label>Event Name</Label>
               <Input
                 placeholder="e.g., page_view"
@@ -185,7 +186,7 @@ export function ProductActivityFeed({ initialEvents, initialPagination }: Produc
                 onChange={(e) => setFilters({ ...filters, eventName: e.target.value })}
               />
             </div>
-            <div className="space-y-2">
+            <div className={styles.filterField}>
               <Label>User ID</Label>
               <Input
                 placeholder="User ID"
@@ -193,7 +194,7 @@ export function ProductActivityFeed({ initialEvents, initialPagination }: Produc
                 onChange={(e) => setFilters({ ...filters, userId: e.target.value })}
               />
             </div>
-            <div className="space-y-2">
+            <div className={styles.filterField}>
               <Label>Start Date</Label>
               <Input
                 type="date"
@@ -201,7 +202,7 @@ export function ProductActivityFeed({ initialEvents, initialPagination }: Produc
                 onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
               />
             </div>
-            <div className="space-y-2">
+            <div className={styles.filterField}>
               <Label>End Date</Label>
               <Input
                 type="date"
@@ -210,14 +211,14 @@ export function ProductActivityFeed({ initialEvents, initialPagination }: Produc
               />
             </div>
           </div>
-          <div className="mt-4 flex justify-end">
+          <div className={styles.filterActions}>
             <Button onClick={handleApplyFilters} disabled={isLoading}>Apply</Button>
           </div>
         </div>
       )}
 
       {/* Table */}
-      <div className="rounded-md border">
+      <div className={styles.tableWrap}>
         <Table>
           <TableHeader>
             <TableRow>
@@ -232,39 +233,39 @@ export function ProductActivityFeed({ initialEvents, initialPagination }: Produc
           <TableBody>
             {events.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground">
+                <TableCell colSpan={6} className={styles.emptyCell}>
                   No events yet. Events will appear as users interact with the product.
                 </TableCell>
               </TableRow>
             ) : (
               events.map((event) => (
                 <TableRow key={event.id}>
-                  <TableCell className="whitespace-nowrap text-sm">
+                  <TableCell style={{ whiteSpace: 'nowrap', fontSize: 14 }}>
                     <span title={new Date(event.createdAt).toLocaleString()}>
                       {timeAgo(event.createdAt)}
                     </span>
                   </TableCell>
                   <TableCell>
                     <div>
-                      <div className="text-sm font-medium">{event.user.name || 'Unknown'}</div>
-                      <div className="text-xs text-muted-foreground">{event.user.email}</div>
+                      <div className={styles.cellPrimary}>{event.user.name || 'Unknown'}</div>
+                      <div className={styles.cellMono}>{event.user.email}</div>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <span className="font-mono text-sm">{event.eventName}</span>
+                    <span className={styles.cellMono}>{event.eventName}</span>
                   </TableCell>
                   <TableCell>
                     <Badge
                       variant="secondary"
-                      className={categoryColors[event.eventCategory] || 'bg-gray-100 text-gray-800'}
+                      className={categoryBadgeClass[event.eventCategory] || 'bg-gray-100 text-gray-800'}
                     >
                       {event.eventCategory}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
+                  <TableCell className={styles.cellSecondary}>
                     {event.page || '-'}
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
+                  <TableCell className={styles.cellSecondary}>
                     {event.deviceType ? `${event.browser || ''} / ${event.os || ''}` : '-'}
                   </TableCell>
                 </TableRow>
@@ -276,11 +277,11 @@ export function ProductActivityFeed({ initialEvents, initialPagination }: Produc
 
       {/* Pagination */}
       {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
+        <div className={styles.pagination}>
+          <p className={styles.paginationInfo}>
             Page {pagination.page} of {pagination.totalPages}
           </p>
-          <div className="flex gap-2">
+          <div className={styles.paginationButtons}>
             <Button
               variant="outline"
               size="sm"

@@ -1,0 +1,708 @@
+/* Admin Dashboard + Monitoring — CSS Module
+ * Design system: globals.css variables
+ * Covers: admin/page.tsx (dashboard) + admin/monitoring/page.tsx
+ */
+
+/* ============================================================
+   Page Layout
+   ============================================================ */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pageHeader h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.pageHeader p {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* Header row variant (monitoring page — title left, actions right) */
+.pageHeaderRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pageHeaderRow > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pageHeaderRow > div:first-child h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.pageHeaderRow > div:first-child p {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Card — base
+   ============================================================ */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.cardHeader {
+  padding: 16px 20px 8px;
+}
+
+.cardHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+}
+
+.cardTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.cardTitleBase {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.cardDescription {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.cardContent {
+  padding: 8px 20px 20px;
+}
+
+.cardContentPy {
+  padding: 24px 20px;
+}
+
+/* ============================================================
+   Stats Grid (dashboard)
+   ============================================================ */
+.statsGrid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (min-width: 768px) {
+  .statsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .statsGrid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+.statCard {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.statCardHeader {
+  padding: 16px 16px 8px;
+}
+
+.statCardHeaderInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.statLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.statIcon {
+  width: 16px;
+  height: 16px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.statCardContent {
+  padding: 0 16px 16px;
+}
+
+.statValue {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   Two-column section grid (dashboard recent panels)
+   ============================================================ */
+.twoColGrid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .twoColGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ============================================================
+   List Items (recent users / tickets inside cards)
+   ============================================================ */
+.viewAllLink {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.viewAllLink:hover {
+  color: var(--text-primary);
+}
+
+.emptyText {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.itemList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.itemRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  margin: 0 -8px;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.itemRow:hover {
+  background: var(--surface-secondary);
+}
+
+.itemMain {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.itemPrimary {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemSecondary {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.itemDate {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   Monitoring — Overall Status Banner
+   ============================================================ */
+.statusBannerHealthy {
+  background: var(--green-light);
+  border: 2px solid var(--green);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.statusBannerDegraded {
+  background: var(--orange-light);
+  border: 2px solid var(--orange);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.statusBannerUnhealthy {
+  background: var(--red-light);
+  border: 2px solid var(--red);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.statusBannerContent {
+  padding: 24px 20px;
+}
+
+.statusBannerInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.statusBannerLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.statusIconHealthy {
+  width: 48px;
+  height: 48px;
+  color: var(--green);
+  flex-shrink: 0;
+}
+
+.statusIconDegraded {
+  width: 48px;
+  height: 48px;
+  color: var(--orange);
+  flex-shrink: 0;
+}
+
+.statusIconUnhealthy {
+  width: 48px;
+  height: 48px;
+  color: var(--red);
+  flex-shrink: 0;
+}
+
+.statusTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.statusMeta {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ============================================================
+   Monitoring — Service Grid
+   ============================================================ */
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.serviceGrid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .serviceGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .serviceGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Service card status variants */
+.serviceCard {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  position: relative;
+}
+
+.serviceCardDegraded {
+  background: var(--orange-light);
+  border-color: #FFD580;
+}
+
+.serviceCardUnhealthy {
+  background: var(--red-light);
+  border-color: #FFBCBA;
+}
+
+.serviceCardHeader {
+  padding: 16px 20px 8px;
+}
+
+.serviceCardHeaderInner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.serviceCardLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Icon wrapper — colored background pill */
+.serviceIconWrapHealthy {
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  background: var(--green-light);
+  flex-shrink: 0;
+}
+
+.serviceIconWrapDegraded {
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  background: var(--orange-light);
+  flex-shrink: 0;
+}
+
+.serviceIconWrapUnhealthy {
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  background: var(--red-light);
+  flex-shrink: 0;
+}
+
+.serviceIconHealthy {
+  width: 20px;
+  height: 20px;
+  color: var(--green);
+}
+
+.serviceIconDegraded {
+  width: 20px;
+  height: 20px;
+  color: var(--orange);
+}
+
+.serviceIconUnhealthy {
+  width: 20px;
+  height: 20px;
+  color: var(--red);
+}
+
+.serviceInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.serviceNameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.serviceCardContent {
+  padding: 8px 20px 16px;
+}
+
+.serviceMetaRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.serviceMetaIcon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.serviceError {
+  font-size: 12px;
+  color: var(--red);
+  background: var(--red-light);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  margin-top: 8px;
+}
+
+/* ============================================================
+   Status Badges (StatusBadge component)
+   ============================================================ */
+.badgeHealthy {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--green-light);
+  color: #1A7A35;
+  border: 1px solid #C3EDCF;
+}
+
+.badgeDegraded {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--orange-light);
+  color: #9C5800;
+  border: 1px solid #FFD099;
+}
+
+.badgeUnhealthy {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--red-light);
+  color: #C0392B;
+  border: 1px solid #FFBCBA;
+}
+
+.badgeIcon {
+  width: 12px;
+  height: 12px;
+}
+
+/* ============================================================
+   External Dashboards Grid (monitoring)
+   ============================================================ */
+.externalGrid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (min-width: 1024px) {
+  .externalGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.externalLink {
+  display: block;
+  text-decoration: none;
+}
+
+.externalCard {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.externalCard:hover {
+  background: var(--surface-secondary);
+}
+
+.externalCardContent {
+  padding: 16px 20px;
+}
+
+.externalCardInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.externalCardLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.externalIconWrap {
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.externalIconWrapBlack {
+  background: #000000;
+}
+
+.externalIconWrapGreen {
+  background: #16A34A;
+}
+
+.externalIconWrapPurple {
+  background: var(--purple);
+}
+
+.externalIconWrapOrange {
+  background: var(--orange);
+}
+
+.externalIcon {
+  width: 16px;
+  height: 16px;
+  color: #FFFFFF;
+}
+
+.externalName {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.externalLinkIcon {
+  width: 16px;
+  height: 16px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Info / About card (monitoring)
+   ============================================================ */
+.infoCard {
+  background: var(--accent-light);
+  border-radius: var(--radius-lg);
+  border: 1px solid #C5DCFB;
+  overflow: hidden;
+}
+
+.infoCardHeader {
+  padding: 20px 20px 0;
+}
+
+.infoCardTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.infoCardContent {
+  padding: 12px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* ============================================================
+   Loading State
+   ============================================================ */
+.loadingCenter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+.spinIcon {
+  width: 32px;
+  height: 32px;
+  color: var(--text-secondary);
+  animation: spin 1s linear infinite;
+}
+
+/* Smaller spin for inline button icons */
+.refreshIcon {
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+}
+
+.refreshIconSpinning {
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   Auto-refresh button active state
+   ============================================================ */
+.autoRefreshActive {
+  background: var(--green-light) !important;
+  border-color: #C3EDCF !important;
+}
+
+.autoRefreshActiveIcon {
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+  color: var(--green);
+}

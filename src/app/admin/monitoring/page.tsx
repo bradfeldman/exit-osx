@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -19,7 +18,7 @@ import {
   Clock,
   ExternalLink,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import styles from '@/components/admin/admin-dashboard.module.css'
 
 interface ServiceHealth {
   status: 'healthy' | 'degraded' | 'unhealthy'
@@ -84,31 +83,31 @@ const serviceConfig = {
 function StatusBadge({ status }: { status: 'healthy' | 'degraded' | 'unhealthy' }) {
   if (status === 'healthy') {
     return (
-      <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-        <CheckCircle2 className="w-3 h-3 mr-1" />
+      <span className={styles.badgeHealthy}>
+        <CheckCircle2 className={styles.badgeIcon} />
         Healthy
-      </Badge>
+      </span>
     )
   }
   if (status === 'degraded') {
     return (
-      <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
-        <AlertTriangle className="w-3 h-3 mr-1" />
+      <span className={styles.badgeDegraded}>
+        <AlertTriangle className={styles.badgeIcon} />
         Degraded
-      </Badge>
+      </span>
     )
   }
   return (
-    <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
-      <XCircle className="w-3 h-3 mr-1" />
+    <span className={styles.badgeUnhealthy}>
+      <XCircle className={styles.badgeIcon} />
       Unhealthy
-    </Badge>
+    </span>
   )
 }
 
 function ServiceCard({
   serviceKey,
-  health
+  health,
 }: {
   serviceKey: keyof typeof serviceConfig
   health: ServiceHealth
@@ -116,57 +115,62 @@ function ServiceCard({
   const config = serviceConfig[serviceKey]
   const Icon = config.icon
 
+  const cardClass =
+    health.status === 'unhealthy'
+      ? `${styles.serviceCard} ${styles.serviceCardUnhealthy}`
+      : health.status === 'degraded'
+        ? `${styles.serviceCard} ${styles.serviceCardDegraded}`
+        : styles.serviceCard
+
+  const iconWrapClass =
+    health.status === 'healthy'
+      ? styles.serviceIconWrapHealthy
+      : health.status === 'degraded'
+        ? styles.serviceIconWrapDegraded
+        : styles.serviceIconWrapUnhealthy
+
+  const iconClass =
+    health.status === 'healthy'
+      ? styles.serviceIconHealthy
+      : health.status === 'degraded'
+        ? styles.serviceIconDegraded
+        : styles.serviceIconUnhealthy
+
   return (
-    <Card className={cn(
-      'relative overflow-hidden',
-      health.status === 'unhealthy' && 'border-red-200 bg-red-50/50',
-      health.status === 'degraded' && 'border-yellow-200 bg-yellow-50/50',
-    )}>
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <div className={cn(
-              'p-2 rounded-lg',
-              health.status === 'healthy' && 'bg-green-100',
-              health.status === 'degraded' && 'bg-yellow-100',
-              health.status === 'unhealthy' && 'bg-red-100',
-            )}>
-              <Icon className={cn(
-                'h-5 w-5',
-                health.status === 'healthy' && 'text-green-600',
-                health.status === 'degraded' && 'text-yellow-600',
-                health.status === 'unhealthy' && 'text-red-600',
-              )} />
+    <div className={cardClass}>
+      <div className={styles.serviceCardHeader}>
+        <div className={styles.serviceCardHeaderInner}>
+          <div className={styles.serviceCardLeft}>
+            <div className={iconWrapClass}>
+              <Icon className={iconClass} />
             </div>
-            <div>
-              <CardTitle className="text-base flex items-center gap-2">
+            <div className={styles.serviceInfo}>
+              <div className={styles.serviceNameRow}>
                 {config.name}
                 {config.critical && (
-                  <Badge variant="outline" className="text-xs">Critical</Badge>
+                  <Badge variant="outline" className="text-xs">
+                    Critical
+                  </Badge>
                 )}
-              </CardTitle>
-              <CardDescription className="text-xs">{config.description}</CardDescription>
+              </div>
+              <div className={styles.cardDescription}>{config.description}</div>
             </div>
           </div>
           <StatusBadge status={health.status} />
         </div>
-      </CardHeader>
-      <CardContent className="pt-2">
-        <div className="space-y-1 text-sm">
-          {health.latency !== undefined && (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Clock className="h-3 w-3" />
-              <span>Latency: {health.latency}ms</span>
-            </div>
-          )}
-          {health.error && (
-            <div className="text-red-600 text-xs mt-2 p-2 bg-red-50 rounded">
-              {health.error}
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+      <div className={styles.serviceCardContent}>
+        {health.latency !== undefined && (
+          <div className={styles.serviceMetaRow}>
+            <Clock className={styles.serviceMetaIcon} />
+            <span>Latency: {health.latency}ms</span>
+          </div>
+        )}
+        {health.error && (
+          <div className={styles.serviceError}>{health.error}</div>
+        )}
+      </div>
+    </div>
   )
 }
 
@@ -210,34 +214,43 @@ export default function MonitoringPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-8">
-        <div>
-          <h1 className="text-2xl font-bold">Site Monitoring</h1>
-          <p className="text-muted-foreground">Real-time health status of all services</p>
+      <div className={styles.page}>
+        <div className={styles.pageHeader}>
+          <h1>Site Monitoring</h1>
+          <p>Real-time health status of all services</p>
         </div>
-        <div className="flex items-center justify-center py-12">
-          <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className={styles.loadingCenter}>
+          <RefreshCw className={styles.spinIcon} />
         </div>
       </div>
     )
   }
 
+  const bannerClass =
+    healthData?.status === 'healthy'
+      ? styles.statusBannerHealthy
+      : healthData?.status === 'degraded'
+        ? styles.statusBannerDegraded
+        : styles.statusBannerUnhealthy
+
   return (
-    <div className="space-y-8">
+    <div className={styles.page}>
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className={styles.pageHeaderRow}>
         <div>
-          <h1 className="text-2xl font-bold">Site Monitoring</h1>
-          <p className="text-muted-foreground">Real-time health status of all services</p>
+          <h1>Site Monitoring</h1>
+          <p>Real-time health status of all services</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className={styles.headerActions}>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setAutoRefresh(!autoRefresh)}
-            className={cn(autoRefresh && 'bg-green-50 border-green-200')}
+            className={autoRefresh ? styles.autoRefreshActive : undefined}
           >
-            <Activity className={cn('h-4 w-4 mr-1', autoRefresh && 'text-green-600')} />
+            <Activity
+              className={autoRefresh ? styles.autoRefreshActiveIcon : styles.refreshIcon}
+            />
             {autoRefresh ? 'Auto-refresh ON' : 'Auto-refresh OFF'}
           </Button>
           <Button
@@ -246,7 +259,9 @@ export default function MonitoringPage() {
             onClick={() => fetchHealth(true)}
             disabled={isRefreshing}
           >
-            <RefreshCw className={cn('h-4 w-4 mr-1', isRefreshing && 'animate-spin')} />
+            <RefreshCw
+              className={isRefreshing ? styles.refreshIconSpinning : styles.refreshIcon}
+            />
             Refresh
           </Button>
         </div>
@@ -254,47 +269,42 @@ export default function MonitoringPage() {
 
       {/* Overall Status Banner */}
       {healthData && (
-        <Card className={cn(
-          'border-2',
-          healthData.status === 'healthy' && 'border-green-500 bg-green-50',
-          healthData.status === 'degraded' && 'border-yellow-500 bg-yellow-50',
-          healthData.status === 'unhealthy' && 'border-red-500 bg-red-50',
-        )}>
-          <CardContent className="py-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
+        <div className={bannerClass}>
+          <div className={styles.statusBannerContent}>
+            <div className={styles.statusBannerInner}>
+              <div className={styles.statusBannerLeft}>
                 {healthData.status === 'healthy' && (
-                  <CheckCircle2 className="h-12 w-12 text-green-600" />
+                  <CheckCircle2 className={styles.statusIconHealthy} />
                 )}
                 {healthData.status === 'degraded' && (
-                  <AlertTriangle className="h-12 w-12 text-yellow-600" />
+                  <AlertTriangle className={styles.statusIconDegraded} />
                 )}
                 {healthData.status === 'unhealthy' && (
-                  <XCircle className="h-12 w-12 text-red-600" />
+                  <XCircle className={styles.statusIconUnhealthy} />
                 )}
                 <div>
-                  <h2 className="text-xl font-semibold">
+                  <div className={styles.statusTitle}>
                     {healthData.status === 'healthy' && 'All Systems Operational'}
                     {healthData.status === 'degraded' && 'Partial System Degradation'}
                     {healthData.status === 'unhealthy' && 'System Outage Detected'}
-                  </h2>
-                  <p className="text-sm text-muted-foreground">
-                    Version: {healthData.version} |
-                    Last checked: {lastRefresh?.toLocaleTimeString()}
-                  </p>
+                  </div>
+                  <div className={styles.statusMeta}>
+                    Version: {healthData.version} | Last checked:{' '}
+                    {lastRefresh?.toLocaleTimeString()}
+                  </div>
                 </div>
               </div>
               <StatusBadge status={healthData.status} />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       {/* Service Grid */}
       {healthData && (
         <div>
-          <h3 className="text-lg font-semibold mb-4">Service Status</h3>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <h3 className={styles.sectionTitle}>Service Status</h3>
+          <div className={styles.serviceGrid}>
             {(Object.keys(serviceConfig) as Array<keyof typeof serviceConfig>).map((key) => (
               <ServiceCard
                 key={key}
@@ -306,117 +316,118 @@ export default function MonitoringPage() {
         </div>
       )}
 
-      {/* External Links */}
+      {/* External Dashboards */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">External Dashboards</h3>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <h3 className={styles.sectionTitle}>External Dashboards</h3>
+        <div className={styles.externalGrid}>
           <a
             href="https://vercel.com/brad-feldmans-projects/exit-osx"
             target="_blank"
             rel="noopener noreferrer"
-            className="block"
+            className={styles.externalLink}
           >
-            <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
-              <CardContent className="py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-black rounded">
-                      <svg className="h-4 w-4 text-white" viewBox="0 0 76 65" fill="currentColor">
+            <div className={styles.externalCard}>
+              <div className={styles.externalCardContent}>
+                <div className={styles.externalCardInner}>
+                  <div className={styles.externalCardLeft}>
+                    <div className={`${styles.externalIconWrap} ${styles.externalIconWrapBlack}`}>
+                      <svg className={styles.externalIcon} viewBox="0 0 76 65" fill="currentColor">
                         <path d="M37.5274 0L75.0548 65H0L37.5274 0Z" />
                       </svg>
                     </div>
-                    <span className="font-medium">Vercel</span>
+                    <span className={styles.externalName}>Vercel</span>
                   </div>
-                  <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                  <ExternalLink className={styles.externalLinkIcon} />
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </a>
 
           <a
             href="https://supabase.com/dashboard/project/tkzoygqdcvkrwmhzpttl"
             target="_blank"
             rel="noopener noreferrer"
-            className="block"
+            className={styles.externalLink}
           >
-            <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
-              <CardContent className="py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-green-600 rounded">
-                      <Database className="h-4 w-4 text-white" />
+            <div className={styles.externalCard}>
+              <div className={styles.externalCardContent}>
+                <div className={styles.externalCardInner}>
+                  <div className={styles.externalCardLeft}>
+                    <div className={`${styles.externalIconWrap} ${styles.externalIconWrapGreen}`}>
+                      <Database className={styles.externalIcon} />
                     </div>
-                    <span className="font-medium">Supabase</span>
+                    <span className={styles.externalName}>Supabase</span>
                   </div>
-                  <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                  <ExternalLink className={styles.externalLinkIcon} />
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </a>
 
           <a
             href={process.env.NEXT_PUBLIC_SENTRY_DSN ? 'https://sentry.io' : '#'}
             target="_blank"
             rel="noopener noreferrer"
-            className="block"
+            className={styles.externalLink}
           >
-            <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
-              <CardContent className="py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-purple-600 rounded">
-                      <AlertTriangle className="h-4 w-4 text-white" />
+            <div className={styles.externalCard}>
+              <div className={styles.externalCardContent}>
+                <div className={styles.externalCardInner}>
+                  <div className={styles.externalCardLeft}>
+                    <div className={`${styles.externalIconWrap} ${styles.externalIconWrapPurple}`}>
+                      <AlertTriangle className={styles.externalIcon} />
                     </div>
-                    <span className="font-medium">Sentry</span>
+                    <span className={styles.externalName}>Sentry</span>
                   </div>
-                  <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                  <ExternalLink className={styles.externalLinkIcon} />
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </a>
 
           <a
             href="https://analytics.google.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="block"
+            className={styles.externalLink}
           >
-            <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
-              <CardContent className="py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-orange-500 rounded">
-                      <Activity className="h-4 w-4 text-white" />
+            <div className={styles.externalCard}>
+              <div className={styles.externalCardContent}>
+                <div className={styles.externalCardInner}>
+                  <div className={styles.externalCardLeft}>
+                    <div className={`${styles.externalIconWrap} ${styles.externalIconWrapOrange}`}>
+                      <Activity className={styles.externalIcon} />
                     </div>
-                    <span className="font-medium">Google Analytics</span>
+                    <span className={styles.externalName}>Google Analytics</span>
                   </div>
-                  <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                  <ExternalLink className={styles.externalLinkIcon} />
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </a>
         </div>
       </div>
 
       {/* Info Card */}
-      <Card className="bg-blue-50 border-blue-200">
-        <CardHeader>
-          <CardTitle className="text-base">About Monitoring</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-muted-foreground space-y-2">
+      <div className={styles.infoCard}>
+        <div className={styles.infoCardHeader}>
+          <div className={styles.infoCardTitle}>About Monitoring</div>
+        </div>
+        <div className={styles.infoCardContent}>
           <p>
-            <strong>Critical services</strong> (Database, Auth) will mark the system as unhealthy if they fail.
+            <strong>Critical services</strong> (Database, Auth) will mark the system as
+            unhealthy if they fail.
           </p>
           <p>
-            <strong>Non-critical services</strong> (OpenAI, Email, QuickBooks) will mark the system as degraded,
-            but the app will continue to function with reduced capabilities.
+            <strong>Non-critical services</strong> (OpenAI, Email, QuickBooks) will mark the
+            system as degraded, but the app will continue to function with reduced capabilities.
           </p>
           <p>
-            Health checks run every 30 seconds when auto-refresh is enabled.
-            For detailed error tracking and alerts, configure Sentry in your environment variables.
+            Health checks run every 30 seconds when auto-refresh is enabled. For detailed error
+            tracking and alerts, configure Sentry in your environment variables.
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

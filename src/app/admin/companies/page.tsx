@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { CompanyTable } from '@/components/admin/CompanyTable'
+import styles from '@/components/admin/admin-tables.module.css'
 
 async function getCompanies() {
   const limit = 20
@@ -94,25 +94,23 @@ export default async function AdminCompaniesPage() {
   const { companies, pagination } = await getCompanies()
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Companies</h1>
-        <p className="text-muted-foreground">
-          View company accounts and their key metrics
-        </p>
+    <div className={styles.page}>
+      <div className={styles.pageHeader}>
+        <h1>Companies</h1>
+        <p>View company accounts and their key metrics</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>All Companies</CardTitle>
-          <CardDescription>
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <p className={styles.cardTitle}>All Companies</p>
+          <p className={styles.cardDescription}>
             {pagination.total} companies in the system
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+        <div className={styles.cardContent}>
           <CompanyTable initialCompanies={companies} initialPagination={pagination} />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

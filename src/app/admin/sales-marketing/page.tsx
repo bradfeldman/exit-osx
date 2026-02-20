@@ -1,5 +1,5 @@
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { TrendingUp, Users, Mail, BarChart3, Megaphone, Target } from 'lucide-react'
+import styles from '@/components/admin/admin-misc.module.css'
 
 const upcomingFeatures = [
   {
@@ -36,43 +36,43 @@ const upcomingFeatures = [
 
 export default function SalesMarketingPage() {
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold">Sales & Marketing</h1>
-        <p className="text-muted-foreground">
+    <div className={styles.page}>
+      <div className={styles.pageHeader}>
+        <h1 className={styles.pageTitle}>Sales & Marketing</h1>
+        <p className={styles.pageSubtitle}>
           Marketing tools, analytics, and campaign management
         </p>
       </div>
 
       {/* Coming Soon Banner */}
-      <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-500 rounded-lg">
-              <TrendingUp className="h-6 w-6 text-white" />
+      <div className={`${styles.bannerCard} ${styles.bannerCardGreen}`}>
+        <div className={styles.bannerHeader}>
+          <div className={styles.bannerHeaderInner}>
+            <div className={`${styles.bannerIconWrap} ${styles.bannerIconGreen}`}>
+              <TrendingUp className="h-6 w-6" />
             </div>
             <div>
-              <CardTitle>Coming Soon</CardTitle>
-              <CardDescription>
+              <p className={styles.bannerTitle}>Coming Soon</p>
+              <p className={styles.bannerDescription}>
                 Marketing tools are under development and will be available soon
-              </CardDescription>
+              </p>
             </div>
           </div>
-        </CardHeader>
-      </Card>
+        </div>
+      </div>
 
       {/* Planned Features */}
       <div>
-        <h2 className="text-lg font-semibold mb-4">Planned Features</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <h2 className={styles.sectionHeading}>Planned Features</h2>
+        <div className={`${styles.toolsGrid} ${styles.toolsGrid3}`}>
           {upcomingFeatures.map((feature) => (
-            <Card key={feature.title} className="opacity-75">
-              <CardHeader>
-                <feature.icon className="h-8 w-8 text-green-500 mb-2" />
-                <CardTitle className="text-base">{feature.title}</CardTitle>
-                <CardDescription>{feature.description}</CardDescription>
-              </CardHeader>
-            </Card>
+            <div key={feature.title} className={`${styles.toolCard} ${styles.toolCardDimmed}`}>
+              <div className={styles.toolCardHeader}>
+                <feature.icon className={`h-8 w-8 ${styles.toolCardIconGreen}`} style={{ marginBottom: 8 }} />
+                <p className={styles.toolCardTitle}>{feature.title}</p>
+                <p className={styles.toolCardDescription}>{feature.description}</p>
+              </div>
+            </div>
           ))}
         </div>
       </div>

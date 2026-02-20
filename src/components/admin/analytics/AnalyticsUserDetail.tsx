@@ -1,6 +1,5 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
   Table,
@@ -14,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Monitor, Smartphone, Tablet, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import styles from '@/components/admin/admin-misc.module.css'
 
 interface UserData {
   id: string
@@ -75,7 +75,7 @@ interface AnalyticsUserDetailProps {
   engagementStatus: 'active' | 'stalled' | 'dormant'
 }
 
-const categoryColors: Record<string, string> = {
+const categoryBadgeClass: Record<string, string> = {
   auth: 'bg-purple-100 text-purple-800',
   navigation: 'bg-blue-100 text-blue-800',
   onboarding: 'bg-green-100 text-green-800',
@@ -83,6 +83,12 @@ const categoryColors: Record<string, string> = {
   task: 'bg-orange-100 text-orange-800',
   valuation: 'bg-pink-100 text-pink-800',
   subscription: 'bg-indigo-100 text-indigo-800',
+}
+
+const statusBadgeClass: Record<string, string> = {
+  active: 'bg-green-100 text-green-800',
+  stalled: 'bg-yellow-100 text-yellow-800',
+  dormant: 'bg-red-100 text-red-800',
 }
 
 function DeviceIcon({ type }: { type: string | null }) {
@@ -116,99 +122,94 @@ export function AnalyticsUserDetail({
   companyState,
   engagementStatus,
 }: AnalyticsUserDetailProps) {
-
-  const statusColors: Record<string, string> = {
-    active: 'bg-green-100 text-green-800',
-    stalled: 'bg-yellow-100 text-yellow-800',
-    dormant: 'bg-red-100 text-red-800',
-  }
-
   return (
-    <div className="space-y-6">
+    <div className={styles.page}>
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className={styles.detailHeader}>
         <Link href="/admin/analytics/users">
           <Button variant="ghost" size="sm">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
           </Button>
         </Link>
-        <div>
-          <h1 className="text-2xl font-bold">{user.name || user.email}</h1>
-          <p className="text-muted-foreground">{user.email}</p>
+        <div className={styles.detailHeaderText}>
+          <h1 className={styles.detailTitle}>{user.name || user.email}</h1>
+          <p className={styles.detailSubtitle}>{user.email}</p>
         </div>
-        <Badge variant="secondary" className={statusColors[engagementStatus]}>
+        <Badge variant="secondary" className={statusBadgeClass[engagementStatus]}>
           {engagementStatus}
         </Badge>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{user.eventCount}</div>
-            <p className="text-sm text-muted-foreground">Total Events</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{user.sessionCount}</div>
-            <p className="text-sm text-muted-foreground">Sessions</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{user.planTier || 'None'}</div>
-            <p className="text-sm text-muted-foreground">Plan</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{user.exposureState}</div>
-            <p className="text-sm text-muted-foreground">Exposure State</p>
-          </CardContent>
-        </Card>
+      <div className={styles.summaryGrid}>
+        <div className={styles.summaryCard}>
+          <div className={styles.summaryCardContent}>
+            <div className={styles.summaryValue}>{user.eventCount}</div>
+            <p className={styles.summaryLabel}>Total Events</p>
+          </div>
+        </div>
+        <div className={styles.summaryCard}>
+          <div className={styles.summaryCardContent}>
+            <div className={styles.summaryValue}>{user.sessionCount}</div>
+            <p className={styles.summaryLabel}>Sessions</p>
+          </div>
+        </div>
+        <div className={styles.summaryCard}>
+          <div className={styles.summaryCardContent}>
+            <div className={styles.summaryValue}>{user.planTier || 'None'}</div>
+            <p className={styles.summaryLabel}>Plan</p>
+          </div>
+        </div>
+        <div className={styles.summaryCard}>
+          <div className={styles.summaryCardContent}>
+            <div className={styles.summaryValue}>{user.exposureState}</div>
+            <p className={styles.summaryLabel}>Exposure State</p>
+          </div>
+        </div>
       </div>
 
       {/* Company State */}
       {companyState && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Company: {companyState.name}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-5">
-              <div>
-                <div className="text-xl font-bold">
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <div className={styles.cardHeaderInner}>
+              <p className={styles.cardTitle}>Company: {companyState.name}</p>
+            </div>
+          </div>
+          <div className={styles.cardContent}>
+            <div className={styles.companyMetrics}>
+              <div className={styles.companyMetric}>
+                <div className={styles.companyMetricValue}>
                   {companyState.briScore !== null ? `${(companyState.briScore * 100).toFixed(0)}%` : '-'}
                 </div>
-                <p className="text-sm text-muted-foreground">BRI Score</p>
+                <p className={styles.companyMetricLabel}>BRI Score</p>
               </div>
-              <div>
-                <div className="text-xl font-bold">
+              <div className={styles.companyMetric}>
+                <div className={styles.companyMetricValue}>
                   {companyState.currentValue !== null ? formatCurrency(companyState.currentValue) : '-'}
                 </div>
-                <p className="text-sm text-muted-foreground">Current Value</p>
+                <p className={styles.companyMetricLabel}>Current Value</p>
               </div>
-              <div>
-                <div className="text-xl font-bold">
+              <div className={styles.companyMetric}>
+                <div className={styles.companyMetricValue}>
                   {companyState.potentialValue !== null ? formatCurrency(companyState.potentialValue) : '-'}
                 </div>
-                <p className="text-sm text-muted-foreground">Potential Value</p>
+                <p className={styles.companyMetricLabel}>Potential Value</p>
               </div>
-              <div>
-                <div className="text-xl font-bold">
+              <div className={styles.companyMetric}>
+                <div className={styles.companyMetricValue}>
                   {companyState.completedTaskCount}/{companyState.taskCount}
                 </div>
-                <p className="text-sm text-muted-foreground">Tasks Completed</p>
+                <p className={styles.companyMetricLabel}>Tasks Completed</p>
               </div>
-              <div>
-                <div className="text-xl font-bold">{companyState.assessmentCount}</div>
-                <p className="text-sm text-muted-foreground">Assessments</p>
+              <div className={styles.companyMetric}>
+                <div className={styles.companyMetricValue}>{companyState.assessmentCount}</div>
+                <p className={styles.companyMetricLabel}>Assessments</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       <Tabs defaultValue="timeline">
@@ -218,13 +219,15 @@ export function AnalyticsUserDetail({
           <TabsTrigger value="details">Account Details</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="timeline" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Recent Activity ({recentEvents.length} events)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-md border">
+        <TabsContent value="timeline" className={styles.tabContent}>
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <div className={styles.cardHeaderInner}>
+                <p className={styles.cardTitle}>Recent Activity ({recentEvents.length} events)</p>
+              </div>
+            </div>
+            <div className={styles.cardContent}>
+              <div className={styles.tableWrap}>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -238,36 +241,36 @@ export function AnalyticsUserDetail({
                   <TableBody>
                     {recentEvents.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center text-muted-foreground">
+                        <TableCell colSpan={5} className={styles.emptyCell}>
                           No events recorded yet
                         </TableCell>
                       </TableRow>
                     ) : (
                       recentEvents.map((event) => (
                         <TableRow key={event.id}>
-                          <TableCell className="whitespace-nowrap text-sm">
+                          <TableCell style={{ whiteSpace: 'nowrap', fontSize: 14 }}>
                             <span title={new Date(event.createdAt).toLocaleString()}>
                               {timeAgo(event.createdAt)}
                             </span>
                           </TableCell>
                           <TableCell>
-                            <span className="font-mono text-sm">{event.eventName}</span>
+                            <span className={styles.cellMono}>{event.eventName}</span>
                           </TableCell>
                           <TableCell>
                             <Badge
                               variant="secondary"
-                              className={categoryColors[event.eventCategory] || 'bg-gray-100 text-gray-800'}
+                              className={categoryBadgeClass[event.eventCategory] || 'bg-gray-100 text-gray-800'}
                             >
                               {event.eventCategory}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
+                          <TableCell className={styles.cellSecondary}>
                             {event.page || '-'}
                           </TableCell>
                           <TableCell>
-                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <div className={styles.breakdownLabel}>
                               <DeviceIcon type={event.deviceType} />
-                              {event.browser || '-'}
+                              <span className={styles.cellSecondary}>{event.browser || '-'}</span>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -276,100 +279,106 @@ export function AnalyticsUserDetail({
                   </TableBody>
                 </Table>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="devices" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Device Types</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {deviceBreakdown.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No device data yet</p>
-                ) : (
-                  <div className="space-y-3">
-                    {deviceBreakdown.map((d) => (
-                      <div key={d.deviceType} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <DeviceIcon type={d.deviceType} />
-                          <span className="text-sm capitalize">{d.deviceType || 'Unknown'}</span>
-                        </div>
-                        <span className="text-sm font-medium tabular-nums">{d.count}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Browsers</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {browserBreakdown.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No browser data yet</p>
-                ) : (
-                  <div className="space-y-3">
-                    {browserBreakdown.map((b) => (
-                      <div key={b.browser} className="flex items-center justify-between">
-                        <span className="text-sm">{b.browser || 'Unknown'}</span>
-                        <span className="text-sm font-medium tabular-nums">{b.count}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            </div>
           </div>
         </TabsContent>
 
-        <TabsContent value="details" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Account Info</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div>
-                  <p className="text-sm text-muted-foreground">User ID</p>
-                  <p className="font-mono text-sm">{user.id}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Created</p>
-                  <p className="text-sm">{new Date(user.createdAt).toLocaleDateString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Email Verified</p>
-                  <p className="text-sm">{user.emailVerified ? 'Yes' : 'No'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">User Type</p>
-                  <p className="text-sm">{user.userType}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Plan</p>
-                  <p className="text-sm">{user.planTier || 'None'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Subscription Status</p>
-                  <p className="text-sm">{user.subscriptionStatus || '-'}</p>
-                </div>
-                {user.trialEndsAt && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Trial Ends</p>
-                    <p className="text-sm">{new Date(user.trialEndsAt).toLocaleDateString()}</p>
-                  </div>
-                )}
-                <div>
-                  <p className="text-sm text-muted-foreground">Super Admin</p>
-                  <p className="text-sm">{user.isSuperAdmin ? 'Yes' : 'No'}</p>
+        <TabsContent value="devices" className={styles.tabContent}>
+          <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
+            <div className={styles.card}>
+              <div className={styles.cardHeader}>
+                <div className={styles.cardHeaderInner}>
+                  <p className={styles.cardTitle}>Device Types</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+              <div className={styles.cardContent}>
+                {deviceBreakdown.length === 0 ? (
+                  <p className={styles.cellSecondary}>No device data yet</p>
+                ) : (
+                  <div className={styles.breakdownList}>
+                    {deviceBreakdown.map((d) => (
+                      <div key={d.deviceType} className={styles.breakdownRow}>
+                        <div className={styles.breakdownLabel}>
+                          <DeviceIcon type={d.deviceType} />
+                          <span>{d.deviceType || 'Unknown'}</span>
+                        </div>
+                        <span className={styles.breakdownCount}>{d.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className={styles.card}>
+              <div className={styles.cardHeader}>
+                <div className={styles.cardHeaderInner}>
+                  <p className={styles.cardTitle}>Browsers</p>
+                </div>
+              </div>
+              <div className={styles.cardContent}>
+                {browserBreakdown.length === 0 ? (
+                  <p className={styles.cellSecondary}>No browser data yet</p>
+                ) : (
+                  <div className={styles.breakdownList}>
+                    {browserBreakdown.map((b) => (
+                      <div key={b.browser} className={styles.breakdownRow}>
+                        <span className={styles.cellSecondary}>{b.browser || 'Unknown'}</span>
+                        <span className={styles.breakdownCount}>{b.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="details" className={styles.tabContent}>
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <div className={styles.cardHeaderInner}>
+                <p className={styles.cardTitle}>Account Info</p>
+              </div>
+            </div>
+            <div className={styles.cardContent}>
+              <div className={styles.accountGrid}>
+                <div className={styles.accountField}>
+                  <p className={styles.accountFieldLabel}>User ID</p>
+                  <p className={styles.accountFieldMono}>{user.id}</p>
+                </div>
+                <div className={styles.accountField}>
+                  <p className={styles.accountFieldLabel}>Created</p>
+                  <p className={styles.accountFieldValue}>{new Date(user.createdAt).toLocaleDateString()}</p>
+                </div>
+                <div className={styles.accountField}>
+                  <p className={styles.accountFieldLabel}>Email Verified</p>
+                  <p className={styles.accountFieldValue}>{user.emailVerified ? 'Yes' : 'No'}</p>
+                </div>
+                <div className={styles.accountField}>
+                  <p className={styles.accountFieldLabel}>User Type</p>
+                  <p className={styles.accountFieldValue}>{user.userType}</p>
+                </div>
+                <div className={styles.accountField}>
+                  <p className={styles.accountFieldLabel}>Plan</p>
+                  <p className={styles.accountFieldValue}>{user.planTier || 'None'}</p>
+                </div>
+                <div className={styles.accountField}>
+                  <p className={styles.accountFieldLabel}>Subscription Status</p>
+                  <p className={styles.accountFieldValue}>{user.subscriptionStatus || '-'}</p>
+                </div>
+                {user.trialEndsAt && (
+                  <div className={styles.accountField}>
+                    <p className={styles.accountFieldLabel}>Trial Ends</p>
+                    <p className={styles.accountFieldValue}>{new Date(user.trialEndsAt).toLocaleDateString()}</p>
+                  </div>
+                )}
+                <div className={styles.accountField}>
+                  <p className={styles.accountFieldLabel}>Super Admin</p>
+                  <p className={styles.accountFieldValue}>{user.isSuperAdmin ? 'Yes' : 'No'}</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

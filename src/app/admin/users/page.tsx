@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { UserTable } from '@/components/admin/UserTable'
+import styles from '@/components/admin/admin-tables.module.css'
 
 async function getUsers() {
   const limit = 20
@@ -48,25 +48,23 @@ export default async function AdminUsersPage() {
   const { users, pagination } = await getUsers()
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Users</h1>
-        <p className="text-muted-foreground">
-          Manage user accounts and permissions
-        </p>
+    <div className={styles.page}>
+      <div className={styles.pageHeader}>
+        <h1>Users</h1>
+        <p>Manage user accounts and permissions</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>All Users</CardTitle>
-          <CardDescription>
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <p className={styles.cardTitle}>All Users</p>
+          <p className={styles.cardDescription}>
             {pagination.total} users registered in the system
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+        <div className={styles.cardContent}>
           <UserTable initialUsers={users} initialPagination={pagination} />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

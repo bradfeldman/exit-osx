@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Loader2, CheckCircle2, ArrowLeft, Shield } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import styles from '@/components/admin/admin-auth.module.css'
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -55,77 +56,73 @@ export default function AdminForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className={styles.authPage}>
       {/* Left side - Admin Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-slate-900 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-slate-800" />
-        <div className="absolute top-20 right-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-10 w-48 h-48 bg-primary/10 rounded-full blur-2xl" />
+      <div className={styles.brandPanel}>
+        <div className={styles.brandOverlay} />
+        <div className={styles.brandBlobTop} />
+        <div className={styles.brandBlobBottom} />
         <motion.div
-          className="relative z-10 flex flex-col justify-between p-12 text-white"
+          className={styles.brandContent}
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="flex items-center gap-3">
+          <div className={styles.brandLogo}>
             <Shield className="h-8 w-8 text-primary" />
-            <span className="text-xl font-semibold">Exit OSx Admin</span>
+            <span className={styles.brandLogoText}>Exit OSx Admin</span>
           </div>
 
-          <div className="space-y-6">
-            <h1 className="text-4xl font-bold font-display leading-tight tracking-tight">
+          <div className={styles.brandBody}>
+            <h1 className={styles.brandHeadline}>
               Administration<br />Portal
             </h1>
-            <p className="text-lg text-slate-300 max-w-md">
+            <p className={styles.brandSubtitle}>
               Manage users, organizations, support tickets, and system configuration.
             </p>
           </div>
 
-          <p className="text-sm text-slate-500">
+          <p className={styles.brandFooter}>
             Restricted Access - Authorized Personnel Only
           </p>
         </motion.div>
       </div>
 
       {/* Right side - Form */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-background">
+      <div className={styles.formPanel}>
         <motion.div
-          className="w-full max-w-md space-y-8"
+          className={styles.formInner}
           variants={staggerContainer}
           initial="hidden"
           animate="visible"
         >
           {/* Mobile header */}
-          <motion.div variants={fadeInUp} className="lg:hidden text-center">
-            <div className="inline-flex items-center gap-2">
-              <Shield className="h-8 w-8 text-primary" />
-              <span className="text-xl font-semibold">Exit OSx Admin</span>
-            </div>
+          <motion.div variants={fadeInUp} className={styles.mobileLogo}>
+            <Shield className="h-8 w-8 text-primary" />
+            <span className={styles.mobileLogoText}>Exit OSx Admin</span>
           </motion.div>
 
           {!success ? (
             <>
-              <motion.div variants={fadeInUp} className="text-center">
-                <h2 className="text-3xl font-bold font-display text-foreground tracking-tight">
-                  Reset your password
-                </h2>
-                <p className="mt-2 text-muted-foreground">
+              <motion.div variants={fadeInUp} className={styles.heading}>
+                <h2 className={styles.title}>Reset your password</h2>
+                <p className={styles.subtitle}>
                   Enter your email and we&apos;ll send you a link to reset your password
                 </p>
               </motion.div>
 
-              <motion.form variants={fadeInUp} onSubmit={handleSubmit} className="space-y-6">
+              <motion.form variants={fadeInUp} onSubmit={handleSubmit} className={styles.form}>
                 {error && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg"
+                    className={styles.errorBanner}
                   >
-                    {error}
+                    <p className={styles.errorMain}>{error}</p>
                   </motion.div>
                 )}
 
-                <div className="space-y-2">
+                <div className={styles.field}>
                   <Label htmlFor="email">Email address</Label>
                   <Input
                     id="email"
@@ -156,21 +153,21 @@ export default function AdminForgotPasswordPage() {
               </motion.form>
             </>
           ) : (
-            <motion.div variants={fadeInUp} className="text-center space-y-6">
-              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
-                <CheckCircle2 className="w-8 h-8 text-green-600" />
+            <motion.div variants={fadeInUp} className={styles.success}>
+              <div className={styles.successIcon}>
+                <CheckCircle2 className="w-8 h-8" />
               </div>
-              <div>
-                <h2 className="text-2xl font-bold text-foreground">Check your email</h2>
-                <p className="mt-2 text-muted-foreground">
+              <div className={styles.successBody}>
+                <h2 className={styles.successTitle}>Check your email</h2>
+                <p className={styles.successText}>
                   We&apos;ve sent a password reset link to <strong>{email}</strong>
                 </p>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className={styles.successNote}>
                 Didn&apos;t receive the email? Check your spam folder or{' '}
                 <button
                   onClick={() => setSuccess(false)}
-                  className="text-primary hover:underline"
+                  className={styles.tryAgainButton}
                 >
                   try again
                 </button>
@@ -178,10 +175,10 @@ export default function AdminForgotPasswordPage() {
             </motion.div>
           )}
 
-          <motion.div variants={fadeInUp} className="text-center">
+          <motion.div variants={fadeInUp} className={styles.footer}>
             <Link
               href="/admin/login"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1"
+              className={`${styles.footerLink} ${styles.footerLinkInline}`}
             >
               <ArrowLeft className="w-4 h-4" />
               Back to admin sign in

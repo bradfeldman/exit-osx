@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Search, ChevronLeft, ChevronRight, Building2 } from 'lucide-react'
+import styles from '@/components/admin/admin-misc.module.css'
 
 interface Workspace {
   id: string
@@ -73,10 +74,10 @@ export function WorkspaceTable({ initialWorkspaces, initialPagination }: Workspa
   }
 
   return (
-    <div className="space-y-4">
-      <form onSubmit={handleSearch} className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+    <div className={styles.page}>
+      <form onSubmit={handleSearch} className={styles.filterBar}>
+        <div className={styles.searchWrapper}>
+          <Search className={`${styles.searchIcon} h-4 w-4`} />
           <Input
             type="search"
             placeholder="Search by workspace name..."
@@ -90,7 +91,7 @@ export function WorkspaceTable({ initialWorkspaces, initialPagination }: Workspa
         </Button>
       </form>
 
-      <div className="rounded-md border">
+      <div className={styles.tableWrap}>
         <Table>
           <TableHeader>
             <TableRow>
@@ -104,7 +105,7 @@ export function WorkspaceTable({ initialWorkspaces, initialPagination }: Workspa
           <TableBody>
             {workspaces.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                <TableCell colSpan={5} className={styles.emptyCell}>
                   No workspaces found
                 </TableCell>
               </TableRow>
@@ -112,7 +113,7 @@ export function WorkspaceTable({ initialWorkspaces, initialPagination }: Workspa
               workspaces.map((ws) => (
                 <TableRow key={ws.id}>
                   <TableCell>
-                    <div className="font-medium">{ws.name}</div>
+                    <div className={styles.cellPrimary}>{ws.name}</div>
                   </TableCell>
                   <TableCell>{ws._count.members}</TableCell>
                   <TableCell>{ws._count.companies}</TableCell>
@@ -133,14 +134,13 @@ export function WorkspaceTable({ initialWorkspaces, initialPagination }: Workspa
         </Table>
       </div>
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
+      <div className={styles.pagination}>
+        <p className={styles.paginationInfo}>
           Showing {(pagination.page - 1) * pagination.limit + 1} to{' '}
           {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
           {pagination.total} workspaces
         </p>
-        <div className="flex gap-2">
+        <div className={styles.paginationButtons}>
           <Button
             variant="outline"
             size="sm"

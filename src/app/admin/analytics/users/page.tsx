@@ -1,7 +1,7 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { prisma } from '@/lib/prisma'
 import { AnalyticsUserTable } from '@/components/admin/analytics/AnalyticsUserTable'
 import { computeEngagementStatus } from '@/lib/analytics/engagement-status'
+import styles from '@/components/admin/admin-misc.module.css'
 
 export default async function AnalyticsUsersPage() {
   let users
@@ -90,22 +90,24 @@ export default async function AnalyticsUsersPage() {
   serializedUsers.sort((a, b) => new Date(b.lastActiveAt).getTime() - new Date(a.lastActiveAt).getTime())
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">User Analytics</h1>
-        <p className="text-muted-foreground">
+    <div className={styles.page}>
+      <div className={styles.pageHeader}>
+        <h1 className={styles.pageTitle}>User Analytics</h1>
+        <p className={styles.pageSubtitle}>
           All users with engagement data, status, and device info
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Users</CardTitle>
-          <CardDescription>
-            Active, Stalled ({'>'} 3 days), Dormant ({'>'} 14 days)
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <div className={styles.cardHeaderInner}>
+            <p className={styles.cardTitle}>Users</p>
+            <p className={styles.cardDescription}>
+              Active, Stalled ({'>'} 3 days), Dormant ({'>'} 14 days)
+            </p>
+          </div>
+        </div>
+        <div className={styles.cardContent}>
           <AnalyticsUserTable
             initialUsers={serializedUsers}
             initialPagination={{
@@ -115,8 +117,8 @@ export default async function AnalyticsUsersPage() {
               totalPages: Math.ceil(total / 50),
             }}
           />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

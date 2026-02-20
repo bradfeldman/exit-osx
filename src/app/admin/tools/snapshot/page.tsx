@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
+import styles from '@/components/admin/admin-tools.module.css'
 
 interface Company {
   id: string
@@ -55,12 +55,12 @@ function formatScore(value: number): string {
 
 function DataRow({ label, value, description }: { label: string; value: string; description?: string }) {
   return (
-    <div className="flex items-center justify-between py-2 border-b border-muted last:border-0">
+    <div className={styles.dataRow}>
       <div>
-        <span className="font-medium">{label}</span>
-        {description && <p className="text-xs text-muted-foreground">{description}</p>}
+        <span className={styles.dataRowLabel}>{label}</span>
+        {description && <p className={styles.dataRowDesc}>{description}</p>}
       </div>
-      <span className="font-mono text-sm">{value}</span>
+      <span className={styles.dataRowValue}>{value}</span>
     </div>
   )
 }
@@ -163,33 +163,33 @@ export default function AdminSnapshotPage() {
   const isViewingHistorical = selectedSnapshotId && latestSnapshotId && selectedSnapshotId !== latestSnapshotId
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Valuation Snapshot</h1>
-        <p className="text-muted-foreground">
+    <div className={styles.page}>
+      <div className={styles.pageHeader}>
+        <h1 className={styles.pageTitle}>Valuation Snapshot</h1>
+        <p className={styles.pageDescription}>
           View stored valuation data from assessment completions
         </p>
       </div>
 
       {/* Company Selector */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Select Company</CardTitle>
-          <CardDescription>
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>Select Company</h2>
+          <p className={styles.cardDescription}>
             Choose a company to view its valuation snapshots
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+        <div className={styles.cardContent}>
           {loading ? (
-            <div className="flex items-center gap-2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
-              <span className="text-sm text-muted-foreground">Loading companies...</span>
+            <div className={styles.loadingRow}>
+              <div className={styles.spinner} />
+              <span className={styles.loadingText}>Loading companies...</span>
             </div>
           ) : (
             <select
               value={selectedCompanyId}
               onChange={(e) => setSelectedCompanyId(e.target.value)}
-              className="w-full max-w-md px-3 py-2 border rounded-lg text-sm"
+              className={styles.companySelect}
             >
               <option value="">Select a company...</option>
               {companies.map((company) => (
@@ -199,41 +199,39 @@ export default function AdminSnapshotPage() {
               ))}
             </select>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-700">{error}</p>
+        <div className={styles.bannerError}>
+          <p>{error}</p>
         </div>
       )}
 
       {selectedCompanyId && (
         <>
           {loadingHistory ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+            <div className={styles.loadingCenter}>
+              <div className={styles.spinnerLg} />
             </div>
           ) : snapshotHistory.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
+            <div className={styles.card}>
+              <div className={styles.emptyState}>
                 No snapshots available for this company. Complete an assessment to generate one.
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ) : (
             <>
               {/* Historical Warning Banner */}
               {isViewingHistorical && (
-                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                  <p className="text-amber-800 font-medium">
-                    Viewing Historical Snapshot
-                  </p>
-                  <p className="text-sm text-amber-700 mt-1">
+                <div className={styles.bannerWarning}>
+                  <p className={styles.bannerWarningTitle}>Viewing Historical Snapshot</p>
+                  <p className={styles.bannerWarningText}>
                     This snapshot is not current. You are viewing data from{' '}
                     {new Date(snapshot?.createdAt || '').toLocaleDateString()}.{' '}
                     <button
                       onClick={() => setSelectedSnapshotId(latestSnapshotId)}
-                      className="text-amber-900 underline font-medium"
+                      className={styles.bannerWarningLink}
                     >
                       View current snapshot
                     </button>
@@ -242,23 +240,23 @@ export default function AdminSnapshotPage() {
               )}
 
               {/* Snapshot History Log */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Snapshot History</CardTitle>
-                  <CardDescription>Click a date to view that snapshot</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="max-h-64 overflow-y-auto">
-                    <table className="w-full text-sm">
-                      <thead className="sticky top-0 bg-background border-b">
-                        <tr className="text-left text-muted-foreground">
-                          <th className="pb-2 font-medium">Date/Time</th>
-                          <th className="pb-2 font-medium">Triggered By</th>
-                          <th className="pb-2 font-medium">Reason</th>
-                          <th className="pb-2 font-medium text-right">Value</th>
+              <div className={styles.card}>
+                <div className={styles.cardHeader}>
+                  <h2 className={styles.cardTitleLg}>Snapshot History</h2>
+                  <p className={styles.cardDescription}>Click a date to view that snapshot</p>
+                </div>
+                <div className={styles.cardContent}>
+                  <div className={styles.historyTableWrapper}>
+                    <table className={styles.table}>
+                      <thead className={styles.historyTableHead}>
+                        <tr>
+                          <th>Date/Time</th>
+                          <th>Triggered By</th>
+                          <th>Reason</th>
+                          <th className={styles.thRight}>Value</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y">
+                      <tbody>
                         {snapshotHistory.map((entry) => {
                           const isSelected = entry.id === selectedSnapshotId
                           const isLatest = entry.id === latestSnapshotId
@@ -267,51 +265,39 @@ export default function AdminSnapshotPage() {
                             <tr
                               key={entry.id}
                               onClick={() => setSelectedSnapshotId(entry.id)}
-                              className={`cursor-pointer transition-colors ${
-                                isSelected
-                                  ? 'bg-primary/10'
-                                  : 'hover:bg-muted'
-                              }`}
+                              className={isSelected ? styles.historyRowSelected : styles.historyRow}
                             >
-                              <td className="py-2">
-                                <button className="text-left">
-                                  <span className={`${isSelected ? 'text-primary font-medium' : 'text-blue-600'}`}>
+                              <td>
+                                <button style={{ textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                                  <span className={isSelected ? styles.historyDateLinkSelected : styles.historyDateLink}>
                                     {new Date(entry.date).toLocaleString()}
                                   </span>
                                   {isLatest && (
-                                    <span className="ml-2 text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
-                                      Current
-                                    </span>
+                                    <span className={styles.historyCurrentBadge}>Current</span>
                                   )}
                                 </button>
                               </td>
-                              <td className="py-2 text-muted-foreground">
-                                {entry.createdBy?.name || 'System'}
-                              </td>
-                              <td className="py-2 text-muted-foreground">
-                                {entry.reason || 'N/A'}
-                              </td>
-                              <td className="py-2 text-right font-mono">
-                                {formatCurrency(entry.currentValue)}
-                              </td>
+                              <td className={styles.tdMuted}>{entry.createdBy?.name || 'System'}</td>
+                              <td className={styles.tdMuted}>{entry.reason || 'N/A'}</td>
+                              <td className={styles.tdRight}>{formatCurrency(entry.currentValue)}</td>
                             </tr>
                           )
                         })}
                       </tbody>
                     </table>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {snapshot && (
                 <>
                   {/* Metadata */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Snapshot Metadata</CardTitle>
-                      <CardDescription>When and why this snapshot was created</CardDescription>
-                    </CardHeader>
-                    <CardContent>
+                  <div className={styles.card}>
+                    <div className={styles.cardHeader}>
+                      <h2 className={styles.cardTitleLg}>Snapshot Metadata</h2>
+                      <p className={styles.cardDescription}>When and why this snapshot was created</p>
+                    </div>
+                    <div className={styles.cardContent}>
                       <DataRow label="Snapshot ID" value={snapshot.id} />
                       <DataRow label="Company ID" value={snapshot.companyId} />
                       <DataRow
@@ -322,31 +308,31 @@ export default function AdminSnapshotPage() {
                         label="Reason"
                         value={snapshot.snapshotReason || 'N/A'}
                       />
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
 
                   {/* Financial Inputs */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Financial Inputs</CardTitle>
-                      <CardDescription>Base financial data used in valuation</CardDescription>
-                    </CardHeader>
-                    <CardContent>
+                  <div className={styles.card}>
+                    <div className={styles.cardHeader}>
+                      <h2 className={styles.cardTitleLg}>Financial Inputs</h2>
+                      <p className={styles.cardDescription}>Base financial data used in valuation</p>
+                    </div>
+                    <div className={styles.cardContent}>
                       <DataRow
                         label="Adjusted EBITDA"
                         value={formatCurrency(snapshot.adjustedEbitda)}
                         description="Normalized earnings (base EBITDA + add-backs + excess owner comp - deductions)"
                       />
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
 
                   {/* Industry Multiples */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Industry Multiples</CardTitle>
-                      <CardDescription>EBITDA multiple range for the selected industry</CardDescription>
-                    </CardHeader>
-                    <CardContent>
+                  <div className={styles.card}>
+                    <div className={styles.cardHeader}>
+                      <h2 className={styles.cardTitleLg}>Industry Multiples</h2>
+                      <p className={styles.cardDescription}>EBITDA multiple range for the selected industry</p>
+                    </div>
+                    <div className={styles.cardContent}>
                       <DataRow
                         label="Industry Multiple Low (L)"
                         value={`${snapshot.industryMultipleLow.toFixed(1)}x`}
@@ -357,38 +343,38 @@ export default function AdminSnapshotPage() {
                         value={`${snapshot.industryMultipleHigh.toFixed(1)}x`}
                         description="Ceiling multiple - best case scenario"
                       />
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
 
                   {/* Core Score */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Core Index</CardTitle>
-                      <CardDescription>Structural business factors positioning within industry range</CardDescription>
-                    </CardHeader>
-                    <CardContent>
+                  <div className={styles.card}>
+                    <div className={styles.cardHeader}>
+                      <h2 className={styles.cardTitleLg}>Core Index</h2>
+                      <p className={styles.cardDescription}>Structural business factors positioning within industry range</p>
+                    </div>
+                    <div className={styles.cardContent}>
                       <DataRow
                         label="Core Score (CS)"
                         value={formatScore(snapshot.coreScore)}
                         description="0-100 scale based on revenue size, revenue model, gross margin, labor intensity, asset intensity, owner involvement"
                       />
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
 
                   {/* BRI Scores */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Buyer Readiness Index (BRI)</CardTitle>
-                      <CardDescription>Weighted assessment scores by category</CardDescription>
-                    </CardHeader>
-                    <CardContent>
+                  <div className={styles.card}>
+                    <div className={styles.cardHeader}>
+                      <h2 className={styles.cardTitleLg}>Buyer Readiness Index (BRI)</h2>
+                      <p className={styles.cardDescription}>Weighted assessment scores by category</p>
+                    </div>
+                    <div className={styles.cardContent}>
                       <DataRow
                         label="Buyer Readiness Index"
                         value={formatScore(snapshot.briScore)}
                         description="Weighted average of all categories (0-100)"
                       />
-                      <div className="mt-4 pt-4 border-t">
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">Category Breakdown</p>
+                      <div className={styles.categoryBreakdown}>
+                        <p className={styles.sectionSubheaderSm}>Category Breakdown</p>
                         <DataRow
                           label="Financial"
                           value={formatScore(snapshot.briFinancial)}
@@ -420,16 +406,16 @@ export default function AdminSnapshotPage() {
                           description="Weight: 10%"
                         />
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
 
                   {/* Multiple Calculation */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Multiple Calculation</CardTitle>
-                      <CardDescription>Step-by-step derivation of the final EBITDA multiple</CardDescription>
-                    </CardHeader>
-                    <CardContent>
+                  <div className={styles.card}>
+                    <div className={styles.cardHeader}>
+                      <h2 className={styles.cardTitleLg}>Multiple Calculation</h2>
+                      <p className={styles.cardDescription}>Step-by-step derivation of the final EBITDA multiple</p>
+                    </div>
+                    <div className={styles.cardContent}>
                       <DataRow
                         label="Alpha Constant (α)"
                         value={snapshot.alphaConstant.toFixed(2)}
@@ -450,16 +436,16 @@ export default function AdminSnapshotPage() {
                         value={`${snapshot.finalMultiple.toFixed(2)}x`}
                         description="L + (BaseMultiple - L) × (1 - DiscountFraction)"
                       />
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
 
                   {/* Valuation Outputs */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Valuation Outputs</CardTitle>
-                      <CardDescription>Final calculated values</CardDescription>
-                    </CardHeader>
-                    <CardContent>
+                  <div className={styles.card}>
+                    <div className={styles.cardHeader}>
+                      <h2 className={styles.cardTitleLg}>Valuation Outputs</h2>
+                      <p className={styles.cardDescription}>Final calculated values</p>
+                    </div>
+                    <div className={styles.cardContent}>
                       <DataRow
                         label="Current Value"
                         value={formatCurrency(snapshot.currentValue)}
@@ -475,21 +461,21 @@ export default function AdminSnapshotPage() {
                         value={formatCurrency(snapshot.valueGap)}
                         description="Potential Value - Current Value"
                       />
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
 
                   {/* Raw JSON */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Raw Data</CardTitle>
-                      <CardDescription>Complete snapshot as JSON</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <pre className="p-4 bg-muted rounded-lg overflow-x-auto text-xs font-mono">
+                  <div className={styles.card}>
+                    <div className={styles.cardHeader}>
+                      <h2 className={styles.cardTitleLg}>Raw Data</h2>
+                      <p className={styles.cardDescription}>Complete snapshot as JSON</p>
+                    </div>
+                    <div className={styles.cardContent}>
+                      <pre className={styles.jsonBlock}>
                         {JSON.stringify(snapshot, null, 2)}
                       </pre>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 </>
               )}
             </>
@@ -498,11 +484,11 @@ export default function AdminSnapshotPage() {
       )}
 
       {!selectedCompanyId && (
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
+        <div className={styles.card}>
+          <div className={styles.emptyState}>
             Select a company above to view its valuation snapshots.
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </div>
   )

@@ -1,0 +1,1212 @@
+/* =============================================================================
+   admin-tools.module.css
+   Shared CSS Module for admin tool pages:
+     - multiple-adjustment/page.tsx
+     - task-viewer/page.tsx
+     - snapshot/page.tsx
+   ============================================================================= */
+
+/* ---------------------------------------------------------------------------
+   Page Layout
+   --------------------------------------------------------------------------- */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pageTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.pageDescription {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Card (replaces shadcn Card / CardHeader / CardContent / CardDescription)
+   --------------------------------------------------------------------------- */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.cardHeader {
+  padding: 1.25rem 1.5rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.cardHeaderCompact {
+  padding: 1rem 1.5rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.cardTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.cardTitleLg {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.cardDescription {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+.cardContent {
+  padding: 1rem 1.5rem 1.5rem;
+}
+
+.cardContentPy {
+  padding: 1rem 1.5rem;
+}
+
+/* ---------------------------------------------------------------------------
+   Loading States
+   --------------------------------------------------------------------------- */
+
+.loadingRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.loadingCenter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 0;
+}
+
+.spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid transparent;
+  border-bottom-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+.spinnerLg {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid transparent;
+  border-bottom-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loadingText {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+/* ---------------------------------------------------------------------------
+   Company Select Dropdown
+   --------------------------------------------------------------------------- */
+
+.companySelect {
+  width: 100%;
+  max-width: 28rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  background: var(--card);
+  color: var(--foreground);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236E6E73' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2rem;
+  cursor: pointer;
+}
+
+.companySelect:focus {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-color: var(--primary);
+}
+
+/* ---------------------------------------------------------------------------
+   Formula Step Blocks (multiple-adjustment page)
+   --------------------------------------------------------------------------- */
+
+.formulaStep {
+  padding: 1rem;
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.formulaStepTitle {
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0 0 0.5rem;
+  font-size: 0.9375rem;
+}
+
+.formulaDisplay {
+  font-family: ui-monospace, monospace;
+  font-size: 1.0625rem;
+  background: var(--card);
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  color: var(--foreground);
+}
+
+.formulaNote {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+  margin: 0.5rem 0 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Data Tables (variable definitions, alpha sensitivity, snapshot history)
+   --------------------------------------------------------------------------- */
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  font-size: 0.875rem;
+  border-collapse: collapse;
+}
+
+.table thead tr {
+  border-bottom: 1px solid var(--border);
+}
+
+.table th {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+  color: var(--foreground);
+  white-space: nowrap;
+}
+
+.table th.thCenter {
+  text-align: center;
+}
+
+.table th.thRight {
+  text-align: right;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid var(--border);
+}
+
+.table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.table td {
+  padding: 0.5rem 0.75rem;
+  color: var(--foreground);
+  vertical-align: middle;
+}
+
+.table td.tdMono {
+  font-family: ui-monospace, monospace;
+  font-weight: 600;
+}
+
+.table td.tdMuted {
+  color: var(--muted-foreground);
+}
+
+.table td.tdCenter {
+  text-align: center;
+}
+
+.table td.tdRight {
+  text-align: right;
+  font-family: ui-monospace, monospace;
+}
+
+/* Highlighted column (default alpha column) */
+.table td.tdHighlight {
+  background: #FEFCE8;
+  font-weight: 500;
+  text-align: center;
+}
+
+.tableNote {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  margin-top: 0.75rem;
+}
+
+/* History table scroll container */
+.historyTableWrapper {
+  max-height: 16rem;
+  overflow-y: auto;
+}
+
+.historyTableHead {
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Row states for history table */
+.historyRow {
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.historyRow:hover {
+  background: var(--muted);
+}
+
+.historyRowSelected {
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+.historyRowSelected:hover {
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+}
+
+.historyDateLink {
+  color: #2563EB;
+  font-size: 0.875rem;
+}
+
+.historyDateLinkSelected {
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.historyCurrentBadge {
+  margin-left: 0.5rem;
+  font-size: 0.6875rem;
+  background: var(--green-light);
+  color: #15803d;
+  padding: 0.125rem 0.375rem;
+  border-radius: 999px;
+  font-weight: 500;
+}
+
+/* ---------------------------------------------------------------------------
+   Metric / Stat Cards (snapshot input variables, current values)
+   --------------------------------------------------------------------------- */
+
+/* 5-column metric grid (input variables) */
+.metricGrid5 {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (min-width: 768px) {
+  .metricGrid5 {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* 3-column metric grid (calculated / result values) */
+.metricGrid3 {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (min-width: 768px) {
+  .metricGrid3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.metricCard {
+  padding: 0.75rem;
+  background: var(--muted);
+  border-radius: var(--radius-sm);
+  text-align: center;
+}
+
+.metricLabel {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  font-weight: 500;
+  margin: 0 0 0.25rem;
+}
+
+.metricValue {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0;
+}
+
+/* Color variants for calculated-value cards */
+.metricCardBlue {
+  padding: 0.75rem;
+  background: #EFF6FF;
+  border-radius: var(--radius-sm);
+  text-align: center;
+}
+
+.metricLabelBlue {
+  font-size: 0.75rem;
+  color: #2563EB;
+  font-weight: 500;
+  margin: 0 0 0.25rem;
+}
+
+.metricValueBlue {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1D4ED8;
+  margin: 0;
+}
+
+.metricCardOrange {
+  padding: 0.75rem;
+  background: #FFF7ED;
+  border-radius: var(--radius-sm);
+  text-align: center;
+}
+
+.metricLabelOrange {
+  font-size: 0.75rem;
+  color: #EA580C;
+  font-weight: 500;
+  margin: 0 0 0.25rem;
+}
+
+.metricValueOrange {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #C2410C;
+  margin: 0;
+}
+
+.metricCardGreen {
+  padding: 0.75rem;
+  background: var(--green-light);
+  border-radius: var(--radius-sm);
+  text-align: center;
+}
+
+.metricLabelGreen {
+  font-size: 0.75rem;
+  color: #16A34A;
+  font-weight: 500;
+  margin: 0 0 0.25rem;
+}
+
+.metricValueGreen {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #15803D;
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Value Summary Bar (task-viewer)
+   --------------------------------------------------------------------------- */
+
+.valueSummary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+  text-align: center;
+}
+
+.valueSummaryItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.valueSummaryAmount {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.valueSummaryAmountGreen {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #16A34A;
+}
+
+.valueSummaryAmountBlue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2563EB;
+}
+
+.valueSummaryLabel {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+/* ---------------------------------------------------------------------------
+   Stat Cards Row (task counts, task-viewer)
+   --------------------------------------------------------------------------- */
+
+.statCardsGrid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (min-width: 768px) {
+  .statCardsGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .statCardsGrid {
+    grid-template-columns: repeat(7, 1fr);
+  }
+}
+
+.statCard {
+  padding: 0.75rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.statCardPending {
+  padding: 0.75rem;
+  background: #F9FAFB;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.statCardInProgress {
+  padding: 0.75rem;
+  background: #EFF6FF;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.statCardCompleted {
+  padding: 0.75rem;
+  background: var(--green-light);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.statCardDeferred {
+  padding: 0.75rem;
+  background: #FEFCE8;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.statCardBlocked {
+  padding: 0.75rem;
+  background: var(--red-light);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.statCardCancelled {
+  padding: 0.75rem;
+  background: #F9FAFB;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.statNumber {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.statNumberPending {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #4B5563;
+}
+
+.statNumberInProgress {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2563EB;
+}
+
+.statNumberCompleted {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #16A34A;
+}
+
+.statNumberDeferred {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #CA8A04;
+}
+
+.statNumberBlocked {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #DC2626;
+}
+
+.statNumberCancelled {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #9CA3AF;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  margin-top: 0.125rem;
+}
+
+/* ---------------------------------------------------------------------------
+   Filters Row (task-viewer)
+   --------------------------------------------------------------------------- */
+
+.filtersRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.filterLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+.filterSelect {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  background: var(--card);
+  color: var(--foreground);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236E6E73' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.625rem center;
+  padding-right: 1.75rem;
+  cursor: pointer;
+}
+
+.filterSelect:focus {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-color: var(--primary);
+}
+
+/* ---------------------------------------------------------------------------
+   Task List (task-viewer)
+   --------------------------------------------------------------------------- */
+
+.taskList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.taskItem {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  overflow: hidden;
+}
+
+.taskItemExpanded {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 0 0 2px var(--primary);
+  overflow: hidden;
+}
+
+.taskItemHover:hover {
+  border-color: #D1D5DB;
+}
+
+.taskSummaryButton {
+  width: 100%;
+  padding: 0.75rem;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: block;
+}
+
+.taskSummaryInner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.taskMeta {
+  flex: 1;
+  min-width: 0;
+}
+
+.taskBadges {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.taskActionType {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.taskTitle {
+  font-weight: 500;
+  margin: 0.25rem 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--foreground);
+}
+
+.taskRight {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.taskImpact {
+  font-weight: 600;
+  color: var(--foreground);
+  font-size: 0.9375rem;
+}
+
+.taskEffort {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  margin-top: 0.125rem;
+}
+
+/* Expanded task details */
+.taskDetails {
+  padding: 0 0.75rem 0.75rem;
+  border-top: 1px solid var(--border);
+  background: var(--muted);
+}
+
+.taskDetailsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+}
+
+@media (min-width: 768px) {
+  .taskDetailsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.taskDetailSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.taskDetailSectionTitle {
+  font-weight: 500;
+  margin: 0 0 0.25rem;
+  color: var(--foreground);
+}
+
+.taskDetailDesc {
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+.taskDetailMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.taskDetailRow {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.taskDetailRowLabel {
+  color: var(--muted-foreground);
+}
+
+.taskDetailRowValue {
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.taskIdRow {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+/* ---------------------------------------------------------------------------
+   Upgrade Path Panel (emerald / green)
+   --------------------------------------------------------------------------- */
+
+.upgradePath {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: #ECFDF5;
+  border: 1px solid #6EE7B7;
+  border-radius: var(--radius-sm);
+}
+
+.upgradePathTitle {
+  font-weight: 500;
+  color: #065F46;
+  margin: 0 0 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9375rem;
+}
+
+.upgradePathIcon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.upgradePathRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.upgradeBox {
+  flex: 1;
+  padding: 0.5rem;
+  background: white;
+  border: 1px solid #A7F3D0;
+  border-radius: var(--radius-sm);
+}
+
+.upgradeBoxTarget {
+  flex: 1;
+  padding: 0.5rem;
+  background: #D1FAE5;
+  border: 2px solid #6EE7B7;
+  border-radius: var(--radius-sm);
+}
+
+.upgradeBoxLabel {
+  font-size: 0.75rem;
+  color: #059669;
+  margin: 0 0 0.25rem;
+}
+
+.upgradeBoxText {
+  font-size: 0.875rem;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.upgradeBoxTextTarget {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #064E3B;
+  margin: 0;
+}
+
+.upgradeBoxScore {
+  font-size: 0.75rem;
+  font-family: ui-monospace, monospace;
+  color: #047857;
+  margin: 0.25rem 0 0;
+}
+
+.upgradeArrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #059669;
+  flex-shrink: 0;
+}
+
+.upgradeArrowLabel {
+  font-size: 0.625rem;
+  color: #059669;
+}
+
+.upgradePathNote {
+  margin: 0.5rem 0 0;
+  font-size: 0.75rem;
+  color: #047857;
+}
+
+/* ---------------------------------------------------------------------------
+   Linked Question Panel (blue)
+   --------------------------------------------------------------------------- */
+
+.linkedQuestion {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  border-radius: var(--radius-sm);
+}
+
+.linkedQuestionTitle {
+  font-weight: 500;
+  color: #1E40AF;
+  margin: 0 0 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9375rem;
+}
+
+.linkedQuestionIcon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.linkedQuestionText {
+  font-size: 0.875rem;
+  color: #1E3A8A;
+  font-weight: 500;
+  margin: 0 0 0.5rem;
+}
+
+.linkedQuestionHelp {
+  font-size: 0.75rem;
+  color: #1D4ED8;
+  font-style: italic;
+  margin: 0 0 0.75rem;
+}
+
+.linkedQuestionOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.linkedQuestionOption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  padding: 0.5rem;
+  border-radius: var(--radius-sm);
+  background: white;
+  border: 1px solid #DBEAFE;
+  color: #4B5563;
+}
+
+.linkedQuestionOptionSelected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  padding: 0.5rem;
+  border-radius: var(--radius-sm);
+  background: #BFDBFE;
+  border: 2px solid #93C5FD;
+  font-weight: 500;
+  color: #1E3A8A;
+}
+
+.linkedQuestionUserTag {
+  margin-left: 0.5rem;
+  color: #2563EB;
+}
+
+.scoreGreen {
+  font-family: ui-monospace, monospace;
+  color: #16A34A;
+}
+
+.scoreYellow {
+  font-family: ui-monospace, monospace;
+  color: #CA8A04;
+}
+
+.scoreRed {
+  font-family: ui-monospace, monospace;
+  color: #DC2626;
+}
+
+.linkedQuestionNote {
+  margin: 0.5rem 0 0;
+  font-size: 0.75rem;
+  color: #1D4ED8;
+}
+
+/* ---------------------------------------------------------------------------
+   Calculation Breakdown Block (mono code-like)
+   --------------------------------------------------------------------------- */
+
+.calcBreakdown {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--muted);
+  border-radius: var(--radius-sm);
+  font-family: ui-monospace, monospace;
+  font-size: 0.8125rem;
+  color: var(--foreground);
+  line-height: 1.6;
+}
+
+.calcComment {
+  color: var(--muted-foreground);
+  margin: 0 0 0.5rem;
+}
+
+.calcLine {
+  margin: 0;
+}
+
+.calcLineMt {
+  margin: 0.25rem 0 0;
+}
+
+.calcLineMtLg {
+  margin: 0.75rem 0 0;
+}
+
+.calcValueBlue {
+  color: #2563EB;
+  font-weight: 600;
+}
+
+.calcValueOrange {
+  color: #EA580C;
+  font-weight: 600;
+}
+
+.calcValueGreen {
+  color: #16A34A;
+  font-weight: 600;
+}
+
+.calcValueBold {
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+/* ---------------------------------------------------------------------------
+   Variable Definitions Section Header
+   --------------------------------------------------------------------------- */
+
+.sectionSubheader {
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0 0 0.5rem;
+  font-size: 0.9375rem;
+}
+
+.sectionSubheaderSm {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted-foreground);
+  margin: 0 0 0.75rem;
+}
+
+/* ---------------------------------------------------------------------------
+   Alert / Banner Blocks
+   --------------------------------------------------------------------------- */
+
+.bannerError {
+  padding: 1rem;
+  background: var(--red-light);
+  border: 1px solid #FECACA;
+  border-radius: var(--radius-sm);
+  color: #B91C1C;
+}
+
+.bannerWarning {
+  padding: 1rem;
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  border-radius: var(--radius-sm);
+}
+
+.bannerWarningTitle {
+  font-weight: 500;
+  color: #92400E;
+  margin: 0 0 0.25rem;
+}
+
+.bannerWarningText {
+  font-size: 0.875rem;
+  color: #B45309;
+  margin: 0;
+}
+
+.bannerWarningLink {
+  color: #78350F;
+  text-decoration: underline;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* ---------------------------------------------------------------------------
+   Empty State
+   --------------------------------------------------------------------------- */
+
+.emptyState {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--muted-foreground);
+}
+
+.emptyStateText {
+  padding: 2rem;
+  text-align: center;
+  color: var(--muted-foreground);
+}
+
+/* ---------------------------------------------------------------------------
+   DataRow (snapshot page)
+   --------------------------------------------------------------------------- */
+
+.dataRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.dataRow:last-child {
+  border-bottom: none;
+}
+
+.dataRowLabel {
+  font-weight: 500;
+  color: var(--foreground);
+  font-size: 0.9375rem;
+}
+
+.dataRowDesc {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  margin: 0.125rem 0 0;
+}
+
+.dataRowValue {
+  font-family: ui-monospace, monospace;
+  font-size: 0.875rem;
+  color: var(--foreground);
+  text-align: right;
+  flex-shrink: 0;
+  margin-left: 1rem;
+}
+
+/* ---------------------------------------------------------------------------
+   Category Breakdown Divider (snapshot page)
+   --------------------------------------------------------------------------- */
+
+.categoryBreakdown {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+/* ---------------------------------------------------------------------------
+   Raw JSON Block (snapshot page)
+   --------------------------------------------------------------------------- */
+
+.jsonBlock {
+  padding: 1rem;
+  background: var(--muted);
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  font-size: 0.75rem;
+  font-family: ui-monospace, monospace;
+  color: var(--foreground);
+  white-space: pre;
+}
+
+/* ---------------------------------------------------------------------------
+   Utilities
+   --------------------------------------------------------------------------- */
+
+.spacer4 {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.spacer2 {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}

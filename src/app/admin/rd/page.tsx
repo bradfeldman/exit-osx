@@ -1,6 +1,6 @@
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Camera, ListTodo, Code, Terminal, Database, Bug, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import styles from '@/components/admin/admin-misc.module.css'
 
 const tools = [
   {
@@ -42,47 +42,45 @@ const comingSoon = [
 
 export default function RDPage() {
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold">R&D</h1>
-        <p className="text-muted-foreground">
+    <div className={styles.page}>
+      <div className={styles.pageHeader}>
+        <h1 className={styles.pageTitle}>R&D</h1>
+        <p className={styles.pageSubtitle}>
           Developer tools, debugging utilities, and system diagnostics
         </p>
       </div>
 
       {/* Warning Banner */}
-      <Card className="bg-gradient-to-r from-red-50 to-orange-50 border-red-200">
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-red-500 rounded-lg">
-              <Code className="h-6 w-6 text-white" />
+      <div className={`${styles.bannerCard} ${styles.bannerCardRed}`}>
+        <div className={styles.bannerHeader}>
+          <div className={styles.bannerHeaderInner}>
+            <div className={`${styles.bannerIconWrap} ${styles.bannerIconRed}`}>
+              <Code className="h-6 w-6" />
             </div>
             <div>
-              <CardTitle>Developer Tools</CardTitle>
-              <CardDescription>
+              <p className={styles.bannerTitle}>Developer Tools</p>
+              <p className={styles.bannerDescription}>
                 These tools are intended for development and debugging purposes. Use with caution in production.
-              </CardDescription>
+              </p>
             </div>
           </div>
-        </CardHeader>
-      </Card>
+        </div>
+      </div>
 
       {/* Active Tools */}
       <div>
-        <h2 className="text-lg font-semibold mb-4">Available Tools</h2>
-        <div className="grid gap-4 md:grid-cols-2">
+        <h2 className={styles.sectionHeading}>Available Tools</h2>
+        <div className={`${styles.toolsGrid} ${styles.toolsGrid2}`}>
           {tools.map((tool) => (
-            <Link key={tool.title} href={tool.href}>
-              <Card className="h-full transition-shadow hover:shadow-lg">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <tool.icon className="h-8 w-8 text-red-500" />
-                    <ArrowRight className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <CardTitle className="mt-4">{tool.title}</CardTitle>
-                  <CardDescription>{tool.description}</CardDescription>
-                </CardHeader>
-              </Card>
+            <Link key={tool.title} href={tool.href} className={styles.toolCard}>
+              <div className={styles.toolCardHeader}>
+                <div className={styles.toolCardIconRow}>
+                  <tool.icon className={`h-8 w-8 ${styles.toolCardIconRed}`} />
+                  <ArrowRight className={`h-5 w-5 ${styles.toolCardIconGray}`} />
+                </div>
+                <p className={styles.toolCardTitle}>{tool.title}</p>
+                <p className={styles.toolCardDescription}>{tool.description}</p>
+              </div>
             </Link>
           ))}
         </div>
@@ -90,16 +88,16 @@ export default function RDPage() {
 
       {/* Coming Soon */}
       <div>
-        <h2 className="text-lg font-semibold mb-4">Coming Soon</h2>
-        <div className="grid gap-4 md:grid-cols-2">
+        <h2 className={styles.sectionHeading}>Coming Soon</h2>
+        <div className={`${styles.toolsGrid} ${styles.toolsGrid2}`}>
           {comingSoon.map((tool) => (
-            <Card key={tool.title} className="opacity-60">
-              <CardHeader>
-                <tool.icon className="h-8 w-8 text-gray-400 mb-2" />
-                <CardTitle className="text-base">{tool.title}</CardTitle>
-                <CardDescription>{tool.description}</CardDescription>
-              </CardHeader>
-            </Card>
+            <div key={tool.title} className={`${styles.toolCard} ${styles.toolCardDimmed}`}>
+              <div className={styles.toolCardHeader}>
+                <tool.icon className={`h-8 w-8 ${styles.toolCardIconGray}`} style={{ marginBottom: 8 }} />
+                <p className={styles.toolCardTitle}>{tool.title}</p>
+                <p className={styles.toolCardDescription}>{tool.description}</p>
+              </div>
+            </div>
           ))}
         </div>
       </div>

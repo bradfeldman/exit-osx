@@ -4,6 +4,7 @@ import { ReactNode } from 'react'
 import { AdminSidebar } from './AdminNav'
 import { AdminHeader } from './AdminHeader'
 import { ImpersonationBanner } from './ImpersonationBanner'
+import styles from '@/components/admin/admin.module.css'
 
 interface AdminLayoutProps {
   children: ReactNode
@@ -20,9 +21,9 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children, user, impersonation }: AdminLayoutProps) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className={styles.adminLayout}>
       <AdminSidebar />
-      <div className="lg:pl-64">
+      <div className={styles.adminContent}>
         {impersonation?.isImpersonating && (
           <ImpersonationBanner
             targetEmail={impersonation.targetEmail}
@@ -30,7 +31,7 @@ export function AdminLayout({ children, user, impersonation }: AdminLayoutProps)
           />
         )}
         <AdminHeader user={user} />
-        <main className="p-6">
+        <main className={styles.adminMain}>
           {children}
         </main>
       </div>

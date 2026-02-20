@@ -1,6 +1,6 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { prisma } from '@/lib/prisma'
 import { ProductActivityFeed } from '@/components/admin/analytics/ProductActivityFeed'
+import styles from '@/components/admin/admin-misc.module.css'
 
 export default async function AnalyticsActivityPage() {
   const [events, total] = await Promise.all([
@@ -20,22 +20,22 @@ export default async function AnalyticsActivityPage() {
   }))
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Live Activity</h1>
-        <p className="text-muted-foreground">
-          Real-time feed of user product events
-        </p>
+    <div className={styles.page}>
+      <div className={styles.pageHeader}>
+        <h1 className={styles.pageTitle}>Live Activity</h1>
+        <p className={styles.pageSubtitle}>Real-time feed of user product events</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Product Events</CardTitle>
-          <CardDescription>
-            What users are doing, when, and on what device
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <div className={styles.cardHeaderInner}>
+            <p className={styles.cardTitle}>Product Events</p>
+            <p className={styles.cardDescription}>
+              What users are doing, when, and on what device
+            </p>
+          </div>
+        </div>
+        <div className={styles.cardContent}>
           <ProductActivityFeed
             initialEvents={serializedEvents}
             initialPagination={{
@@ -45,8 +45,8 @@ export default async function AnalyticsActivityPage() {
               totalPages: Math.ceil(total / 50),
             }}
           />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }
