@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { formatIcbName } from '@/lib/utils/format-icb'
 import { formatCurrency } from '@/lib/utils/currency'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import styles from '@/components/advisor/advisor.module.css'
 import {
   Building2,
   TrendingUp,
@@ -119,18 +119,18 @@ export default function AdvisorDashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className={styles.loadingCenter}>
+        <div className={styles.spinner} />
       </div>
     )
   }
 
   if (!data) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">Unable to load advisor data</h2>
-          <p className="text-muted-foreground">Please try again later</p>
+      <div className={styles.loadingCenter}>
+        <div className={styles.loadingCenterError}>
+          <h2>Unable to load advisor data</h2>
+          <p>Please try again later</p>
         </div>
       </div>
     )
@@ -141,24 +141,24 @@ export default function AdvisorDashboardPage() {
     : User
 
   return (
-    <div className="min-h-screen">
+    <div>
       {/* Header */}
-      <header className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <RoleIcon className="h-5 w-5 text-primary" />
+      <header className={styles.header}>
+        <div className={styles.headerInner}>
+          <div className={styles.identityBlock}>
+            <div className={styles.avatarCircle}>
+              <RoleIcon style={{ width: 20, height: 20 }} />
             </div>
             <div>
-              <h1 className="font-semibold text-lg">
+              <p className={styles.identityName}>
                 {data.user.name || 'Advisor Portal'}
-              </h1>
-              <p className="text-sm text-muted-foreground">
+              </p>
+              <p className={styles.identitySubtitle}>
                 {data.advisorProfile?.firmName || data.advisorProfile?.specialty || 'External Advisor'}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className={styles.headerRight}>
             <Link href="/advisor/profile">
               <Button variant="outline" size="sm">
                 <Settings className="h-4 w-4 mr-2" />
@@ -175,64 +175,58 @@ export default function AdvisorDashboardPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className={styles.main}>
         {/* Summary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                  <Users className="h-5 w-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Clients</p>
-                  <p className="text-2xl font-bold">{data.clientCount}</p>
-                </div>
+        <div className={styles.statsGrid}>
+          <div className={styles.statCard}>
+            <div className={styles.statRow}>
+              <div className={`${styles.statIcon} ${styles.statIconBlue}`}>
+                <Users style={{ width: 20, height: 20 }} />
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <p className={styles.statLabel}>Total Clients</p>
+                <p className={styles.statValue}>{data.clientCount}</p>
+              </div>
+            </div>
+          </div>
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                  <Building2 className="h-5 w-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Combined Valuation</p>
-                  <p className="text-2xl font-bold">{formatCurrency(totalValuation)}</p>
-                </div>
+          <div className={styles.statCard}>
+            <div className={styles.statRow}>
+              <div className={`${styles.statIcon} ${styles.statIconGreen}`}>
+                <Building2 style={{ width: 20, height: 20 }} />
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <p className={styles.statLabel}>Combined Valuation</p>
+                <p className={styles.statValue}>{formatCurrency(totalValuation)}</p>
+              </div>
+            </div>
+          </div>
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center">
-                  <TrendingUp className="h-5 w-5 text-amber-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Avg. Buyer Readiness</p>
-                  <p className="text-2xl font-bold">{avgBriScore.toFixed(0)}</p>
-                </div>
+          <div className={styles.statCard}>
+            <div className={styles.statRow}>
+              <div className={`${styles.statIcon} ${styles.statIconAmber}`}>
+                <TrendingUp style={{ width: 20, height: 20 }} />
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <p className={styles.statLabel}>Avg. Buyer Readiness</p>
+                <p className={styles.statValue}>{avgBriScore.toFixed(0)}</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Client List */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <div className={styles.cardHeaderRow}>
               <div>
-                <CardTitle>Your Clients</CardTitle>
-                <CardDescription>
+                <p className={styles.cardTitle}>Your Clients</p>
+                <p className={styles.cardDescription}>
                   Access your client companies and their exit planning data
-                </CardDescription>
+                </p>
               </div>
-              <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <div className={styles.searchWrapper}>
+                <Search className={styles.searchIcon} />
                 <Input
                   placeholder="Search clients..."
                   value={searchQuery}
@@ -241,71 +235,69 @@ export default function AdvisorDashboardPage() {
                 />
               </div>
             </div>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div className={styles.cardContent}>
             {filteredClients.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
+              <div className={styles.emptyState}>
                 {searchQuery
                   ? 'No clients match your search'
                   : 'No clients yet. You will see your clients here when organizations add you as an advisor.'
                 }
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className={styles.clientGrid}>
                 {filteredClients.map((client) => (
                   <Link
                     key={client.companyId}
                     href={`/advisor/${client.companyId}`}
-                    className="block"
+                    className={styles.clientCard}
                   >
-                    <Card className="hover:border-primary transition-colors cursor-pointer h-full">
-                      <CardContent className="pt-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <div>
-                            <h3 className="font-semibold">{client.companyName}</h3>
-                            <p className="text-sm text-muted-foreground">
-                              {client.workspaceName}
-                            </p>
-                          </div>
-                          {client.roleTemplateSlug && (
-                            <Badge variant="secondary" className="text-xs">
-                              {roleLabels[client.roleTemplateSlug] || client.roleTemplateSlug}
-                            </Badge>
-                          )}
-                        </div>
-
-                        {client.company?.icbSector && (
-                          <p className="text-xs text-muted-foreground mb-3">
-                            {formatIcbName(client.company.icbSector)}
+                    <div className={styles.clientCardInner}>
+                      <div className={styles.clientCardTop}>
+                        <div>
+                          <p className={styles.clientCardName}>{client.companyName}</p>
+                          <p className={styles.clientCardWorkspace}>
+                            {client.workspaceName}
                           </p>
-                        )}
-
-                        <div className="grid grid-cols-2 gap-4 pt-3 border-t">
-                          <div>
-                            <p className="text-xs text-muted-foreground">Valuation</p>
-                            <p className="font-medium">
-                              {client.valuation
-                                ? formatCurrency(client.valuation.currentValue)
-                                : 'N/A'}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-muted-foreground">Buyer Readiness</p>
-                            <p className="font-medium">
-                              {client.valuation
-                                ? client.valuation.briScore.toFixed(0)
-                                : 'N/A'}
-                            </p>
-                          </div>
                         </div>
-                      </CardContent>
-                    </Card>
+                        {client.roleTemplateSlug && (
+                          <Badge variant="secondary" className="text-xs">
+                            {roleLabels[client.roleTemplateSlug] || client.roleTemplateSlug}
+                          </Badge>
+                        )}
+                      </div>
+
+                      {client.company?.icbSector && (
+                        <p className={styles.clientCardSector}>
+                          {formatIcbName(client.company.icbSector)}
+                        </p>
+                      )}
+
+                      <div className={styles.clientCardStats}>
+                        <div>
+                          <p className={styles.clientStatLabel}>Valuation</p>
+                          <p className={styles.clientStatValue}>
+                            {client.valuation
+                              ? formatCurrency(client.valuation.currentValue)
+                              : 'N/A'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className={styles.clientStatLabel}>Buyer Readiness</p>
+                          <p className={styles.clientStatValue}>
+                            {client.valuation
+                              ? client.valuation.briScore.toFixed(0)
+                              : 'N/A'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </Link>
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </main>
     </div>
   )

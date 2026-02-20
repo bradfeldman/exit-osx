@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { isExternalAdvisor } from '@/lib/auth/check-granular-permission'
+import styles from '@/components/advisor/advisor.module.css'
 
 export default async function AdvisorLayout({
   children,
@@ -33,7 +34,7 @@ export default async function AdvisorLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={styles.shell}>
       {children}
     </div>
   )

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { IndustryListInline } from '@/components/company/IndustryListInline'
 import { formatIcbName } from '@/lib/utils/format-icb'
 import type { ClassificationResult } from '@/lib/ai/business-classifier'
+import styles from '@/components/onboarding/onboarding.module.css'
 
 // ─── Types ──────────────────────────────────────────────────────────────
 
@@ -148,29 +149,29 @@ export function BusinessDescriptionStep({
     return 'Low confidence'
   }
 
-  const confidenceColor = (confidence: number): string => {
-    if (confidence >= 0.85) return 'text-emerald-600'
-    if (confidence >= 0.6) return 'text-amber-600'
-    return 'text-red-500'
+  const confidenceClass = (confidence: number): string => {
+    if (confidence >= 0.85) return styles.bizDescConfidenceHigh
+    if (confidence >= 0.6) return styles.bizDescConfidenceMed
+    return styles.bizDescConfidenceLow
   }
 
   const canClassify = businessDescription.trim().length >= 10 && !isClassifying
 
   return (
-    <div className="space-y-6">
+    <div className={styles.bizDescContainer}>
       {/* Header */}
-      <div className="text-center mb-8">
+      <div className={styles.bizDescHeader}>
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4"
+          className={styles.bizDescIconWrap}
         >
-          <Building2 className="w-7 h-7 text-primary" />
+          <Building2 className={styles.bizDescIcon} />
         </motion.div>
-        <h2 className="text-xl font-bold text-foreground font-display">
+        <h2 className={styles.bizDescTitle}>
           Tell us about {companyName || 'your business'}
         </h2>
-        <p className="text-muted-foreground mt-2">
+        <p className={styles.bizDescSubtitle}>
           Describe what your business does. We will use AI to find the right industry classification
           for accurate valuation.
         </p>
@@ -178,21 +179,20 @@ export function BusinessDescriptionStep({
 
       {/* Business Description Input */}
       <motion.div
-        className="space-y-3"
+        className={styles.bizDescFieldGroup}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.1 }}
       >
-        <label htmlFor="business-description" className="text-sm font-semibold text-foreground">
+        <label htmlFor="business-description" className={styles.bizDescLabel}>
           What does your business do?
         </label>
-        <div className="relative">
+        <div className={styles.bizDescTextareaWrap}>
           <textarea
             id="business-description"
             value={businessDescription}
             onChange={(e) => {
               onDescriptionChange(e.target.value.slice(0, 500))
-              // Clear previous classification when description changes
               if (classificationResult) {
                 setClassificationResult(null)
               }
@@ -206,17 +206,17 @@ export function BusinessDescriptionStep({
             placeholder="e.g., We manufacture and sell custom dental mouthguards to help people stop grinding their teeth. We have 12 employees and sell through dental offices nationwide."
             rows={4}
             maxLength={500}
-            className="w-full px-4 py-3 border-2 border-border rounded-xl focus:border-primary focus:ring-0 outline-none transition-all text-sm resize-none placeholder:text-muted-foreground/40"
+            className={styles.bizDescTextarea}
             disabled={isClassifying}
           />
-          <div className="absolute bottom-3 right-3 text-xs text-muted-foreground">
+          <div className={styles.bizDescCharCount}>
             {businessDescription.length}/500
           </div>
         </div>
 
         {/* Action row */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className={styles.bizDescActionRow}>
+          <div className={styles.bizDescActionLeft}>
             <Button
               type="button"
               size="sm"
@@ -227,7 +227,7 @@ export function BusinessDescriptionStep({
               {isClassifying ? (
                 <>
                   <motion.div
-                    className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                    className={styles.bizDescSpinnerRing}
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                   />
@@ -243,7 +243,7 @@ export function BusinessDescriptionStep({
             <button
               type="button"
               onClick={() => setShowExamples(!showExamples)}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className={styles.bizDescExamplesToggle}
             >
               <Lightbulb className="w-3.5 h-3.5" />
               {showExamples ? 'Hide examples' : 'Examples'}
@@ -252,9 +252,9 @@ export function BusinessDescriptionStep({
           <button
             type="button"
             onClick={() => setShowIndustryList(!showIndustryList)}
-            className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
+            className={styles.bizDescBrowseBtn}
           >
-            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showIndustryList ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`${styles.bizDescChevron}${showIndustryList ? ` ${styles.bizDescChevronOpen}` : ''}`} />
             Browse industries
           </button>
         </div>
@@ -267,12 +267,12 @@ export function BusinessDescriptionStep({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="space-y-2 overflow-hidden"
+            className={styles.bizDescExamples}
           >
-            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+            <p className={styles.bizDescExamplesLabel}>
               Example descriptions:
             </p>
-            <div className="space-y-2">
+            <div className={styles.bizDescExampleList}>
               {EXAMPLES.map((example, i) => (
                 <button
                   key={i}
@@ -281,7 +281,7 @@ export function BusinessDescriptionStep({
                     onDescriptionChange(example)
                     setClassificationResult(null)
                   }}
-                  className="w-full text-left p-3 bg-muted/50 hover:bg-muted rounded-lg text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  className={styles.bizDescExampleBtn}
                 >
                   &ldquo;{example}&rdquo;
                 </button>
@@ -307,7 +307,7 @@ export function BusinessDescriptionStep({
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-sm text-destructive"
+          className={styles.bizDescError}
         >
           {classificationError}
         </motion.div>
@@ -320,32 +320,32 @@ export function BusinessDescriptionStep({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="space-y-3"
+            className={styles.bizDescFieldGroup}
           >
             {/* Primary classification */}
-            <div className="p-4 bg-gradient-to-br from-primary/10 via-primary/5 to-amber-500/5 rounded-xl border border-primary/20">
-              <div className="flex items-start justify-between gap-3 mb-3">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-medium text-primary uppercase tracking-wide">
+            <div className={styles.bizDescResultPrimary}>
+              <div className={styles.bizDescResultHeader}>
+                <div className={styles.bizDescResultMeta}>
+                  <div className={styles.bizDescResultBadgeRow}>
+                    <span className={styles.bizDescResultLabel}>
                       Recommended Classification
                     </span>
                     {classificationResult.source === 'ai' && (
-                      <span className="text-[10px] px-1.5 py-0.5 bg-primary/10 text-primary rounded-full">
+                      <span className={styles.bizDescAiBadge}>
                         AI
                       </span>
                     )}
                   </div>
-                  <p className="text-base font-bold text-foreground">
+                  <p className={styles.bizDescResultName}>
                     {classificationResult.primaryIndustry.name}
                   </p>
-                  <p className={`text-xs mt-0.5 ${confidenceColor(classificationResult.primaryIndustry.confidence)}`}>
+                  <p className={confidenceClass(classificationResult.primaryIndustry.confidence)}>
                     {confidenceLabel(classificationResult.primaryIndustry.confidence)}
                     {' -- '}
                     {Math.round(classificationResult.primaryIndustry.confidence * 100)}%
                   </p>
                 </div>
-                <div className="flex gap-1.5 flex-shrink-0">
+                <div className={styles.bizDescResultActions}>
                   <Button
                     type="button"
                     size="sm"
@@ -368,23 +368,23 @@ export function BusinessDescriptionStep({
               </div>
 
               {/* Explanation */}
-              <p className="text-xs text-muted-foreground leading-relaxed">
+              <p className={styles.bizDescResultExplanation}>
                 {classificationResult.explanation}
               </p>
 
               {/* Multiple range hint */}
               {classificationResult.suggestedMultipleRange && (
-                <div className="mt-3 pt-3 border-t border-border/50 flex gap-4 text-xs text-muted-foreground">
+                <div className={styles.bizDescMultipleHint}>
                   <span>
                     EBITDA Multiple:{' '}
-                    <span className="font-medium text-foreground">
+                    <span className={styles.bizDescMultipleValue}>
                       {classificationResult.suggestedMultipleRange.ebitda.low}x -{' '}
                       {classificationResult.suggestedMultipleRange.ebitda.high}x
                     </span>
                   </span>
                   <span>
                     Revenue Multiple:{' '}
-                    <span className="font-medium text-foreground">
+                    <span className={styles.bizDescMultipleValue}>
                       {classificationResult.suggestedMultipleRange.revenue.low}x -{' '}
                       {classificationResult.suggestedMultipleRange.revenue.high}x
                     </span>
@@ -395,14 +395,14 @@ export function BusinessDescriptionStep({
 
             {/* Secondary classification (optional) */}
             {classificationResult.secondaryIndustry && (
-              <div className="p-3 bg-muted/50 rounded-xl border border-border">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-xs text-muted-foreground">Also considered:</span>
-                    <p className="text-sm font-medium text-foreground">
+              <div className={styles.bizDescResultSecondary}>
+                <div className={styles.bizDescResultSecondaryInner}>
+                  <div className={styles.bizDescResultSecondaryMeta}>
+                    <span className={styles.bizDescResultSecondaryHint}>Also considered:</span>
+                    <p className={styles.bizDescResultSecondaryName}>
                       {classificationResult.secondaryIndustry.name}
                     </p>
-                    <p className={`text-xs ${confidenceColor(classificationResult.secondaryIndustry.confidence)}`}>
+                    <p className={confidenceClass(classificationResult.secondaryIndustry.confidence)}>
                       {Math.round(classificationResult.secondaryIndustry.confidence * 100)}% confidence
                     </p>
                   </div>
@@ -427,31 +427,31 @@ export function BusinessDescriptionStep({
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-4 bg-gradient-to-br from-primary/15 via-primary/10 to-amber-500/5 rounded-xl border border-primary/30"
+          className={styles.bizDescConfirmedIndustry}
         >
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-amber-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-md shadow-primary/20">
+          <div className={styles.bizDescConfirmedInner}>
+            <div className={styles.bizDescConfirmedIconWrap}>
               <Check className="w-5 h-5 text-white" />
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-bold text-foreground truncate">
+            <div className={styles.bizDescConfirmedContent}>
+              <p className={styles.bizDescConfirmedName}>
                 {formatIcbName(currentIndustry.icbSubSector)}
               </p>
-              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+              <p className={styles.bizDescConfirmedPath}>
                 <span>{formatIcbName(currentIndustry.icbIndustry)}</span>
-                <span className="text-primary">&gt;</span>
+                <span className={styles.bizDescConfirmedPathArrow}>&gt;</span>
                 <span>{formatIcbName(currentIndustry.icbSuperSector)}</span>
-                <span className="text-primary">&gt;</span>
+                <span className={styles.bizDescConfirmedPathArrow}>&gt;</span>
                 <span>{formatIcbName(currentIndustry.icbSector)}</span>
               </p>
             </div>
             <button
               type="button"
               onClick={handleClearIndustry}
-              className="p-1.5 hover:bg-red-100 rounded-full transition-colors group flex-shrink-0"
+              className={styles.bizDescClearBtn}
               title="Change industry"
             >
-              <X className="w-4 h-4 text-muted-foreground group-hover:text-red-600" />
+              <X className={styles.bizDescClearIcon} />
             </button>
           </div>
         </motion.div>
@@ -462,11 +462,11 @@ export function BusinessDescriptionStep({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.3 }}
-        className="flex items-start gap-4 p-4 bg-muted/50 rounded-xl border border-border/50"
+        className={styles.bizDescInfoBox}
       >
-        <div className="w-8 h-8 bg-muted-foreground/10 rounded-lg flex items-center justify-center flex-shrink-0">
+        <div className={styles.bizDescInfoIconWrap}>
           <svg
-            className="w-4 h-4 text-muted-foreground"
+            className={styles.bizDescInfoIcon}
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth={2}
@@ -480,8 +480,8 @@ export function BusinessDescriptionStep({
           </svg>
         </div>
         <div>
-          <h3 className="text-sm font-semibold text-foreground">Why industry matters</h3>
-          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+          <h3 className={styles.bizDescInfoTitle}>Why industry matters</h3>
+          <p className={styles.bizDescInfoBody}>
             Your industry classification determines the valuation multiples used to estimate your
             company&apos;s market value. A more accurate classification means a more accurate
             valuation.

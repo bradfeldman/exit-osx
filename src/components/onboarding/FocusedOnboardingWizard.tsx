@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from '@/lib/motion'
 import confetti from 'canvas-confetti'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { BasicInfoStep } from '@/components/company/steps/BasicInfoStep'
 import { RevenueStep } from '@/components/company/steps/RevenueStep'
 import { useCompany } from '@/contexts/CompanyContext'
 import { analytics } from '@/lib/analytics'
 import { createClient } from '@/lib/supabase/client'
+import styles from '@/components/onboarding/onboarding.module.css'
 
 interface Adjustment {
   description: string
@@ -395,23 +395,23 @@ export function FocusedOnboardingWizard({ userName: _userName }: FocusedOnboardi
   // Celebration screen - THE BIG REVEAL (Dan Martell + Alex Hormozi style)
   if (showCelebration) {
     return (
-      <div className="fixed inset-0 z-50 bg-background overflow-auto">
+      <div className={styles.obCelebration}>
         {/* Dark gradient background for drama */}
-        <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-zinc-950 to-black" />
+        <div className={styles.obCelebrationBg} aria-hidden="true" />
 
         {/* Subtle gold accent glow */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent pointer-events-none" />
+        <div className={styles.obCelebrationGlow} aria-hidden="true" />
 
-        <div className="relative min-h-screen flex flex-col items-center justify-center px-6 py-12">
+        <div className={styles.obCelebrationBody}>
           <motion.div
-            className="text-center max-w-2xl"
+            className={styles.obCelebrationContent}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
           >
             {/* Small label */}
             <motion.p
-              className="text-sm uppercase tracking-widest text-primary/80 mb-4"
+              className={styles.obCelebrationLabel}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.5 }}
@@ -421,7 +421,7 @@ export function FocusedOnboardingWizard({ userName: _userName }: FocusedOnboardi
 
             {/* The headline */}
             <motion.h2
-              className="text-xl md:text-2xl text-zinc-400 mb-6"
+              className={styles.obCelebrationSubheading}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.5 }}
@@ -432,23 +432,23 @@ export function FocusedOnboardingWizard({ userName: _userName }: FocusedOnboardi
             {/* THE BIG NUMBER */}
             {estimatedValuation ? (
               <motion.div
-                className="mb-6"
+                className={styles.obCelebrationNumber}
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.8, duration: 0.8, type: "spring", stiffness: 100 }}
               >
-                <span className="text-6xl md:text-8xl lg:text-9xl font-bold bg-gradient-to-r from-primary via-amber-400 to-primary bg-clip-text text-transparent font-display">
+                <span className={styles.obCelebrationValueText}>
                   {formatValuation(estimatedValuation)}
                 </span>
               </motion.div>
             ) : (
               <motion.div
-                className="mb-6"
+                className={styles.obCelebrationNumber}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.8 }}
               >
-                <span className="text-4xl md:text-5xl font-bold text-white">
+                <span className={styles.obCelebrationPlaceholder}>
                   Calculating...
                 </span>
               </motion.div>
@@ -456,25 +456,27 @@ export function FocusedOnboardingWizard({ userName: _userName }: FocusedOnboardi
 
             {/* Value anchor line */}
             <motion.p
-              className="text-lg md:text-xl text-zinc-300 mb-8 max-w-md mx-auto"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.2, duration: 0.5 }}
             >
-              But your number could be <span className="text-emerald-400 font-semibold">20-40% higher</span> with the right preparation.
+              But your number could be{' '}
+              <span className={styles.obCelebrationHighlight}>20-40% higher</span>{' '}
+              with the right preparation.
             </motion.p>
 
             {/* Curiosity hook */}
             <motion.div
-              className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-6 mb-10 max-w-lg mx-auto"
+              className={styles.obCelebrationHook}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.5, duration: 0.5 }}
             >
-              <p className="text-zinc-300 text-base">
-                <span className="text-white font-semibold">{formData.name}</span> has hidden value that buyers will discount — unless you fix it first.
+              <p className={styles.obCelebrationHookText}>
+                <span className={styles.obCelebrationCompanyName}>{formData.name}</span>{' '}
+                has hidden value that buyers will discount — unless you fix it first.
               </p>
-              <p className="text-primary text-sm mt-2 font-medium">
+              <p className={styles.obCelebrationHookAccent}>
                 Your Exit Readiness Score reveals exactly where.
               </p>
             </motion.div>
@@ -499,6 +501,7 @@ export function FocusedOnboardingWizard({ userName: _userName }: FocusedOnboardi
                   stroke="currentColor"
                   animate={{ x: [0, 5, 0] }}
                   transition={{ duration: 1.5, repeat: Infinity, delay: 2.5 }}
+                  aria-hidden="true"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
                 </motion.svg>
@@ -512,42 +515,65 @@ export function FocusedOnboardingWizard({ userName: _userName }: FocusedOnboardi
 
   // Main wizard
   return (
-    <div className="fixed inset-0 z-50 bg-background overflow-auto">
+    <div className={styles.obWizard}>
       {/* Subtle gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-emerald-500/5 pointer-events-none" />
+      <div className={styles.obWizardBg} aria-hidden="true" />
 
-      <div className="relative min-h-screen flex flex-col items-center px-6 py-8 md:py-12">
+      <div className={styles.obWizardBody}>
         {/* Unified Progress Indicator */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className={styles.obStepIndicator}
         >
-          <div className="flex items-center gap-2 md:gap-3 text-sm">
+          <div className={styles.obStepIndicatorInner} role="list" aria-label="Onboarding steps">
             {steps.map((step, idx) => (
-              <div key={step.id} className="flex items-center gap-2 md:gap-3">
-                <div className="flex items-center gap-2">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm transition-all ${
-                    currentStep > step.id
-                      ? 'bg-emerald-500 text-white'
-                      : currentStep === step.id
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted text-muted-foreground'
-                  }`}>
+              <div key={step.id} className={styles.obStepItem} role="listitem">
+                <div className={styles.obStepItemInner}>
+                  <div
+                    className={
+                      currentStep > step.id
+                        ? `${styles.obStepBubble} ${styles.obStepBubbleComplete}`
+                        : currentStep === step.id
+                          ? `${styles.obStepBubble} ${styles.obStepBubbleActive}`
+                          : styles.obStepBubble
+                    }
+                    aria-current={currentStep === step.id ? 'step' : undefined}
+                  >
                     {currentStep > step.id ? (
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
+                      <svg
+                        className={styles.obStepBubbleIcon}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={3}
+                        stroke="currentColor"
+                        aria-hidden="true"
+                      >
                         <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                       </svg>
                     ) : (
                       step.id
                     )}
                   </div>
-                  <span className={`hidden md:inline ${currentStep === step.id ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
+                  <span
+                    className={
+                      currentStep === step.id
+                        ? `${styles.obStepLabel} ${styles.obStepLabelActive}`
+                        : styles.obStepLabel
+                    }
+                  >
                     {step.title}
                   </span>
                 </div>
                 {idx < steps.length - 1 && (
-                  <div className={`w-6 md:w-8 h-px ${currentStep > step.id ? 'bg-emerald-500' : 'bg-border'}`} />
+                  <div
+                    className={
+                      currentStep > step.id
+                        ? `${styles.obStepConnector} ${styles.obStepConnectorComplete}`
+                        : styles.obStepConnector
+                    }
+                    aria-hidden="true"
+                  />
                 )}
               </div>
             ))}
@@ -559,12 +585,12 @@ export function FocusedOnboardingWizard({ userName: _userName }: FocusedOnboardi
           initial={{ opacity: 0, y: -5 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="w-full max-w-2xl mb-6"
+          className={styles.obAnchorBanner}
         >
-          <div className="bg-gradient-to-r from-amber-500/10 to-red-500/10 border border-amber-500/20 rounded-lg px-4 py-3 text-center">
-            <p className="text-sm">
-              <span className="text-amber-700 dark:text-amber-400 font-medium">Why this matters: </span>
-              <span className="text-muted-foreground">{getStepValueReminder()}</span>
+          <div className={styles.obAnchorBannerInner}>
+            <p className={styles.obAnchorBannerLabel}>
+              <span className={styles.obAnchorBannerEmphasis}>Why this matters: </span>
+              <span className={styles.obAnchorBannerText}>{getStepValueReminder()}</span>
             </p>
           </div>
         </motion.div>
@@ -574,45 +600,50 @@ export function FocusedOnboardingWizard({ userName: _userName }: FocusedOnboardi
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="w-full max-w-2xl"
+          className={styles.obWizardCard}
         >
-          <Card className="border-0 shadow-2xl shadow-black/10 bg-card">
-            <CardContent className="p-6 md:p-8">
-              {error && (
-                <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl text-sm flex items-start gap-3">
-                  <svg className="w-5 h-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-                  </svg>
-                  <span>{error}</span>
-                </div>
-              )}
-
-              <div className="min-h-[400px]">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentStep}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-                  >
-                    {renderStep()}
-                  </motion.div>
-                </AnimatePresence>
+          <div className={styles.obWizardCardBody}>
+            {error && (
+              <div className={styles.obCardError} role="alert">
+                <svg
+                  className={styles.obCardErrorIcon}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+                </svg>
+                <span>{error}</span>
               </div>
-            </CardContent>
-          </Card>
+            )}
+
+            <div className={styles.obStepContent}>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentStep}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                >
+                  {renderStep()}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
         </motion.div>
 
         {/* Navigation */}
-        <div className="w-full max-w-2xl flex items-center justify-between mt-6">
+        <nav className={styles.obWizardNav} aria-label="Step navigation">
           <Button
             variant="ghost"
             onClick={handleBack}
             disabled={currentStep === 1}
-            className={`gap-2 ${currentStep === 1 ? 'invisible' : ''}`}
+            className={`gap-2${currentStep === 1 ? ` ${styles.obNavHidden}` : ''}`}
           >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
             </svg>
             Back
@@ -625,7 +656,7 @@ export function FocusedOnboardingWizard({ userName: _userName }: FocusedOnboardi
               className="gap-2 px-6"
             >
               Continue
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
               </svg>
             </Button>
@@ -637,7 +668,7 @@ export function FocusedOnboardingWizard({ userName: _userName }: FocusedOnboardi
             >
               {isSubmitting ? (
                 <>
-                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
@@ -646,44 +677,44 @@ export function FocusedOnboardingWizard({ userName: _userName }: FocusedOnboardi
               ) : (
                 <>
                   See My Valuation
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
                   </svg>
                 </>
               )}
             </Button>
           )}
-        </div>
+        </nav>
 
         {/* Trust Footer */}
-        <motion.div
+        <motion.footer
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="mt-8 flex items-center justify-center gap-6 text-sm text-muted-foreground"
+          className={styles.obTrustFooter}
         >
-          <div className="flex items-center gap-1.5">
-            <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className={styles.obTrustItem}>
+            <svg className={styles.obTrustIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
             <span>Enterprise-grade security</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className={styles.obTrustItem}>
+            <svg className={styles.obTrustIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <span>Step {currentStep} of {steps.length}</span>
           </div>
           <button
             onClick={handleSignOut}
-            className="flex items-center gap-1.5 hover:text-foreground transition-colors"
+            className={styles.obSignOutButton}
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
             <span>Log out</span>
           </button>
-        </motion.div>
+        </motion.footer>
       </div>
     </div>
   )

@@ -2,13 +2,14 @@
 
 import { ReactNode, Suspense } from 'react'
 import { CompanyProvider } from '@/contexts/CompanyContext'
+import styles from '@/components/onboarding/onboarding.module.css'
 
 function LoadingFallback() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-muted-foreground text-sm">Loading...</p>
+    <div className={styles.obLoadingFallback}>
+      <div className={styles.obLoadingCenter}>
+        <div className={styles.obSpinner} role="status" aria-label="Loading" />
+        <p className={styles.obLoadingText}>Loading...</p>
       </div>
     </div>
   )

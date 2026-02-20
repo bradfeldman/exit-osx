@@ -16,6 +16,7 @@ import {
   Scale,
   User,
 } from 'lucide-react'
+import styles from '@/components/onboarding/onboarding.module.css'
 
 interface CategoryGapItem {
   category: string
@@ -84,7 +85,7 @@ export function ValuationRevealStep({
   const categoriesWithGap = categoryGapBreakdown.filter(c => c.gapAmount > 0)
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className={styles.valRevealRoot}>
       {/* Stage 1: Valuation Reveal */}
       <AnimatePresence>
         {revealStage >= 1 && (
@@ -92,16 +93,16 @@ export function ValuationRevealStep({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, type: 'spring' }}
-            className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-8 text-white shadow-2xl mb-6"
+            className={styles.valRevealHero}
           >
-            <div className="text-center">
+            <div className={styles.valRevealHeroCenter}>
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 rounded-full text-sm text-emerald-300 mb-4"
+                className={styles.valRevealVerifiedBadge}
               >
-                <CheckCircle className="w-4 h-4" />
+                <CheckCircle style={{ width: '1rem', height: '1rem' }} />
                 Your Personalized Valuation
               </motion.div>
 
@@ -109,7 +110,7 @@ export function ValuationRevealStep({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="text-lg text-white/70 mb-2"
+                className={styles.valRevealHeroIntro}
               >
                 Based on your specific risk profile,
               </motion.h2>
@@ -118,18 +119,18 @@ export function ValuationRevealStep({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="text-white/80 mb-6"
+                className={styles.valRevealHeroContext}
               >
-                <span className="text-white font-medium">{companyName}</span> is currently worth
+                <span className={styles.valRevealHeroCompanyName}>{companyName}</span> is currently worth
               </motion.p>
 
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.5, type: 'spring', stiffness: 100 }}
-                className="mb-6"
+                style={{ marginBottom: '1.5rem' }}
               >
-                <span className="text-5xl md:text-6xl font-bold font-display text-white">
+                <span className={styles.valRevealAmount}>
                   {formatCurrency(currentValue)}
                 </span>
               </motion.div>
@@ -140,18 +141,18 @@ export function ValuationRevealStep({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.8 }}
-                  className="bg-amber-500/20 border border-amber-500/30 rounded-xl p-4 text-left"
+                  className={styles.valRevealGapCallout}
                 >
-                  <div className="flex items-start gap-3">
-                    <TrendingUp className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div className={styles.valRevealGapInner}>
+                    <TrendingUp style={{ width: '1.25rem', height: '1.25rem', color: '#FCD34D', flexShrink: 0, marginTop: '0.125rem' }} />
                     <div>
-                      <p className="text-amber-100 font-medium">
+                      <p className={styles.valRevealGapText}>
                         You could be worth{' '}
-                        <span className="text-amber-300 font-bold">{formatCurrency(potentialValue)}</span>
+                        <span className={styles.valRevealGapPotential}>{formatCurrency(potentialValue)}</span>
                       </p>
-                      <p className="text-amber-200/70 text-sm mt-1">
+                      <p className={styles.valRevealGapSubtext}>
                         That&apos;s{' '}
-                        <span className="text-amber-100 font-semibold">{formatCurrency(valueGap)}</span>{' '}
+                        <span className={styles.valRevealGapSubAmount}>{formatCurrency(valueGap)}</span>{' '}
                         you&apos;re leaving on the table.
                       </p>
                     </div>
@@ -170,14 +171,14 @@ export function ValuationRevealStep({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="bg-card rounded-2xl border border-border p-6 mb-6"
+            className={styles.valRevealBriCard}
           >
-            <div className="flex items-center justify-between">
+            <div className={styles.valRevealBriInner}>
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                <h3 className={styles.valRevealBriLabel}>
                   Buyer Readiness Index
                 </h3>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className={styles.valRevealBriDesc}>
                   How attractive you are to buyers
                 </p>
               </div>
@@ -186,34 +187,32 @@ export function ValuationRevealStep({
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
-                className="relative"
+                className={styles.valRevealBriGaugeWrap}
               >
-                <div className="relative w-24 h-24">
-                  <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                    <circle
-                      cx="50" cy="50" r="42"
-                      fill="none"
-                      stroke="rgba(184, 115, 51, 0.2)"
-                      strokeWidth="8"
-                    />
-                    <motion.circle
-                      cx="50" cy="50" r="42"
-                      fill="none"
-                      stroke="#B87333"
-                      strokeWidth="8"
-                      strokeLinecap="round"
-                      strokeDasharray={2 * Math.PI * 42}
-                      initial={{ strokeDashoffset: 2 * Math.PI * 42 }}
-                      animate={{ strokeDashoffset: 2 * Math.PI * 42 * (1 - roundedBRI / 100) }}
-                      transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-2xl font-bold text-foreground font-display">
-                      {roundedBRI}
-                    </span>
-                    <span className="text-xs text-muted-foreground">/100</span>
-                  </div>
+                <svg className={styles.valRevealBriGauge} viewBox="0 0 100 100">
+                  <circle
+                    cx="50" cy="50" r="42"
+                    fill="none"
+                    stroke="rgba(184, 115, 51, 0.2)"
+                    strokeWidth="8"
+                  />
+                  <motion.circle
+                    cx="50" cy="50" r="42"
+                    fill="none"
+                    stroke="#B87333"
+                    strokeWidth="8"
+                    strokeLinecap="round"
+                    strokeDasharray={2 * Math.PI * 42}
+                    initial={{ strokeDashoffset: 2 * Math.PI * 42 }}
+                    animate={{ strokeDashoffset: 2 * Math.PI * 42 * (1 - roundedBRI / 100) }}
+                    transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
+                  />
+                </svg>
+                <div className={styles.valRevealBriGaugeCenter}>
+                  <span className={styles.valRevealBriScore}>
+                    {roundedBRI}
+                  </span>
+                  <span className={styles.valRevealBriUnit}>/100</span>
                 </div>
               </motion.div>
             </div>
@@ -228,69 +227,72 @@ export function ValuationRevealStep({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="bg-card rounded-2xl border border-border p-6 mb-6"
+            className={styles.valRevealBreakdownCard}
           >
-            <div className="flex items-center gap-2 mb-4">
-              <DollarSign className="w-5 h-5 text-primary" />
-              <h3 className="font-semibold text-foreground">Where Your Value Gap Comes From</h3>
+            <div className={styles.valRevealBreakdownTitleRow}>
+              <DollarSign style={{ width: '1.25rem', height: '1.25rem', color: 'var(--primary)' }} />
+              <h3 className={styles.valRevealBreakdownTitle}>Where Your Value Gap Comes From</h3>
             </div>
 
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className={styles.valRevealBreakdownSubtext}>
               Here&apos;s how much each area is costing you:
             </p>
 
-            <div className="space-y-4">
+            <div className={styles.valRevealCategoryList}>
               {categoriesWithGap.map((item, index) => {
                 const Icon = CATEGORY_ICONS[item.category] || Settings
+                const isHigh = item.gapPercent >= 25
+                const isMed = item.gapPercent >= 15 && item.gapPercent < 25
+
                 return (
                   <motion.div
                     key={item.category}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className="relative"
+                    className={styles.valRevealCategoryItem}
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                          item.gapPercent >= 25 ? 'bg-red-100 dark:bg-red-900/30' :
-                          item.gapPercent >= 15 ? 'bg-amber-100 dark:bg-amber-900/30' :
-                          'bg-emerald-100 dark:bg-emerald-900/30'
-                        }`}>
-                          <Icon className={`w-4 h-4 ${
-                            item.gapPercent >= 25 ? 'text-red-600 dark:text-red-400' :
-                            item.gapPercent >= 15 ? 'text-amber-600 dark:text-amber-400' :
-                            'text-emerald-600 dark:text-emerald-400'
-                          }`} />
+                    <div className={styles.valRevealCategoryRow}>
+                      <div className={styles.valRevealCategoryLeft}>
+                        <div className={
+                          isHigh ? styles.valRevealCategoryIconWrapHigh
+                          : isMed ? styles.valRevealCategoryIconWrapMed
+                          : styles.valRevealCategoryIconWrapLow
+                        }>
+                          <Icon className={
+                            isHigh ? styles.valRevealCategoryIconHigh
+                            : isMed ? styles.valRevealCategoryIconMed
+                            : styles.valRevealCategoryIconLow
+                          } />
                         </div>
                         <div>
-                          <span className="text-sm font-medium text-foreground">{item.label}</span>
-                          <span className="text-xs text-muted-foreground ml-2">
+                          <span className={styles.valRevealCategoryName}>{item.label}</span>
+                          <span className={styles.valRevealCategoryScore}>
                             Score: {item.score}/100
                           </span>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <span className={`text-lg font-bold ${
-                          item.gapPercent >= 25 ? 'text-red-600 dark:text-red-400' :
-                          item.gapPercent >= 15 ? 'text-amber-600 dark:text-amber-400' :
-                          'text-emerald-600 dark:text-emerald-400'
-                        }`}>
+                      <div className={styles.valRevealCategoryRight}>
+                        <span className={
+                          isHigh ? styles.valRevealCategoryGapHigh
+                          : isMed ? styles.valRevealCategoryGapMed
+                          : styles.valRevealCategoryGapLow
+                        }>
                           {formatCurrency(item.gapAmount)}
                         </span>
-                        <span className="text-xs text-muted-foreground block">
+                        <span className={styles.valRevealCategoryGapPct}>
                           {item.gapPercent}% of gap
                         </span>
                       </div>
                     </div>
                     {/* Progress bar showing contribution to gap */}
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div className={styles.valRevealProgressTrack}>
                       <motion.div
-                        className={`h-full rounded-full ${
-                          item.gapPercent >= 25 ? 'bg-red-500' :
-                          item.gapPercent >= 15 ? 'bg-amber-500' :
-                          'bg-emerald-500'
-                        }`}
+                        className={
+                          isHigh ? styles.valRevealProgressBarHigh
+                          : isMed ? styles.valRevealProgressBarMed
+                          : styles.valRevealProgressBarLow
+                        }
                         initial={{ width: 0 }}
                         animate={{ width: `${item.gapPercent}%` }}
                         transition={{ duration: 0.5, delay: index * 0.1 + 0.2 }}
@@ -301,11 +303,9 @@ export function ValuationRevealStep({
               })}
             </div>
 
-            <div className="mt-6 pt-4 border-t border-border">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">Total Value Gap</span>
-                <span className="text-xl font-bold text-foreground">{formatCurrency(valueGap)}</span>
-              </div>
+            <div className={styles.valRevealTotalRow}>
+              <span className={styles.valRevealTotalLabel}>Total Value Gap</span>
+              <span className={styles.valRevealTotalAmount}>{formatCurrency(valueGap)}</span>
             </div>
           </motion.div>
         )}
@@ -319,16 +319,16 @@ export function ValuationRevealStep({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
-            <div className="text-center">
+            <div className={styles.valRevealCtaSection}>
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
               >
-                <h3 className="text-xl font-bold text-foreground font-display mb-2">
+                <h3 className={styles.valRevealCtaTitle}>
                   Ready to Close the Gap?
                 </h3>
-                <p className="text-muted-foreground mb-6">
+                <p className={styles.valRevealCtaText}>
                   Your personalized action plan is ready. We&apos;ll help you tackle the biggest opportunities first.
                 </p>
 
@@ -338,7 +338,7 @@ export function ValuationRevealStep({
                   className="w-full sm:w-auto px-8 py-6 text-lg shadow-xl shadow-primary/25 hover:shadow-2xl transition-all"
                 >
                   See Your Action Plan
-                  <ArrowRight className="ml-2 w-5 h-5" />
+                  <ArrowRight style={{ marginLeft: '0.5rem', width: '1.25rem', height: '1.25rem' }} />
                 </Button>
               </motion.div>
             </div>

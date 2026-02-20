@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, CheckCircle2 } from 'lucide-react'
+import styles from '@/components/onboarding/onboarding.module.css'
 
 // 8 Binary Questions - Buyer-Neutral Framing
 const QUICK_SCAN_QUESTIONS = [
@@ -125,7 +126,6 @@ export function QuickScanStep({
   }
 
   const handleComplete = () => {
-    // Calculate risks identified
     const risksIdentified = QUICK_SCAN_QUESTIONS.filter(q => {
       const answer = answers[q.id]
       const isYes = answer === true
@@ -137,7 +137,6 @@ export function QuickScanStep({
       rationale: q.rationale,
     }))
 
-    // Calculate BRI score (each risk reduces score by ~8.5 points)
     const riskCount = risksIdentified.length
     const briScore = Math.max(35, Math.round(100 - (riskCount * 8.5)))
 
@@ -150,13 +149,13 @@ export function QuickScanStep({
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className={styles.quickScanContainer}>
       {/* Header */}
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-foreground mb-2">
+      <div className={styles.quickScanHeader}>
+        <h2 className={styles.quickScanTitle}>
           Buyer Confidence Scan
         </h2>
-        <p className="text-muted-foreground">
+        <p className={styles.quickScanSubtitle}>
           8 questions. Each one reflects how buyers actually evaluate businesses.
         </p>
       </div>
@@ -165,25 +164,25 @@ export function QuickScanStep({
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-amber-50 dark:bg-amber-900/20 border-l-4 border-amber-400 p-4 rounded-r-lg mb-6"
+        className={styles.quickScanDisclaimer}
       >
-        <p className="text-sm text-amber-800 dark:text-amber-200">
+        <p className={styles.quickScanDisclaimerText}>
           <strong>Note:</strong> Most strong businesses answer &quot;No&quot; to more than half of these.
           That&apos;s normal — and exactly why value gaps exist.
         </p>
       </motion.div>
 
       {/* Progress Bar */}
-      <div className="flex items-center gap-4 mb-8">
-        <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+      <div className={styles.quickScanProgressRow}>
+        <div className={styles.quickScanProgressTrack}>
           <motion.div
-            className="h-full bg-primary"
+            className={styles.quickScanProgressFill}
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.3 }}
           />
         </div>
-        <span className="text-sm text-muted-foreground whitespace-nowrap">
+        <span className={styles.quickScanProgressLabel}>
           {Object.keys(answers).length} of {QUICK_SCAN_QUESTIONS.length}
         </span>
       </div>
@@ -197,30 +196,30 @@ export function QuickScanStep({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
-            className="bg-card rounded-2xl border border-border p-6 shadow-lg"
+            className={styles.quickScanCard}
           >
             {/* Category Badge */}
-            <div className="flex items-center justify-between mb-4">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary">
+            <div className={styles.quickScanCardTop}>
+              <span className={styles.quickScanCategoryBadge}>
                 {currentQuestion.categoryLabel}
               </span>
-              <span className="text-sm text-muted-foreground">
+              <span className={styles.quickScanCardCounter}>
                 {currentIndex + 1} of {QUICK_SCAN_QUESTIONS.length}
               </span>
             </div>
 
             {/* Question */}
-            <h3 className="text-xl font-semibold text-foreground mb-3">
+            <h3 className={styles.quickScanQuestion}>
               {currentQuestion.question}
             </h3>
 
             {/* Rationale */}
-            <p className="text-sm text-muted-foreground italic mb-6">
+            <p className={styles.quickScanRationale}>
               {currentQuestion.rationale}
             </p>
 
             {/* Answer Buttons */}
-            <div className="flex gap-4">
+            <div className={styles.quickScanAnswerRow}>
               <Button
                 variant={answers[currentQuestion.id] === true ? 'default' : 'outline'}
                 size="lg"
@@ -241,7 +240,7 @@ export function QuickScanStep({
 
             {/* Back button when not on first question */}
             {currentIndex > 0 && (
-              <div className="mt-4 text-center">
+              <div className={styles.quickScanBackRow}>
                 <Button
                   variant="ghost"
                   onClick={handleBack}
@@ -258,18 +257,18 @@ export function QuickScanStep({
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-card rounded-2xl border border-border p-8 shadow-lg text-center"
+          className={styles.quickScanCompleteCard}
         >
-          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className={styles.quickScanCompleteIconWrap}>
             <CheckCircle2 className="w-8 h-8 text-primary" />
           </div>
-          <h3 className="text-xl font-semibold text-foreground mb-2">
+          <h3 className={styles.quickScanCompleteTitle}>
             Scan Complete
           </h3>
-          <p className="text-muted-foreground mb-6">
+          <p className={styles.quickScanCompleteSubtitle}>
             We&apos;ve identified where buyers will focus during diligence.
           </p>
-          <div className="flex items-center justify-center gap-4">
+          <div className={styles.quickScanCompleteActions}>
             <Button
               variant="ghost"
               size="lg"
@@ -288,7 +287,6 @@ export function QuickScanStep({
           </div>
         </motion.div>
       )}
-
     </div>
   )
 }

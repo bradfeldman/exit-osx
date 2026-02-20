@@ -18,6 +18,7 @@ import { createClient } from '@/lib/supabase/client'
 import { calculateValuationFromPercentages } from '@/lib/valuation/calculate-valuation'
 import { track } from '@/lib/analytics'
 import { useTimer } from '@/lib/analytics/hooks'
+import styles from '@/components/onboarding/onboarding.module.css'
 
 // Onboarding step definitions - Streamlined Dan/Alex flow
 const STEPS = [
@@ -683,8 +684,8 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
             multipleSource={industryPreviewData.multipleSource}
           />
         ) : (
-          <div className="flex items-center justify-center py-20">
-            <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
+          <div className={styles.obStepLoading}>
+            <div className={styles.obStepSpinner} role="status" aria-label="Loading valuation" />
           </div>
         )
       case 4:
@@ -720,29 +721,29 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
   const showNavigation = currentStep === 1 || currentStep === 2
 
   return (
-    <div className="min-h-screen overflow-y-auto">
+    <div className={styles.obPage}>
       {/* Minimal header */}
-      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50">
-        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-xl font-bold font-display text-foreground">
-              Exit<span className="text-primary">OS</span><span className="text-muted-foreground text-lg">x</span>
+      <header className={styles.obHeader}>
+        <div className={styles.obHeaderInner}>
+          <div className={styles.obBrand}>
+            <span className={styles.obBrandName}>
+              Exit<span className={styles.obBrandAccent}>OS</span><span className={styles.obBrandSuffix}>x</span>
             </span>
           </div>
 
           {/* Progress indicator for steps 1-3 (before assessment) */}
           {currentStep <= 3 && (
-            <div className="flex items-center gap-2">
+            <div className={styles.obProgressDots} aria-label="Progress" role="status">
               {STEPS.slice(0, 3).map((step) => (
                 <div
                   key={step.id}
-                  className={`w-2 h-2 rounded-full transition-all ${
+                  className={
                     step.id === currentStep
-                      ? 'w-6 bg-primary'
+                      ? `${styles.obProgressDot} ${styles.obProgressDotActive}`
                       : step.id < currentStep
-                        ? 'bg-primary'
-                        : 'bg-muted-foreground/30'
-                  }`}
+                        ? `${styles.obProgressDot} ${styles.obProgressDotComplete}`
+                        : styles.obProgressDot
+                  }
                 />
               ))}
             </div>
@@ -752,28 +753,28 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
             variant="ghost"
             size="sm"
             onClick={handleLogout}
-            className="text-muted-foreground hover:text-foreground gap-2"
+            aria-label="Log out"
           >
-            <LogOut className="w-4 h-4" />
-            <span className="hidden sm:inline">Logout</span>
+            <LogOut className="w-4 h-4" aria-hidden="true" />
+            <span className={styles.obHeaderLogoutLabel}>Logout</span>
           </Button>
         </div>
-      </div>
+      </header>
 
       {/* Main content */}
-      <div className="pt-8 pb-12 px-4">
-        <div className="max-w-2xl mx-auto">
+      <div className={styles.obContent}>
+        <div className={styles.obContentInner}>
           {/* Welcome message for step 1 */}
           {currentStep === 1 && userName && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-center mb-8"
+              className={styles.obWelcome}
             >
-              <h1 className="text-2xl font-bold text-foreground font-display">
+              <h1 className={styles.obWelcomeHeading}>
                 Welcome{userName ? `, ${userName.split(' ')[0]}` : ''}!
               </h1>
-              <p className="text-muted-foreground mt-2">
+              <p className={styles.obWelcomeSubtext}>
                 Let&apos;s discover what your business could be worth.
               </p>
             </motion.div>
@@ -784,7 +785,8 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-6 p-4 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl text-sm"
+              className={styles.obError}
+              role="alert"
             >
               {error}
             </motion.div>
@@ -799,8 +801,8 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
             >
-              {(currentStep <= 2) ? (
-                <div className="bg-card rounded-2xl border border-border shadow-xl p-6 sm:p-8">
+              {currentStep <= 2 ? (
+                <div className={styles.obCard}>
                   {renderStep()}
                 </div>
               ) : (
@@ -811,12 +813,12 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
 
           {/* Navigation for steps 1-2 */}
           {showNavigation && (
-            <div className="flex items-center justify-between mt-6">
+            <nav className={styles.obNavRow} aria-label="Step navigation">
               <Button
                 variant="ghost"
                 onClick={handleBack}
                 disabled={currentStep === 1}
-                className={currentStep === 1 ? 'invisible' : ''}
+                className={currentStep === 1 ? styles.obNavHidden : undefined}
               >
                 Back
               </Button>
@@ -829,9 +831,10 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
                 {isSubmitting ? (
                   <>
                     <motion.div
-                      className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"
+                      className={styles.obButtonSpinner}
                       animate={{ rotate: 360 }}
                       transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      aria-hidden="true"
                     />
                     Creating...
                   </>
@@ -839,18 +842,25 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
                   'Continue'
                 )}
               </Button>
-            </div>
+            </nav>
           )}
 
           {/* Security footer */}
-          <div className="mt-12 text-center">
-            <div className="inline-flex items-center gap-2 text-xs text-muted-foreground">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <footer className={styles.obFooter}>
+            <div className={styles.obFooterBadge}>
+              <svg
+                className={styles.obFooterIcon}
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                aria-hidden="true"
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
               </svg>
               <span>Enterprise-grade security</span>
             </div>
-          </div>
+          </footer>
         </div>
       </div>
     </div>

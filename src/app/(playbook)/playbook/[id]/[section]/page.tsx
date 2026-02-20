@@ -11,6 +11,7 @@ import { useSubscription } from '@/contexts/SubscriptionContext'
 import { canAccessPlaybookSection } from '@/lib/subscriptions/playbook-access'
 import { usePlaybookSync } from '@/lib/playbook/PlaybookContext'
 import type { PlaybookSection } from '@/components/playbook/PlaybookSidebar'
+import styles from '@/components/playbook/playbook.module.css'
 
 interface StoredProgress {
   currentPage: number
@@ -216,21 +217,18 @@ export default function FocusModePage() {
     >
       {/* Completion celebration banner */}
       {celebration && (
-        <div className="mx-4 mb-4 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40">
-          <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
+        <div className={styles.celebrationBanner}>
+          <p className={styles.celebrationTitle}>
             Playbook complete — Score: {celebration.score}/100
           </p>
-          <p className="text-sm text-emerald-700 dark:text-emerald-400 mt-1">
+          <p className={styles.celebrationBody}>
             This score has been shared with your Exit OS dashboard.
             Your {celebration.category.toLowerCase().replace('_', ' ')} readiness improved by +{celebration.bonus} points.
             {celebration.autoCompletedTasks > 0 && (
               <> Also completed {celebration.autoCompletedTasks} related action item{celebration.autoCompletedTasks === 1 ? '' : 's'}.</>
             )}
           </p>
-          <Link
-            href="/dashboard/diagnosis"
-            className="inline-flex items-center gap-1 text-sm font-medium text-emerald-700 dark:text-emerald-300 hover:underline mt-2"
-          >
+          <Link href="/dashboard/diagnosis" className={styles.celebrationLink}>
             View Impact on Dashboard →
           </Link>
         </div>
@@ -239,7 +237,7 @@ export default function FocusModePage() {
         ref={iframeRef}
         src={iframeSrc}
         title={`${definition.title} — Section ${sectionIndex + 1}`}
-        className="w-full border-0"
+        className={styles.playbookFrame}
         style={{ minHeight: 'calc(100dvh - 120px)' }}
         sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
       />

@@ -5,11 +5,11 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { formatIcbName } from '@/lib/utils/format-icb'
 import { formatCurrency } from '@/lib/utils/currency'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ClientSwitcher } from '@/components/advisor/ClientSwitcher'
 import { usePermissions } from '@/hooks/usePermissions'
+import styles from '@/components/advisor/advisor.module.css'
 import {
   ArrowLeft,
   Building2,
@@ -99,15 +99,15 @@ export default function AdvisorClientPage() {
 
   if (loading || permissionsLoading) {
     return (
-      <div className="min-h-screen">
-        <header className="bg-white border-b">
-          <div className="max-w-7xl mx-auto px-4 py-4">
-            <div className="h-8 w-48 bg-muted animate-pulse rounded" />
+      <div>
+        <header className={styles.header}>
+          <div className={styles.headerInner}>
+            <div className={styles.skeletonBar} />
           </div>
         </header>
-        <main className="max-w-7xl mx-auto px-4 py-8">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        <main className={styles.main}>
+          <div className={styles.loadingBody}>
+            <div className={styles.spinner} />
           </div>
         </main>
       </div>
@@ -116,9 +116,9 @@ export default function AdvisorClientPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen">
-        <header className="bg-white border-b">
-          <div className="max-w-7xl mx-auto px-4 py-4">
+      <div>
+        <header className={styles.header}>
+          <div className={styles.headerInner}>
             <Link href="/advisor">
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -127,17 +127,19 @@ export default function AdvisorClientPage() {
             </Link>
           </div>
         </header>
-        <main className="max-w-7xl mx-auto px-4 py-8">
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <Lock className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
-              <p className="text-muted-foreground text-center max-w-md">{error}</p>
-              <Button className="mt-4" onClick={() => router.push('/advisor')}>
-                Return to Dashboard
-              </Button>
-            </CardContent>
-          </Card>
+        <main className={styles.main}>
+          <div className={styles.card}>
+            <div className={styles.cardContent}>
+              <div className={styles.accessDenied}>
+                <Lock className={styles.accessDeniedIcon} style={{ width: 48, height: 48 }} />
+                <p className={styles.accessDeniedTitle}>Access Denied</p>
+                <p className={styles.accessDeniedText}>{error}</p>
+                <Button onClick={() => router.push('/advisor')}>
+                  Return to Dashboard
+                </Button>
+              </div>
+            </div>
+          </div>
         </main>
       </div>
     )
@@ -196,42 +198,40 @@ export default function AdvisorClientPage() {
   ]
 
   return (
-    <div className="min-h-screen">
+    <div>
       {/* Header */}
-      <header className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/advisor">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  All Clients
-                </Button>
-              </Link>
-              <div className="h-6 w-px bg-border" />
-              <ClientSwitcher currentCompanyId={companyId} />
-            </div>
-            <Link href="/dashboard">
-              <Button variant="outline" size="sm">
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Full Dashboard
+      <header className={styles.header}>
+        <div className={styles.headerInner}>
+          <div className={styles.headerLeft}>
+            <Link href="/advisor">
+              <Button variant="ghost" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                All Clients
               </Button>
             </Link>
+            <div className={styles.divider} />
+            <ClientSwitcher currentCompanyId={companyId} />
           </div>
+          <Link href="/dashboard">
+            <Button variant="outline" size="sm">
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Full Dashboard
+            </Button>
+          </Link>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className={styles.main}>
         {/* Company Info */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Building2 className="h-6 w-6 text-primary" />
+        <div className={styles.companyInfo}>
+          <div className={styles.companyInfoRow}>
+            <div className={styles.companyIconBox}>
+              <Building2 style={{ width: 24, height: 24 }} />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">{company?.name}</h1>
+              <h1 className={styles.companyName}>{company?.name}</h1>
               {company?.icbSector && (
-                <p className="text-muted-foreground">{formatIcbName(company.icbSector)}</p>
+                <p className={styles.companySector}>{formatIcbName(company.icbSector)}</p>
               )}
             </div>
           </div>
@@ -239,102 +239,88 @@ export default function AdvisorClientPage() {
 
         {/* Summary Stats */}
         {dashboard?.tier1 && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-sm text-muted-foreground">Current Value</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {formatCurrency(dashboard.tier1.currentValue)}
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-sm text-muted-foreground">Potential Value</p>
-                <p className="text-2xl font-bold text-blue-600">
-                  {formatCurrency(dashboard.tier1.potentialValue)}
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-sm text-muted-foreground">Buyer Readiness Index</p>
-                <p className="text-2xl font-bold">
-                  {dashboard.tier1.briScore.toFixed(0)}
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-sm text-muted-foreground">Percentile</p>
-                <p className="text-2xl font-bold text-amber-600">
-                  {dashboard.tier1.percentileRank.toFixed(0)}%
-                </p>
-              </CardContent>
-            </Card>
+          <div className={styles.statsGrid4}>
+            <div className={styles.statCard}>
+              <p className={styles.statLabel}>Current Value</p>
+              <p className={styles.statValueGreen}>
+                {formatCurrency(dashboard.tier1.currentValue)}
+              </p>
+            </div>
+            <div className={styles.statCard}>
+              <p className={styles.statLabel}>Potential Value</p>
+              <p className={styles.statValueBlue}>
+                {formatCurrency(dashboard.tier1.potentialValue)}
+              </p>
+            </div>
+            <div className={styles.statCard}>
+              <p className={styles.statLabel}>Buyer Readiness Index</p>
+              <p className={styles.statValue}>
+                {dashboard.tier1.briScore.toFixed(0)}
+              </p>
+            </div>
+            <div className={styles.statCard}>
+              <p className={styles.statLabel}>Percentile</p>
+              <p className={styles.statValueAmber}>
+                {dashboard.tier1.percentileRank.toFixed(0)}%
+              </p>
+            </div>
           </div>
         )}
 
         {/* Module Access */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Available Modules</CardTitle>
-            <CardDescription>
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <p className={styles.cardTitle}>Available Modules</p>
+            <p className={styles.cardDescription}>
               Access client data based on your assigned permissions
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            </p>
+          </div>
+          <div className={styles.cardContent}>
+            <div className={styles.moduleGrid}>
               {modules.map((module) => {
                 const Icon = module.icon
                 return (
                   <div key={module.key}>
                     {module.enabled ? (
-                      <Link href={module.href}>
-                        <Card className="hover:border-primary transition-colors cursor-pointer h-full">
-                          <CardContent className="pt-6">
-                            <div className="flex items-start gap-3">
-                              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                <Icon className="h-5 w-5 text-primary" />
-                              </div>
-                              <div>
-                                <h3 className="font-medium">{module.title}</h3>
-                                <p className="text-sm text-muted-foreground">
-                                  {module.description}
-                                </p>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
+                      <Link href={module.href} className={styles.moduleCard}>
+                        <div className={styles.moduleCardBody}>
+                          <div className={styles.moduleIconBox}>
+                            <Icon style={{ width: 20, height: 20 }} />
+                          </div>
+                          <div>
+                            <p className={styles.moduleTitle}>{module.title}</p>
+                            <p className={styles.moduleDescription}>
+                              {module.description}
+                            </p>
+                          </div>
+                        </div>
                       </Link>
                     ) : (
-                      <Card className="opacity-50 h-full">
-                        <CardContent className="pt-6">
-                          <div className="flex items-start gap-3">
-                            <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                              <Lock className="h-5 w-5 text-muted-foreground" />
-                            </div>
-                            <div>
-                              <h3 className="font-medium flex items-center gap-2">
-                                {module.title}
-                                <Badge variant="outline" className="text-xs">
-                                  No Access
-                                </Badge>
-                              </h3>
-                              <p className="text-sm text-muted-foreground">
-                                {module.description}
-                              </p>
-                            </div>
+                      <div className={styles.moduleCardLocked}>
+                        <div className={styles.moduleCardBody}>
+                          <div className={styles.moduleIconBoxLocked}>
+                            <Lock style={{ width: 20, height: 20 }} />
                           </div>
-                        </CardContent>
-                      </Card>
+                          <div>
+                            <p className={styles.moduleTitle}>
+                              {module.title}
+                              <Badge variant="outline" className="text-xs">
+                                No Access
+                              </Badge>
+                            </p>
+                            <p className={styles.moduleDescription}>
+                              {module.description}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     )}
                   </div>
                 )
               })}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </main>
     </div>
   )

@@ -19,7 +19,7 @@ import {
   MinusCircle,
   Sparkles,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import styles from '@/components/onboarding/onboarding.module.css'
 
 interface Question {
   id: string
@@ -95,17 +95,14 @@ export function RiskAssessmentStep({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [recentlySelected, setRecentlySelected] = useState<string | null>(null)
 
-  // Track question timing
   const questionStartTime = useRef<number>(Date.now())
 
-  // Group questions by category
   const questionsByCategory = questions.reduce((acc, q) => {
     if (!acc[q.briCategory]) acc[q.briCategory] = []
     acc[q.briCategory].push(q)
     return acc
   }, {} as Record<string, Question[]>)
 
-  // Get ordered list of all questions
   const orderedQuestions = CATEGORY_ORDER.flatMap(
     cat => questionsByCategory[cat] || []
   )
@@ -115,16 +112,13 @@ export function RiskAssessmentStep({
     ? Math.round((responses.size / orderedQuestions.length) * 100)
     : 0
 
-  // Get current category info
   const currentCategory = currentQuestion?.briCategory
   const categoryQuestions = currentCategory ? questionsByCategory[currentCategory] : []
   const categoryQuestionIndex = categoryQuestions.findIndex(q => q.id === currentQuestion?.id)
 
-  // Initialize assessment
   useEffect(() => {
     async function initAssessment() {
       try {
-        // Load questions (company-scoped if companyId available)
         const questionsUrl = companyId
           ? `/api/questions?companyId=${companyId}`
           : '/api/questions'
@@ -133,7 +127,6 @@ export function RiskAssessmentStep({
         const { questions: fetchedQuestions } = await questionsRes.json()
         setQuestions(fetchedQuestions)
 
-        // Create or get assessment
         const assessmentRes = await fetch('/api/assessments', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -143,7 +136,6 @@ export function RiskAssessmentStep({
         const { assessment } = await assessmentRes.json()
         setAssessmentId(assessment.id)
 
-        // Load existing responses
         const responsesRes = await fetch(`/api/assessments/${assessment.id}/responses`)
         if (responsesRes.ok) {
           const { responses: existingResponses } = await responsesRes.json()
@@ -157,7 +149,6 @@ export function RiskAssessmentStep({
           }
           setResponses(responseMap)
 
-          // Find first unanswered question
           const orderedQs = CATEGORY_ORDER.flatMap(
             cat => (fetchedQuestions as Question[]).filter(q => q.briCategory === cat)
           )
@@ -176,7 +167,6 @@ export function RiskAssessmentStep({
     initAssessment()
   }, [companyId])
 
-  // Animate through completion steps
   useEffect(() => {
     if (!completing) {
       setCompletingStep(0)
@@ -195,7 +185,6 @@ export function RiskAssessmentStep({
     return () => clearTimeout(timer)
   }, [completing, completingStep])
 
-  // Advance to next question
   const advanceToNext = useCallback(() => {
     if (currentQuestionIndex < orderedQuestions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1)
@@ -203,7 +192,6 @@ export function RiskAssessmentStep({
     }
   }, [currentQuestionIndex, orderedQuestions.length])
 
-  // Handle answer selection
   const handleAnswer = async (optionId: string, confidenceLevel: string = 'CONFIDENT') => {
     if (!assessmentId || !currentQuestion || saving) return
 
@@ -231,7 +219,6 @@ export function RiskAssessmentStep({
       })
       setResponses(newResponses)
 
-      // Auto-advance after a brief moment
       setTimeout(() => {
         setRecentlySelected(null)
         advanceToNext()
@@ -245,7 +232,6 @@ export function RiskAssessmentStep({
     }
   }
 
-  // Mark as not applicable
   const markAsNotApplicable = async () => {
     if (!assessmentId || !currentQuestion || saving) return
 
@@ -283,7 +269,6 @@ export function RiskAssessmentStep({
     }
   }
 
-  // Complete assessment
   const handleComplete = async () => {
     if (!assessmentId) return
 
@@ -301,12 +286,10 @@ export function RiskAssessmentStep({
         throw new Error(data.error || 'Failed to complete assessment')
       }
 
-      // Fetch updated dashboard data for reveal
       const dashboardRes = await fetch(`/api/companies/${companyId}/dashboard`)
       const dashboardData = await dashboardRes.json()
       const tier1 = dashboardData.tier1 || {}
 
-      // Fetch tasks and find the #1 priority
       let tasksCreated = 0
       let topTask: { id: string; title: string; description: string; category: string; estimatedValue: number } | null = null
       try {
@@ -315,7 +298,6 @@ export function RiskAssessmentStep({
           const tasksData = await tasksRes.json()
           tasksCreated = tasksData.stats?.pending || tasksData.tasks?.length || 0
 
-          // Get the #1 priority task (first one, sorted by priority)
           if (tasksData.tasks && tasksData.tasks.length > 0) {
             const firstTask = tasksData.tasks[0]
             topTask = {
@@ -331,12 +313,11 @@ export function RiskAssessmentStep({
         // Ignore task fetch errors
       }
 
-      // Build category scores from tier3.categories (already integer percentages 0-100)
       const tier3 = dashboardData.tier3 || {}
       const categoryScores = tier3.categories
         ? tier3.categories.map((c: { key: string; score: number }) => ({
             category: c.key,
-            score: c.score, // Already 0-100 from API
+            score: c.score,
           }))
         : [
             { category: 'FINANCIAL', score: 50 },
@@ -347,7 +328,6 @@ export function RiskAssessmentStep({
             { category: 'PERSONAL', score: 50 },
           ]
 
-      // Wait for completion animation to finish
       await new Promise(resolve => setTimeout(resolve, COMPLETION_STEPS.reduce((acc, s) => acc + s.duration, 0)))
 
       onComplete({
@@ -369,17 +349,17 @@ export function RiskAssessmentStep({
   // Loading state
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px]">
+      <div className={styles.riskAssessLoadingWrap}>
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="text-center"
+          style={{ textAlign: 'center' }}
         >
-          <div className="relative w-16 h-16 mx-auto mb-4">
-            <div className="absolute inset-0 rounded-full border-4 border-muted" />
-            <div className="absolute inset-0 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+          <div className={styles.riskAssessLoadingSpinnerWrap}>
+            <div className={styles.riskAssessLoadingTrack} />
+            <div className={styles.riskAssessLoadingSpinner} />
           </div>
-          <p className="text-muted-foreground">Loading assessment...</p>
+          <p className={styles.riskAssessLoadingText}>Loading assessment...</p>
         </motion.div>
       </div>
     )
@@ -391,52 +371,50 @@ export function RiskAssessmentStep({
 
     return (
       <motion.div
-        className="flex items-center justify-center min-h-[500px] p-4"
+        className={styles.riskAssessCompletingWrap}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
-        <div className="w-full max-w-lg">
+        <div className={styles.riskAssessCompletingInner}>
           <motion.div
-            className="bg-card rounded-3xl shadow-2xl border border-border overflow-hidden"
+            className={styles.riskAssessCompletingCard}
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
           >
-            <div className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 p-8 text-white">
-              <div className="flex items-center gap-5">
-                <div className="relative w-16 h-16">
+            <div className={styles.riskAssessCompletingHeader}>
+              <div className={styles.riskAssessCompletingHeaderInner}>
+                <div className={styles.riskAssessCompletingSpinnerWrap}>
                   <motion.div
-                    className="absolute inset-0 rounded-full border-4 border-white/30 border-t-white"
+                    className={styles.riskAssessCompletingSpinnerRing}
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
                   />
-                  <div className="absolute inset-0 flex items-center justify-center">
+                  <div className={styles.riskAssessCompletingSpinnerIcon}>
                     <Sparkles className="w-7 h-7 text-white" />
                   </div>
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold font-display">
+                  <h2 className={styles.riskAssessCompletingTitle}>
                     Calculating Your Results
                   </h2>
-                  <p className="text-white/80">
+                  <p className={styles.riskAssessCompletingSubtitle}>
                     Analyzing {companyName}&apos;s risk profile
                   </p>
                 </div>
               </div>
 
-              <div className="mt-6">
-                <div className="h-2 bg-white/20 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-white rounded-full"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${completionPercent}%` }}
-                    transition={{ duration: 0.5 }}
-                  />
-                </div>
+              <div className={styles.riskAssessCompletingProgressTrack}>
+                <motion.div
+                  className={styles.riskAssessCompletingProgressFill}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${completionPercent}%` }}
+                  transition={{ duration: 0.5 }}
+                />
               </div>
             </div>
 
-            <div className="p-6">
-              <div className="space-y-3">
+            <div className={styles.riskAssessCompletingBody}>
+              <div className={styles.riskAssessCompletingSteps}>
                 {COMPLETION_STEPS.map((step, index) => {
                   const isCompleted = index < completingStep
                   const isCurrent = index === completingStep
@@ -447,41 +425,40 @@ export function RiskAssessmentStep({
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.3, delay: index * 0.1 }}
-                      className={`flex items-center gap-4 p-3 rounded-xl transition-colors ${
-                        isCurrent ? 'bg-emerald-50 dark:bg-emerald-900/20' : ''
-                      }`}
+                      className={`${styles.riskAssessCompletingStep}${isCurrent ? ` ${styles.riskAssessCompletingStepActive}` : ''}`}
                     >
-                      <div className="flex-shrink-0">
+                      <div className={styles.riskAssessCompletingSpinnerWrap}>
                         {isCompleted ? (
                           <motion.div
-                            className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center"
+                            className={styles.riskAssessCompletingStepIconDone}
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                           >
-                            <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                            <Check className="w-5 h-5 text-emerald-600" />
                           </motion.div>
                         ) : isCurrent ? (
-                          <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                          <div className={styles.riskAssessCompletingStepIconCurrent}>
                             <motion.div
-                              className="w-3 h-3 rounded-full bg-emerald-500"
+                              className={styles.riskAssessCompletingStepDot}
                               animate={{ scale: [1, 1.3, 1] }}
                               transition={{ duration: 0.8, repeat: Infinity }}
+                              style={{ background: '#10b981', borderRadius: '50%', width: '0.75rem', height: '0.75rem' }}
                             />
                           </div>
                         ) : (
-                          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                            <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
+                          <div className={styles.riskAssessCompletingStepIconPending}>
+                            <div className={styles.riskAssessCompletingStepDot} />
                           </div>
                         )}
                       </div>
 
-                      <span className={`text-sm ${
+                      <span className={
                         isCompleted
-                          ? 'text-emerald-700 dark:text-emerald-400 font-medium'
+                          ? styles.riskAssessCompletingStepLabelDone
                           : isCurrent
-                          ? 'text-foreground font-medium'
-                          : 'text-muted-foreground'
-                      }`}>
+                          ? styles.riskAssessCompletingStepLabelCurrent
+                          : styles.riskAssessCompletingStepLabelPending
+                      }>
                         {step.label}
                       </span>
                     </motion.div>
@@ -500,29 +477,29 @@ export function RiskAssessmentStep({
   const isCurrentNotApplicable = currentResponse?.confidenceLevel === 'NOT_APPLICABLE'
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className={styles.riskAssessContainer}>
       {/* Header */}
       <motion.div
-        className="text-center mb-6"
+        className={styles.riskAssessHeader}
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full text-sm text-primary mb-3">
+        <div className={styles.riskAssessModeBadge}>
           <Target className="w-4 h-4" />
           Risk Discovery
         </div>
-        <h2 className="text-xl font-bold text-foreground font-display">
+        <h2 className={styles.riskAssessTitle}>
           {currentCategory
             ? `How's Your ${CATEGORY_LABELS[currentCategory]}?`
             : 'Discovering Your Risks'}
         </h2>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className={styles.riskAssessRemaining}>
           {orderedQuestions.length - responses.size} questions remaining
         </p>
       </motion.div>
 
       {/* Category Navigation */}
-      <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-6">
+      <div className={styles.riskAssessCategoryNav}>
         {CATEGORY_ORDER.map((cat) => {
           const catQuestions = questionsByCategory[cat] || []
           const catAnswered = catQuestions.filter(q => responses.has(q.id)).length
@@ -530,6 +507,28 @@ export function RiskAssessmentStep({
           const isCurrentCat = cat === currentCategory
           const firstQuestionIndex = orderedQuestions.findIndex(q => q.briCategory === cat)
           const Icon = CATEGORY_ICONS[cat] || Settings
+
+          const btnClass = `${styles.riskAssessCategoryBtn} ${
+            isComplete
+              ? styles.riskAssessCategoryBtnComplete
+              : isCurrentCat
+              ? styles.riskAssessCategoryBtnActive
+              : styles.riskAssessCategoryBtnDefault
+          }`
+
+          const iconClass = `${styles.riskAssessCategoryIconWrap} ${
+            isComplete
+              ? styles.riskAssessCategoryIconComplete
+              : isCurrentCat
+              ? styles.riskAssessCategoryIconActive
+              : styles.riskAssessCategoryIconDefault
+          }`
+
+          const labelClass = isComplete
+            ? styles.riskAssessCategoryLabelComplete
+            : isCurrentCat
+            ? styles.riskAssessCategoryLabelActive
+            : styles.riskAssessCategoryLabelDefault
 
           return (
             <button
@@ -539,32 +538,15 @@ export function RiskAssessmentStep({
                   setCurrentQuestionIndex(firstQuestionIndex)
                 }
               }}
-              className={cn(
-                "relative rounded-xl p-3 text-center transition-all duration-200",
-                isComplete
-                  ? "bg-emerald-50 dark:bg-emerald-900/20 border-2 border-emerald-200 dark:border-emerald-800"
-                  : isCurrentCat
-                    ? "bg-primary/5 border-2 border-primary shadow-sm"
-                    : "bg-card border border-border hover:border-primary/30"
-              )}
+              className={btnClass}
             >
-              <div className={cn(
-                "w-8 h-8 rounded-lg flex items-center justify-center mx-auto mb-2",
-                isComplete
-                  ? "bg-emerald-500 text-white"
-                  : isCurrentCat
-                    ? "bg-primary text-white"
-                    : "bg-muted text-muted-foreground"
-              )}>
+              <div className={iconClass}>
                 {isComplete ? <Check className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
               </div>
-              <div className={cn(
-                "text-xs font-medium truncate",
-                isComplete ? "text-emerald-700 dark:text-emerald-400" : isCurrentCat ? "text-primary" : "text-muted-foreground"
-              )}>
+              <div className={`${styles.riskAssessCategoryLabel} ${labelClass}`}>
                 {CATEGORY_LABELS[cat]?.split(' ')[0]}
               </div>
-              <div className="text-[10px] text-muted-foreground mt-0.5">
+              <div className={styles.riskAssessCategoryCount}>
                 {catAnswered}/{catQuestions.length}
               </div>
             </button>
@@ -573,14 +555,14 @@ export function RiskAssessmentStep({
       </div>
 
       {/* Progress Bar */}
-      <div className="bg-card rounded-xl border border-border p-4 mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium">Overall Progress</span>
-          <span className="text-sm font-bold text-primary">{progress}%</span>
+      <div className={styles.riskAssessProgressCard}>
+        <div className={styles.riskAssessProgressTop}>
+          <span className={styles.riskAssessProgressLabel}>Overall Progress</span>
+          <span className={styles.riskAssessProgressValue}>{progress}%</span>
         </div>
-        <div className="h-2 bg-muted rounded-full overflow-hidden">
+        <div className={styles.riskAssessProgressTrack}>
           <motion.div
-            className="h-full bg-primary rounded-full"
+            className={styles.riskAssessProgressFill}
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.5 }}
@@ -595,10 +577,10 @@ export function RiskAssessmentStep({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-center gap-3"
+            className={styles.riskAssessError}
           >
             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-            <span className="text-red-700 dark:text-red-300 text-sm">{error}</span>
+            <span className={styles.riskAssessErrorText}>{error}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -612,58 +594,63 @@ export function RiskAssessmentStep({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
-            className="bg-card rounded-2xl border border-border overflow-hidden mb-6"
+            className={styles.riskAssessQuestionCard}
           >
             {/* Question Header */}
-            <div className="p-6 pb-4">
-              <div className="flex items-center gap-2 text-sm mb-4">
-                <span className="px-3 py-1 bg-primary/10 text-primary font-medium rounded-lg">
+            <div className={styles.riskAssessQuestionHeader}>
+              <div className={styles.riskAssessQuestionMeta}>
+                <span className={styles.riskAssessQuestionCategoryBadge}>
                   {CATEGORY_LABELS[currentQuestion.briCategory]}
                 </span>
-                <span className="text-muted-foreground">
+                <span className={styles.riskAssessQuestionCounter}>
                   Question {categoryQuestionIndex + 1} of {categoryQuestions.length}
                 </span>
               </div>
-              <h3 className="text-lg font-semibold text-foreground leading-relaxed">
+              <h3 className={styles.riskAssessQuestionText}>
                 {currentQuestion.questionText}
               </h3>
               {currentQuestion.helpText && (
-                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                <p className={styles.riskAssessHelpText}>
                   {currentQuestion.helpText}
                 </p>
               )}
             </div>
 
             {/* Answer Options */}
-            <div className="px-6 pb-6 space-y-3">
+            <div className={styles.riskAssessOptions}>
               {[...currentQuestion.options]
                 .sort((a, b) => a.displayOrder - b.displayOrder)
                 .map((option) => {
                   const isSelected = currentResponse?.selectedOptionId === option.id
                   const isRecentlySelected = recentlySelected === option.id
 
+                  const btnClass = [
+                    styles.riskAssessOptionBtn,
+                    isSelected ? styles.riskAssessOptionBtnSelected : '',
+                    saving ? styles.riskAssessOptionBtnDisabled : '',
+                  ].filter(Boolean).join(' ')
+
+                  const radioClass = [
+                    styles.riskAssessOptionRadio,
+                    isSelected ? styles.riskAssessOptionRadioSelected : '',
+                  ].filter(Boolean).join(' ')
+
+                  const textClass = [
+                    styles.riskAssessOptionText,
+                    isSelected ? styles.riskAssessOptionTextSelected : '',
+                  ].filter(Boolean).join(' ')
+
                   return (
                     <motion.button
                       key={option.id}
                       onClick={() => !saving && handleAnswer(option.id)}
                       disabled={saving}
-                      className={cn(
-                        "w-full text-left p-4 rounded-xl border-2 transition-all duration-200",
-                        isSelected
-                          ? "border-primary bg-primary/5"
-                          : "border-border hover:border-primary/40 hover:bg-muted/30",
-                        saving && "opacity-60 cursor-not-allowed"
-                      )}
+                      className={btnClass}
                       whileHover={!saving ? { scale: 1.01 } : {}}
                       whileTap={!saving ? { scale: 0.99 } : {}}
                     >
-                      <div className="flex items-start gap-3">
-                        <div className={cn(
-                          "w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all duration-200",
-                          isSelected
-                            ? "border-primary bg-primary"
-                            : "border-muted-foreground/30"
-                        )}>
+                      <div className={styles.riskAssessOptionInner}>
+                        <div className={radioClass}>
                           {isSelected && (
                             <motion.div
                               initial={{ scale: 0 }}
@@ -674,10 +661,7 @@ export function RiskAssessmentStep({
                           )}
                         </div>
 
-                        <span className={cn(
-                          "text-sm leading-relaxed flex-1",
-                          isSelected ? "text-foreground font-medium" : "text-foreground/80"
-                        )}>
+                        <span className={textClass}>
                           {option.optionText}
                         </span>
 
@@ -691,7 +675,7 @@ export function RiskAssessmentStep({
 
               {/* Not applicable option */}
               {isCurrentNotApplicable ? (
-                <div className="flex items-center justify-center gap-2 py-3 text-sm text-slate-500 bg-slate-50 dark:bg-slate-900/30 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div className={styles.riskAssessNaMarked}>
                   <MinusCircle className="w-4 h-4" />
                   Marked as not applicable
                 </div>
@@ -699,7 +683,7 @@ export function RiskAssessmentStep({
                 <button
                   onClick={markAsNotApplicable}
                   disabled={saving}
-                  className="w-full flex items-center justify-center gap-2 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  className={styles.riskAssessNaBtn}
                 >
                   <MinusCircle className="w-3.5 h-3.5" />
                   This doesn&apos;t apply to my business
@@ -711,7 +695,7 @@ export function RiskAssessmentStep({
       </AnimatePresence>
 
       {/* Navigation */}
-      <div className="flex justify-between items-center">
+      <div className={styles.riskAssessNav}>
         <Button
           variant="ghost"
           onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}
@@ -752,12 +736,12 @@ export function RiskAssessmentStep({
         )}
       </div>
 
-      {/* Skip link - only show when not completing */}
+      {/* Skip link */}
       {!completing && (
-        <div className="mt-6 text-center">
+        <div className={styles.riskAssessSkipRow}>
           <button
             onClick={onSkip}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className={styles.riskAssessSkipBtn}
           >
             Skip for now
           </button>

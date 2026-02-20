@@ -17,6 +17,7 @@ import {
   Scale,
   User,
 } from 'lucide-react'
+import styles from '@/components/onboarding/onboarding.module.css'
 
 interface GeneratedTask {
   id: string
@@ -142,9 +143,9 @@ export function TaskAssignmentStep({
   // Loading state
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-16">
-        <Loader2 className="w-8 h-8 text-primary animate-spin mb-4" />
-        <p className="text-muted-foreground">
+      <div className={styles.taskAssignLoadingState}>
+        <Loader2 style={{ width: '2rem', height: '2rem', color: 'var(--primary)', animation: 'spin 1s linear infinite' }} />
+        <p className={styles.taskAssignLoadingText}>
           Creating your personalized action plan...
         </p>
       </div>
@@ -154,10 +155,10 @@ export function TaskAssignmentStep({
   // Error state
   if (error) {
     return (
-      <div className="space-y-6">
-        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 dark:bg-red-950/30 dark:border-red-800/30 dark:text-red-400">
-          <p className="font-medium">Unable to generate action plan</p>
-          <p className="text-sm mt-1">{error}</p>
+      <div className={styles.taskAssignErrorState}>
+        <div className={styles.taskAssignErrorBanner}>
+          <p className={styles.taskAssignErrorTitle}>Unable to generate action plan</p>
+          <p className={styles.taskAssignErrorDetail}>{error}</p>
         </div>
         <Button onClick={onComplete}>
           Continue to Dashboard
@@ -167,17 +168,17 @@ export function TaskAssignmentStep({
   }
 
   return (
-    <div className="space-y-8">
+    <div className={styles.taskAssignRoot}>
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center"
+        className={styles.taskAssignHeader}
       >
-        <h2 className="text-2xl sm:text-3xl font-bold font-display text-foreground">
+        <h2 className={styles.taskAssignTitle}>
           Your Action Plan
         </h2>
-        <p className="text-muted-foreground mt-2">
+        <p className={styles.taskAssignSubtitle}>
           {tasks.length} tasks to start improving {companyName}&apos;s value
         </p>
       </motion.div>
@@ -187,24 +188,24 @@ export function TaskAssignmentStep({
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2 }}
-        className="grid grid-cols-2 gap-4"
+        className={styles.taskAssignSummaryGrid}
       >
-        <div className="bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 rounded-xl p-4 border border-emerald-200/50 dark:border-emerald-800/30">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-            <span className="text-sm text-muted-foreground">Potential Value Impact</span>
+        <div className={styles.taskAssignSummaryCardGreen}>
+          <div className={styles.taskAssignSummaryIconRow}>
+            <TrendingUp style={{ width: '1.25rem', height: '1.25rem', color: '#059669' }} />
+            <span className={styles.taskAssignSummaryLabel}>Potential Value Impact</span>
           </div>
-          <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+          <p className={styles.taskAssignSummaryValueGreen}>
             +{formatCurrency(totalValueImprovement)}
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl p-4 border border-blue-200/50 dark:border-blue-800/30">
-          <div className="flex items-center gap-2 mb-2">
-            <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            <span className="text-sm text-muted-foreground">Time Investment</span>
+        <div className={styles.taskAssignSummaryCardBlue}>
+          <div className={styles.taskAssignSummaryIconRow}>
+            <Clock style={{ width: '1.25rem', height: '1.25rem', color: '#2563EB' }} />
+            <span className={styles.taskAssignSummaryLabel}>Time Investment</span>
           </div>
-          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+          <p className={styles.taskAssignSummaryValueBlue}>
             ~{totalHours} hours
           </p>
         </div>
@@ -215,11 +216,11 @@ export function TaskAssignmentStep({
         initial={{ opacity: 0 }}
         animate={{ opacity: showTasks ? 1 : 0 }}
         transition={{ delay: 0.4 }}
-        className="space-y-4"
+        className={styles.taskAssignListSection}
       >
-        <h3 className="text-lg font-semibold text-foreground">This Week&apos;s Tasks</h3>
+        <h3 className={styles.taskAssignListTitle}>This Week&apos;s Tasks</h3>
 
-        <div className="space-y-3">
+        <div className={styles.taskAssignList}>
           {tasks.map((task, index) => {
             const Icon = CATEGORY_ICONS[task.category] || Settings
             const isRevealed = index < revealedTasks
@@ -230,36 +231,36 @@ export function TaskAssignmentStep({
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: isRevealed ? 1 : 0, x: isRevealed ? 0 : -20 }}
                 transition={{ duration: 0.3 }}
-                className="bg-card rounded-xl border border-border p-4"
+                className={styles.taskAssignCard}
               >
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-5 h-5 text-primary" />
+                <div className={styles.taskAssignCardInner}>
+                  <div className={styles.taskAssignIconWrap}>
+                    <Icon style={{ width: '1.25rem', height: '1.25rem', color: 'var(--primary)' }} />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs px-2 py-0.5 bg-muted rounded-full text-muted-foreground">
+                  <div className={styles.taskAssignCardBody}>
+                    <div className={styles.taskAssignCardMeta}>
+                      <span className={styles.taskAssignCategoryBadge}>
                         {CATEGORY_LABELS[task.category] || task.category}
                       </span>
                       {task.estimatedHours && (
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
+                        <span className={styles.taskAssignTimeBadge}>
+                          <Clock style={{ width: '0.75rem', height: '0.75rem' }} />
                           {task.estimatedHours}h
                         </span>
                       )}
                     </div>
-                    <h4 className="font-medium text-foreground">{task.title}</h4>
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                    <h4 className={styles.taskAssignCardTitle}>{task.title}</h4>
+                    <p className={styles.taskAssignCardDesc}>
                       {task.description}
                     </p>
                     {task.estimatedValue > 0 && (
-                      <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-2 flex items-center gap-1">
-                        <TrendingUp className="w-3 h-3" />
+                      <p className={styles.taskAssignValueBadge}>
+                        <TrendingUp style={{ width: '0.75rem', height: '0.75rem' }} />
                         +{formatCurrency(task.estimatedValue)} potential value
                       </p>
                     )}
                   </div>
-                  <CheckCircle2 className="w-5 h-5 text-muted-foreground/30 flex-shrink-0" />
+                  <CheckCircle2 className={styles.taskAssignCardCheck} />
                 </div>
               </motion.div>
             )
@@ -272,21 +273,21 @@ export function TaskAssignmentStep({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: revealedTasks >= tasks.length ? 1 : 0, y: revealedTasks >= tasks.length ? 0 : 20 }}
         transition={{ delay: 0.3 }}
-        className="bg-gradient-to-br from-primary/10 to-amber-500/10 rounded-2xl border border-primary/20 p-6 text-center"
+        className={styles.taskAssignCta}
       >
-        <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-          <Rocket className="w-6 h-6 text-primary-foreground" />
+        <div className={styles.taskAssignCtaIconWrap}>
+          <Rocket style={{ width: '1.5rem', height: '1.5rem', color: '#FFFFFF' }} />
         </div>
-        <h3 className="text-lg font-semibold text-foreground mb-2">
+        <h3 className={styles.taskAssignCtaTitle}>
           Ready to Start Building Value?
         </h3>
-        <p className="text-sm text-muted-foreground mb-4">
+        <p className={styles.taskAssignCtaText}>
           Your personalized action plan is waiting. Complete these tasks to start
           closing the value gap.
         </p>
         <Button onClick={onComplete} size="lg" className="gap-2">
           Go to Action Plan
-          <Rocket className="w-4 h-4" />
+          <Rocket style={{ width: '1rem', height: '1rem' }} />
         </Button>
       </motion.div>
     </div>

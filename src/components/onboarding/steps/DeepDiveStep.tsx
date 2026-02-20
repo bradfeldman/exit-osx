@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 import {
   Check,
   ChevronRight,
@@ -17,6 +16,7 @@ import {
   BRI_CATEGORY_BORDER_COLORS,
   type BRICategory,
 } from '@/lib/constants/bri-categories'
+import styles from '@/components/onboarding/onboarding.module.css'
 
 interface Question {
   id: string
@@ -221,17 +221,17 @@ export function DeepDiveStep({
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-16">
-        <Loader2 className="w-8 h-8 text-primary animate-spin mb-4" />
-        <p className="text-muted-foreground">Loading assessment...</p>
+      <div className={styles.deepDiveLoadingState}>
+        <Loader2 style={{ width: '2rem', height: '2rem', color: 'var(--primary)', animation: 'spin 1s linear infinite' }} />
+        <p className={styles.deepDiveLoadingText}>Loading assessment...</p>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="space-y-6">
-        <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-xl text-destructive text-sm">
+      <div className={styles.deepDiveErrorState}>
+        <div className={styles.deepDiveErrorBanner}>
           {error}
         </div>
         <Button onClick={() => onFinish()}>Continue to Dashboard</Button>
@@ -242,17 +242,17 @@ export function DeepDiveStep({
   const completedCount = completedCategories.size
 
   return (
-    <div className="space-y-6">
+    <div className={styles.deepDiveRoot}>
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center"
+        className={styles.deepDiveHeader}
       >
-        <h2 className="text-2xl sm:text-3xl font-bold font-display text-foreground">
+        <h2 className={styles.deepDiveTitle}>
           Refine Your Risk Profile
         </h2>
-        <p className="text-muted-foreground mt-2 max-w-md mx-auto">
+        <p className={styles.deepDiveSubtitle}>
           Answer detailed questions in each category to get a more accurate diagnosis.
           This is optional — you can skip straight to your dashboard.
         </p>
@@ -263,11 +263,11 @@ export function DeepDiveStep({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="flex justify-center"
+        className={styles.deepDiveProgressWrap}
       >
-        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-muted text-sm font-medium">
-          <span className="text-primary font-semibold">{completedCount}</span>
-          <span className="text-muted-foreground">/ {BRI_CATEGORIES.length} categories assessed</span>
+        <span className={styles.deepDiveProgressPill}>
+          <span className={styles.deepDiveProgressCount}>{completedCount}</span>
+          <span className={styles.deepDiveProgressLabel}>/ {BRI_CATEGORIES.length} categories assessed</span>
         </span>
       </motion.div>
 
@@ -276,7 +276,7 @@ export function DeepDiveStep({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.15 }}
-        className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+        className={styles.deepDiveCategoryGrid}
       >
         {BRI_CATEGORIES.map((category) => {
           const isCompleted = completedCategories.has(category)
@@ -289,37 +289,34 @@ export function DeepDiveStep({
             <motion.div
               key={category}
               layout
-              className={cn(
-                'rounded-xl border bg-card transition-all',
-                isExpanded ? 'sm:col-span-2' : '',
-                isCompleted ? 'border-emerald-500/30' : 'border-border',
-              )}
+              className={`${styles.deepDiveCategoryCard} ${isCompleted ? styles.deepDiveCategoryCardCompleted : ''}`}
+              style={isExpanded ? { gridColumn: '1 / -1' } : undefined}
             >
               {/* Card header */}
-              <div className="p-4">
-                <div className="flex items-center gap-3">
+              <div className={styles.deepDiveCategoryHeader}>
+                <div className={styles.deepDiveCategoryInner}>
                   {/* Color accent dot */}
-                  <div className={cn('w-2.5 h-2.5 rounded-full border-2', borderColor)} />
+                  <div className={`${styles.deepDiveAccentDot} ${borderColor}`} />
 
                   {/* Category name + info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-semibold text-foreground truncate">
+                  <div className={styles.deepDiveCategoryMeta}>
+                    <div className={styles.deepDiveCategoryTitleRow}>
+                      <h3 className={styles.deepDiveCategoryName}>
                         {BRI_CATEGORY_LABELS[category]}
                       </h3>
                       {isCompleted && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                          <Check className="w-3 h-3" />
+                        <span className={styles.deepDiveCompletedBadge}>
+                          <Check style={{ width: '0.75rem', height: '0.75rem' }} />
                           Done
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-3 mt-0.5">
-                      <span className="text-xs text-muted-foreground">
+                    <div className={styles.deepDiveCategoryStats}>
+                      <span className={styles.deepDiveCategoryStat}>
                         QuickScan: {score !== undefined ? `${score}%` : 'N/A'}
                       </span>
                       {questions.length > 0 && (
-                        <span className="text-xs text-muted-foreground">
+                        <span className={styles.deepDiveCategoryStat}>
                           {questions.length} questions
                         </span>
                       )}
@@ -335,7 +332,7 @@ export function DeepDiveStep({
                       className="shrink-0 gap-1 text-xs"
                     >
                       Start
-                      <ChevronRight className="w-3 h-3" />
+                      <ChevronRight style={{ width: '0.75rem', height: '0.75rem' }} />
                     </Button>
                   )}
                   {!isExpanded && isCompleted && (
@@ -376,10 +373,10 @@ export function DeepDiveStep({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="p-4 bg-destructive/10 border border-destructive/20 rounded-xl"
+            className={styles.deepDiveTaskGenError}
           >
-            <p className="text-sm text-destructive mb-3">{taskGenError}</p>
-            <div className="flex gap-2">
+            <p className={styles.deepDiveTaskGenErrorText}>{taskGenError}</p>
+            <div className={styles.deepDiveTaskGenErrorActions}>
               <Button
                 size="sm"
                 variant="outline"
@@ -388,7 +385,7 @@ export function DeepDiveStep({
               >
                 {finishing ? (
                   <>
-                    <Loader2 className="w-3 h-3 animate-spin mr-2" />
+                    <Loader2 style={{ width: '0.75rem', height: '0.75rem', animation: 'spin 1s linear infinite', marginRight: '0.5rem' }} />
                     Retrying...
                   </>
                 ) : (
@@ -396,8 +393,8 @@ export function DeepDiveStep({
                 )}
               </Button>
               {retryCount >= 1 && (
-                <p className="text-xs text-muted-foreground flex items-center">
-                  We're generating your action plan. It'll be ready when you reach your dashboard.
+                <p className={styles.deepDiveRetryNote}>
+                  We&apos;re generating your action plan. It&apos;ll be ready when you reach your dashboard.
                 </p>
               )}
             </div>
@@ -410,7 +407,7 @@ export function DeepDiveStep({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="pt-2"
+        className={styles.deepDiveContinueWrap}
       >
         <Button
           size="lg"
@@ -420,18 +417,18 @@ export function DeepDiveStep({
         >
           {finishing ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 style={{ width: '1rem', height: '1rem', animation: 'spin 1s linear infinite' }} />
               Preparing your dashboard...
             </>
           ) : (
             <>
               Continue to Dashboard
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight style={{ width: '1.25rem', height: '1.25rem' }} />
             </>
           )}
         </Button>
         {completedCount === 0 && (
-          <p className="text-center text-xs text-muted-foreground mt-2">
+          <p className={styles.deepDiveSkipNote}>
             You can always refine your assessment later from the Diagnosis page.
           </p>
         )}

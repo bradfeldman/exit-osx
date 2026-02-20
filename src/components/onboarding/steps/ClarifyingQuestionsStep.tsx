@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from '@/lib/motion'
 import { MessageCircleQuestion, Loader2 } from 'lucide-react'
 import type { ClarifyingQuestion } from '@/lib/ai/types'
+import styles from '@/components/onboarding/onboarding.module.css'
 
 interface ClarifyingQuestionsStepProps {
   companyName: string
@@ -102,23 +103,21 @@ export function ClarifyingQuestionsStep({
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 text-primary animate-spin mb-4" />
-        <p className="text-muted-foreground">Analyzing your business...</p>
-        <p className="text-sm text-muted-foreground/70 mt-1">
-          Generating personalized questions
-        </p>
+      <div className={styles.clarifyLoadingState}>
+        <Loader2 className={styles.clarifyLoadingIcon} style={{ width: '2rem', height: '2rem', color: 'var(--primary)', animation: 'spin 1s linear infinite' }} />
+        <p className={styles.clarifyLoadingText}>Analyzing your business...</p>
+        <p className={styles.clarifyLoadingSubtext}>Generating personalized questions</p>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="text-center py-8">
-        <p className="text-destructive mb-4">{error}</p>
+      <div className={styles.clarifyErrorState}>
+        <p className={styles.clarifyErrorText}>{error}</p>
         <button
           onClick={() => onComplete({}, [])}
-          className="text-sm text-primary hover:text-primary/80"
+          className={styles.clarifyErrorLink}
         >
           Continue anyway
         </button>
@@ -128,43 +127,43 @@ export function ClarifyingQuestionsStep({
 
   if (questions.length === 0 && !isLoading && !error) {
     return (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground">Great! We have everything we need.</p>
+      <div className={styles.clarifyEmptyState}>
+        <p className={styles.clarifyEmptyText}>Great! We have everything we need.</p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="text-center mb-8">
+    <div className={styles.clarifyRoot}>
+      <div className={styles.clarifyHeader}>
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4"
+          className={styles.clarifyIconWrap}
         >
-          <MessageCircleQuestion className="w-7 h-7 text-primary" />
+          <MessageCircleQuestion className={styles.clarifyIcon} style={{ width: '1.75rem', height: '1.75rem' }} />
         </motion.div>
-        <h2 className="text-xl font-bold text-foreground font-display">
+        <h2 className={styles.clarifyTitle}>
           A few quick questions about {companyName}
         </h2>
-        <p className="text-muted-foreground mt-2">
+        <p className={styles.clarifySubtitle}>
           This helps us create a personalized improvement plan.
         </p>
       </div>
 
-      <div className="space-y-8">
+      <div className={styles.clarifyQuestionList}>
         {questions.map((question, index) => (
           <motion.div
             key={question.id}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="space-y-3"
+            className={styles.clarifyQuestion}
           >
-            <p className="font-medium text-foreground">
+            <p className={styles.clarifyQuestionLabel}>
               {index + 1}. {question.question}
             </p>
-            <div className="space-y-2">
+            <div className={styles.clarifyOptionList}>
               {question.options.map((option) => {
                 const isSelected = answers[question.id] === option.id
                 const isOther = option.text.toLowerCase().includes('something else')
@@ -174,23 +173,15 @@ export function ClarifyingQuestionsStep({
                     <button
                       type="button"
                       onClick={() => handleOptionSelect(question.id, option.id)}
-                      className={`w-full text-left p-3 rounded-lg border transition-all ${
-                        isSelected
-                          ? 'border-primary bg-primary/5 text-foreground'
-                          : 'border-border bg-background hover:border-primary/50 text-muted-foreground hover:text-foreground'
-                      }`}
+                      className={`${styles.clarifyOptionBtn} ${isSelected ? styles.clarifyOptionBtnSelected : ''}`}
                     >
-                      <span className="flex items-center gap-3">
-                        <span
-                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                            isSelected ? 'border-primary' : 'border-muted-foreground/50'
-                          }`}
-                        >
+                      <span className={styles.clarifyOptionInner}>
+                        <span className={`${styles.clarifyRadio} ${isSelected ? styles.clarifyRadioSelected : ''}`}>
                           {isSelected && (
-                            <span className="w-2 h-2 rounded-full bg-primary" />
+                            <span className={styles.clarifyRadioDot} />
                           )}
                         </span>
-                        <span className="text-sm">{option.text}</span>
+                        <span className={styles.clarifyOptionText}>{option.text}</span>
                       </span>
                     </button>
 
@@ -199,7 +190,7 @@ export function ClarifyingQuestionsStep({
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
-                        className="mt-2 ml-7"
+                        className={styles.clarifyOtherInput}
                       >
                         <input
                           type="text"
@@ -208,7 +199,7 @@ export function ClarifyingQuestionsStep({
                             handleOtherTextChange(question.id, e.target.value)
                           }
                           placeholder="Please specify..."
-                          className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                          className={styles.clarifyTextInput}
                         />
                       </motion.div>
                     )}
@@ -220,16 +211,12 @@ export function ClarifyingQuestionsStep({
         ))}
       </div>
 
-      <div className="flex items-center justify-end pt-6 border-t border-border">
+      <div className={styles.clarifyFooter}>
         <button
           type="button"
           onClick={handleContinue}
           disabled={!allQuestionsAnswered}
-          className={`px-6 py-2 rounded-lg font-medium transition-all ${
-            allQuestionsAnswered
-              ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-              : 'bg-muted text-muted-foreground cursor-not-allowed'
-          }`}
+          className={`${styles.clarifySubmitBtn} ${allQuestionsAnswered ? styles.clarifySubmitBtnActive : styles.clarifySubmitBtnDisabled}`}
         >
           Continue
         </button>

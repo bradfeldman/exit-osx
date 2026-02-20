@@ -8,6 +8,7 @@ import {
   Loader2,
   ArrowRight,
 } from 'lucide-react'
+import styles from '@/components/onboarding/onboarding.module.css'
 
 interface GeneratedTask {
   id: string
@@ -97,14 +98,14 @@ export function FirstMoveStep({
   // Loading state with animation
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-16">
+      <div className={styles.firstMoveLoadingState}>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-center"
+          className={styles.firstMoveLoadingInner}
         >
-          <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">
+          <Loader2 style={{ width: '2rem', height: '2rem', color: 'var(--primary)', animation: 'spin 1s linear infinite', margin: '0 auto' }} />
+          <p className={styles.firstMoveLoadingText}>
             Creating your personalized action plan...
           </p>
         </motion.div>
@@ -115,10 +116,10 @@ export function FirstMoveStep({
   // Error state
   if (error || !firstTask) {
     return (
-      <div className="space-y-6">
-        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 dark:bg-red-950/30 dark:border-red-800/30 dark:text-red-400">
-          <p className="font-medium">Unable to generate action plan</p>
-          <p className="text-sm mt-1">{error || 'No tasks available'}</p>
+      <div className={styles.firstMoveErrorState}>
+        <div className={styles.firstMoveErrorBanner}>
+          <p className={styles.firstMoveErrorTitle}>Unable to generate action plan</p>
+          <p className={styles.firstMoveErrorDetail}>{error || 'No tasks available'}</p>
         </div>
         <Button onClick={() => onComplete()}>
           Continue to Dashboard
@@ -131,17 +132,17 @@ export function FirstMoveStep({
   const _briChange = Math.min(100, riskResults.briScore + 6)
 
   return (
-    <div className="space-y-6">
+    <div className={styles.firstMoveRoot}>
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center"
+        className={styles.firstMoveHeader}
       >
-        <h2 className="text-2xl sm:text-3xl font-bold font-display text-foreground">
+        <h2 className={styles.firstMoveTitle}>
           Your First Move
         </h2>
-        <p className="text-muted-foreground mt-2">
+        <p className={styles.firstMoveSubtitle}>
           If you do nothing else, do this.
         </p>
       </motion.div>
@@ -151,54 +152,54 @@ export function FirstMoveStep({
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2 }}
-        className="relative bg-card rounded-2xl border-2 border-primary p-6"
+        className={styles.firstMoveCard}
       >
         {/* Badge */}
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span className="inline-flex items-center px-4 py-1 rounded-full text-xs font-semibold bg-primary text-primary-foreground uppercase tracking-wider">
+        <div className={styles.firstMoveBadgeWrap}>
+          <span className={styles.firstMoveBadge}>
             Highest Impact
           </span>
         </div>
 
         {/* Task Content */}
-        <div className="mt-4">
-          <h3 className="text-xl font-bold text-foreground mb-2">
+        <div className={styles.firstMoveCardBody}>
+          <h3 className={styles.firstMoveTaskTitle}>
             {firstTask.title}
           </h3>
-          <p className="text-muted-foreground mb-6">
+          <p className={styles.firstMoveTaskDesc}>
             {firstTask.description}
           </p>
 
           {/* Task Metrics */}
-          <div className="grid grid-cols-3 gap-4 py-4 border-y border-border">
-            <div className="text-center">
-              <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+          <div className={styles.firstMoveMetrics}>
+            <div className={styles.firstMoveMetric}>
+              <p className={styles.firstMoveMetricValueGreen}>
                 +{formatCurrency(firstTask.estimatedValue)}
               </p>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">
+              <p className={styles.firstMoveMetricLabel}>
                 Value Impact
               </p>
             </div>
-            <div className="text-center">
-              <p className="text-lg font-bold text-foreground">
+            <div className={styles.firstMoveMetric}>
+              <p className={styles.firstMoveMetricValue}>
                 {estimatedMinutes} min
               </p>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">
+              <p className={styles.firstMoveMetricLabel}>
                 Est. Time
               </p>
             </div>
-            <div className="text-center">
-              <p className="text-lg font-bold text-foreground">
+            <div className={styles.firstMoveMetric}>
+              <p className={styles.firstMoveMetricValue}>
                 {CATEGORY_LABELS[firstTask.category] || firstTask.category}
               </p>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">
+              <p className={styles.firstMoveMetricLabel}>
                 Risk Addressed
               </p>
             </div>
           </div>
 
           {/* Unlock Note */}
-          <p className="text-sm text-muted-foreground text-center mt-4">
+          <p className={styles.firstMoveUnlockNote}>
             Completing this unlocks the next highest-impact task.
           </p>
         </div>
@@ -216,7 +217,7 @@ export function FirstMoveStep({
           onClick={() => onComplete(firstTask.id)}
         >
           Start This Task
-          <ArrowRight className="w-5 h-5" />
+          <ArrowRight style={{ width: '1.25rem', height: '1.25rem' }} />
         </Button>
       </motion.div>
 
@@ -225,11 +226,11 @@ export function FirstMoveStep({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
-        className="text-center"
+        className={styles.firstMoveBackWrap}
       >
         <button
           onClick={() => window.history.back()}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className={styles.firstMoveBackBtn}
         >
           Back to Results
         </button>

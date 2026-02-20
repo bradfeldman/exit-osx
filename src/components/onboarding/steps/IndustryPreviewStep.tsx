@@ -4,6 +4,7 @@ import { motion } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils/currency'
 import { ValuationDisclaimer } from '@/components/ui/ValuationDisclaimer'
+import styles from '@/components/onboarding/onboarding.module.css'
 
 interface IndustryPreviewStepProps {
   companyName: string
@@ -25,20 +26,20 @@ export function IndustryPreviewStep({
   multipleSource,
 }: IndustryPreviewStepProps) {
   return (
-    <div className="max-w-xl mx-auto">
+    <div className={styles.indPreviewContainer}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-card rounded-2xl border border-border p-8 shadow-lg"
+        className={styles.indPreviewCard}
       >
-        {/* Valuation Reveal - Matching prototype */}
-        <div className="text-center mb-8">
+        {/* Valuation Reveal */}
+        <div className={styles.indPreviewRevealSection}>
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-sm text-muted-foreground mb-2"
+            className={styles.indPreviewIndustryLabel}
           >
             Based on {industryName}
           </motion.p>
@@ -47,7 +48,7 @@ export function IndustryPreviewStep({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="text-xl font-semibold text-foreground mb-6"
+            className={styles.indPreviewHeading}
           >
             Your estimated valuation range
           </motion.h2>
@@ -56,13 +57,13 @@ export function IndustryPreviewStep({
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.4, type: 'spring', stiffness: 100 }}
-            className="flex items-baseline justify-center gap-4 mb-4"
+            className={styles.indPreviewValuationRange}
           >
-            <span className="text-4xl md:text-5xl font-bold text-foreground">
+            <span className={styles.indPreviewValuationAmount}>
               {formatCurrency(valuationLow)}
             </span>
-            <span className="text-xl text-muted-foreground">to</span>
-            <span className="text-4xl md:text-5xl font-bold text-foreground">
+            <span className={styles.indPreviewValuationSep}>to</span>
+            <span className={styles.indPreviewValuationAmount}>
               {formatCurrency(valuationHigh)}
             </span>
           </motion.div>
@@ -72,13 +73,13 @@ export function IndustryPreviewStep({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
-            className="h-3 bg-muted rounded-full overflow-hidden mb-6"
+            className={styles.indPreviewValuationBar}
           >
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: '100%' }}
               transition={{ delay: 0.8, duration: 1 }}
-              className="h-full bg-gradient-to-r from-muted-foreground/50 to-primary rounded-full"
+              className={styles.indPreviewValuationBarFill}
             />
           </motion.div>
         </div>
@@ -87,21 +88,22 @@ export function IndustryPreviewStep({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7 }}
+          className={styles.indPreviewDisclaimerWrap}
         >
           <ValuationDisclaimer className="text-center mb-6" />
         </motion.div>
 
-        {/* Context box - Matching prototype with amber left border */}
+        {/* Context box */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1 }}
-          className="bg-muted/50 border-l-4 border-amber-500 rounded-r-lg p-4 mb-6"
+          className={styles.indPreviewContextBox}
         >
-          <p className="text-foreground font-medium text-sm mb-2">
+          <p className={styles.indPreviewContextMain}>
             This range reflects what buyers typically pay for businesses like yours—before diligence.
           </p>
-          <p className="text-muted-foreground text-sm">
+          <p className={styles.indPreviewContextSub}>
             The spread isn&apos;t about revenue. It&apos;s about how much risk a buyer perceives. Let&apos;s find out where you fall.
           </p>
         </motion.div>
@@ -111,7 +113,7 @@ export function IndustryPreviewStep({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2 }}
-          className="text-center text-muted-foreground mb-6"
+          className={styles.indPreviewCtaText}
         >
           Let&apos;s find out where you fall in that range.
         </motion.p>
@@ -122,18 +124,18 @@ export function IndustryPreviewStep({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.3 }}
-            className="text-center text-[10px] text-muted-foreground/60 mb-4"
+            className={styles.indPreviewSource}
           >
             Source: {multipleSource}
           </motion.p>
         )}
 
-        {/* Navigation - Matching prototype */}
+        {/* Navigation */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.4 }}
-          className="flex items-center justify-between"
+          className={styles.indPreviewNavRow}
         >
           <Button
             variant="ghost"

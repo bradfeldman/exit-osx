@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
@@ -22,6 +21,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { ArrowLeft, Check, X, Plus, Shield, AlertTriangle } from 'lucide-react'
+import styles from '@/components/advisor/advisor.module.css'
 
 interface Signal {
   id: string
@@ -41,19 +41,21 @@ interface Signal {
   createdAt: string
 }
 
-const SEVERITY_COLORS: Record<string, string> = {
-  CRITICAL: 'bg-red-100 text-red-700 border-red-200',
-  HIGH: 'bg-orange-100 text-orange-700 border-orange-200',
-  MEDIUM: 'bg-amber-100 text-amber-700 border-amber-200',
-  LOW: 'bg-blue-100 text-blue-700 border-blue-200',
-  INFO: 'bg-zinc-100 text-zinc-600 border-zinc-200',
+// Severity → CSS module class name lookup
+const SEVERITY_CLASS: Record<string, string> = {
+  CRITICAL: styles.severityCritical,
+  HIGH: styles.severityHigh,
+  MEDIUM: styles.severityMedium,
+  LOW: styles.severityLow,
+  INFO: styles.severityInfo,
 }
 
-const CONFIDENCE_COLORS: Record<string, string> = {
-  UNCERTAIN: 'bg-zinc-100 text-zinc-600',
-  SOMEWHAT_CONFIDENT: 'bg-yellow-100 text-yellow-700',
-  CONFIDENT: 'bg-blue-100 text-blue-700',
-  VERIFIED: 'bg-emerald-100 text-emerald-700',
+// Confidence → CSS module class name lookup
+const CONFIDENCE_CLASS: Record<string, string> = {
+  UNCERTAIN: styles.confidenceUncertain,
+  SOMEWHAT_CONFIDENT: styles.confidenceSomewhat,
+  CONFIDENT: styles.confidenceConfident,
+  VERIFIED: styles.confidenceVerified,
 }
 
 export default function AdvisorSignalsPage() {
@@ -148,19 +150,19 @@ export default function AdvisorSignalsPage() {
   const displayedSignals = tab === 'pending' ? pendingSignals : reviewedSignals
 
   return (
-    <div className="min-h-screen">
-      <header className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+    <div>
+      <header className={styles.header}>
+        <div className={styles.headerInner}>
+          <div className={styles.headerLeft}>
             <Link href={`/advisor/${companyId}`}>
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Client
               </Button>
             </Link>
-            <div className="h-6 w-px bg-border" />
-            <h1 className="text-lg font-semibold flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
+            <div className={styles.divider} />
+            <h1 className={styles.signalPageTitle}>
+              <Shield className={styles.signalPageTitleIcon} style={{ width: 20, height: 20 }} />
               Signal Review
             </h1>
           </div>
@@ -171,9 +173,9 @@ export default function AdvisorSignalsPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8 space-y-6">
+      <main className={styles.main}>
         {/* Tabs */}
-        <div className="flex gap-2">
+        <div className={styles.tabRow}>
           <Button
             variant={tab === 'pending' ? 'default' : 'outline'}
             size="sm"
@@ -192,93 +194,93 @@ export default function AdvisorSignalsPage() {
 
         {/* Signal List */}
         {loading ? (
-          <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+          <div className={styles.emptyState}>
+            <div className={styles.spinner} style={{ margin: '0 auto' }} />
           </div>
         ) : displayedSignals.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center py-12">
-              <AlertTriangle className="h-8 w-8 text-muted-foreground/40 mb-3" />
-              <p className="text-sm text-muted-foreground">
+          <div className={styles.signalCard}>
+            <div className={styles.emptyState}>
+              <div className={styles.emptyStateIcon}>
+                <AlertTriangle style={{ width: 32, height: 32 }} />
+              </div>
+              <p>
                 {tab === 'pending' ? 'No signals pending review' : 'No reviewed signals yet'}
               </p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ) : (
-          <div className="space-y-3">
+          <div className={styles.signalList}>
             {displayedSignals.map((signal) => (
-              <Card key={signal.id}>
-                <CardContent className="py-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge variant="outline" className={SEVERITY_COLORS[signal.severity]}>
-                          {signal.severity}
-                        </Badge>
-                        {signal.category && (
-                          <Badge variant="outline" className="text-xs">
-                            {signal.category.replace(/_/g, ' ')}
-                          </Badge>
-                        )}
-                        <Badge variant="outline" className={CONFIDENCE_COLORS[signal.confidence]}>
-                          {signal.confidence.replace(/_/g, ' ')}
-                        </Badge>
-                      </div>
-                      <h3 className="font-medium text-sm">{signal.title}</h3>
-                      {signal.description && (
-                        <p className="text-xs text-muted-foreground mt-1">{signal.description}</p>
-                      )}
-                      <p className="text-[11px] text-muted-foreground mt-2">
-                        {new Date(signal.createdAt).toLocaleDateString()} via {signal.channel.replace(/_/g, ' ').toLowerCase()}
-                        {signal.estimatedValueImpact != null && (
-                          <> &middot; Est. impact: ${Math.abs(signal.estimatedValueImpact).toLocaleString()}</>
-                        )}
-                      </p>
-                    </div>
-                    {tab === 'pending' && (
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-emerald-700 border-emerald-200 hover:bg-emerald-50"
-                          onClick={() => handleConfirm(signal.id)}
-                          disabled={actionLoading === signal.id}
-                        >
-                          <Check className="h-3 w-3 mr-1" />
-                          Confirm
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-red-700 border-red-200 hover:bg-red-50"
-                          onClick={() => setDismissDialogSignal(signal)}
-                          disabled={actionLoading === signal.id}
-                        >
-                          <X className="h-3 w-3 mr-1" />
-                          Dismiss
-                        </Button>
-                      </div>
-                    )}
-                    {tab === 'reviewed' && signal.userConfirmed && (
-                      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
-                        Confirmed
+              <div key={signal.id} className={styles.signalCard}>
+                <div className={styles.signalCardBody}>
+                  <div className={styles.signalContent}>
+                    <div className={styles.signalBadgeRow}>
+                      <Badge variant="outline" className={SEVERITY_CLASS[signal.severity]}>
+                        {signal.severity}
                       </Badge>
-                    )}
-                    {tab === 'reviewed' && signal.resolutionStatus === 'DISMISSED' && (
-                      <div className="flex flex-col items-end gap-1">
-                        <Badge className="bg-zinc-100 text-zinc-600 border-zinc-200">
-                          Dismissed
+                      {signal.category && (
+                        <Badge variant="outline" className="text-xs">
+                          {signal.category.replace(/_/g, ' ')}
                         </Badge>
-                        {signal.resolutionNotes && (
-                          <p className="text-[11px] text-muted-foreground max-w-[200px] text-right">
-                            {signal.resolutionNotes}
-                          </p>
-                        )}
-                      </div>
+                      )}
+                      <Badge variant="outline" className={CONFIDENCE_CLASS[signal.confidence]}>
+                        {signal.confidence.replace(/_/g, ' ')}
+                      </Badge>
+                    </div>
+                    <p className={styles.signalTitle}>{signal.title}</p>
+                    {signal.description && (
+                      <p className={styles.signalDescription}>{signal.description}</p>
                     )}
+                    <p className={styles.signalMeta}>
+                      {new Date(signal.createdAt).toLocaleDateString()} via {signal.channel.replace(/_/g, ' ').toLowerCase()}
+                      {signal.estimatedValueImpact != null && (
+                        <> &middot; Est. impact: ${Math.abs(signal.estimatedValueImpact).toLocaleString()}</>
+                      )}
+                    </p>
                   </div>
-                </CardContent>
-              </Card>
+                  {tab === 'pending' && (
+                    <div className={styles.signalActions}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-emerald-700 border-emerald-200 hover:bg-emerald-50"
+                        onClick={() => handleConfirm(signal.id)}
+                        disabled={actionLoading === signal.id}
+                      >
+                        <Check className="h-3 w-3 mr-1" />
+                        Confirm
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-red-700 border-red-200 hover:bg-red-50"
+                        onClick={() => setDismissDialogSignal(signal)}
+                        disabled={actionLoading === signal.id}
+                      >
+                        <X className="h-3 w-3 mr-1" />
+                        Dismiss
+                      </Button>
+                    </div>
+                  )}
+                  {tab === 'reviewed' && signal.userConfirmed && (
+                    <Badge className={styles.badgeConfirmed}>
+                      Confirmed
+                    </Badge>
+                  )}
+                  {tab === 'reviewed' && signal.resolutionStatus === 'DISMISSED' && (
+                    <div className={styles.signalDismissedNotes}>
+                      <Badge className={styles.badgeDismissed}>
+                        Dismissed
+                      </Badge>
+                      {signal.resolutionNotes && (
+                        <p className={styles.signalDismissedNotesText}>
+                          {signal.resolutionNotes}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
             ))}
           </div>
         )}
@@ -290,7 +292,7 @@ export default function AdvisorSignalsPage() {
           <DialogHeader>
             <DialogTitle>Dismiss Signal</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground mb-2">
+          <p className={styles.dialogHint}>
             Why is this signal not relevant?
           </p>
           <Textarea
@@ -319,19 +321,19 @@ export default function AdvisorSignalsPage() {
           <DialogHeader>
             <DialogTitle>Add Advisor Observation</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className={styles.dialogBody}>
             <div>
-              <label className="text-sm font-medium mb-1 block">Title</label>
+              <label className={styles.dialogLabel}>Title</label>
               <input
                 type="text"
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className={styles.dialogInput}
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
                 placeholder="e.g., Key employee departure risk"
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Description (optional)</label>
+              <label className={styles.dialogLabel}>Description (optional)</label>
               <Textarea
                 value={newDescription}
                 onChange={(e) => setNewDescription(e.target.value)}
@@ -339,9 +341,9 @@ export default function AdvisorSignalsPage() {
                 rows={3}
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className={styles.dialogGrid2}>
               <div>
-                <label className="text-sm font-medium mb-1 block">Category</label>
+                <label className={styles.dialogLabel}>Category</label>
                 <Select value={newCategory} onValueChange={setNewCategory}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select..." />
@@ -357,7 +359,7 @@ export default function AdvisorSignalsPage() {
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Severity</label>
+                <label className={styles.dialogLabel}>Severity</label>
                 <Select value={newSeverity} onValueChange={setNewSeverity}>
                   <SelectTrigger>
                     <SelectValue />
