@@ -31,15 +31,15 @@ export function DeferredTasks({ tasks, onResume }: DeferredTasksProps) {
         DEFERRED TASKS
       </h2>
 
-      <div className="rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50 dark:bg-amber-950/20 overflow-hidden divide-y divide-amber-200 dark:divide-amber-800/30">
+      <div className="rounded-xl border border-orange/20 dark:border-orange-dark/50 bg-orange-light dark:bg-orange-dark/20 overflow-hidden divide-y divide-orange/20 dark:divide-orange-dark/30">
         {tasks.map(task => (
           <div key={task.id} className="p-4">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3 flex-1 min-w-0">
-                <Calendar className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <Calendar className="w-4 h-4 text-orange-dark dark:text-orange shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground">{task.title}</p>
-                  <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                  <p className="text-xs text-orange-dark dark:text-orange mt-1">
                     Deferred until {formatDate(task.deferredUntil)}
                     {task.deferralReason && (
                       <span className="text-muted-foreground"> · {task.deferralReason}</span>

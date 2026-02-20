@@ -30,16 +30,16 @@ function ChartTooltip({
   if (active && payload && payload.length) {
     const data = payload[0].payload
     return (
-      <div className="bg-white p-3 border border-gray-200 rounded shadow-sm">
+      <div className="bg-white p-3 border border-border rounded shadow-sm">
         <p className="text-sm font-medium">Age {data.age}</p>
-        <p className="text-sm text-gray-600">Portfolio: {formatCurrency(data.portfolioEnd)}</p>
+        <p className="text-sm text-muted-foreground">Portfolio: {formatCurrency(data.portfolioEnd)}</p>
         {data.isRetired && (
           <>
-            <p className="text-sm text-gray-600">Withdrawal: {formatCurrency(data.withdrawal)}</p>
-            <p className="text-sm text-gray-600">Other Income: {formatCurrency(data.otherIncome)}</p>
+            <p className="text-sm text-muted-foreground">Withdrawal: {formatCurrency(data.withdrawal)}</p>
+            <p className="text-sm text-muted-foreground">Other Income: {formatCurrency(data.otherIncome)}</p>
           </>
         )}
-        <p className="text-sm text-gray-600">Growth: {formatCurrency(data.growth)}</p>
+        <p className="text-sm text-muted-foreground">Growth: {formatCurrency(data.growth)}</p>
       </div>
     )
   }
@@ -59,7 +59,7 @@ export function ProjectionChart({ projections, retirementAge, currentAge }: Proj
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base font-medium text-gray-900">
+        <CardTitle className="text-base font-medium text-foreground">
           Portfolio Projection Over Time
         </CardTitle>
       </CardHeader>
@@ -111,27 +111,27 @@ export function ProjectionChart({ projections, retirementAge, currentAge }: Proj
         </div>
 
         {/* Legend */}
-        <div className="flex items-center justify-center gap-6 mt-4 text-xs text-gray-500">
+        <div className="flex items-center justify-center gap-6 mt-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 bg-primary rounded"></div>
             <span>Portfolio Value</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-3 h-0.5 bg-green-500"></div>
+            <div className="w-3 h-0.5 bg-green"></div>
             <span>Retirement Start</span>
           </div>
         </div>
 
         {/* Key milestones */}
-        <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-100">
+        <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-border">
           <div className="text-center">
-            <p className="text-xs text-gray-500">Today</p>
+            <p className="text-xs text-muted-foreground">Today</p>
             <p className="text-sm font-medium">
               {projections[0] ? formatCurrency(projections[0].portfolioStart) : '$0'}
             </p>
           </div>
           <div className="text-center">
-            <p className="text-xs text-gray-500">At Retirement</p>
+            <p className="text-xs text-muted-foreground">At Retirement</p>
             <p className="text-sm font-medium">
               {projections[retirementIndex]
                 ? formatCurrency(projections[retirementIndex].portfolioEnd)
@@ -139,7 +139,7 @@ export function ProjectionChart({ projections, retirementAge, currentAge }: Proj
             </p>
           </div>
           <div className="text-center">
-            <p className="text-xs text-gray-500">End of Plan</p>
+            <p className="text-xs text-muted-foreground">End of Plan</p>
             <p className="text-sm font-medium">
               {projections[projections.length - 1]
                 ? formatCurrency(projections[projections.length - 1].portfolioEnd)

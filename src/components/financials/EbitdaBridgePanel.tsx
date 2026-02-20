@@ -64,13 +64,13 @@ const CATEGORY_LABELS: Record<string, string> = {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  OWNER_COMPENSATION: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-  PERSONAL_EXPENSES: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
-  ONE_TIME_CHARGES: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-  RELATED_PARTY: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
-  NON_OPERATING: 'bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-300',
+  OWNER_COMPENSATION: 'bg-accent-light text-primary dark:bg-primary/30 dark:text-primary',
+  PERSONAL_EXPENSES: 'bg-purple-light text-purple-dark dark:bg-purple/30 dark:text-purple',
+  ONE_TIME_CHARGES: 'bg-orange-light text-orange-dark dark:bg-orange/30 dark:text-orange',
+  RELATED_PARTY: 'bg-orange-light text-orange-dark dark:bg-orange/30 dark:text-orange',
+  NON_OPERATING: 'bg-muted text-foreground dark:bg-foreground/30 dark:text-muted',
   DISCRETIONARY: 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300',
-  OTHER: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300',
+  OTHER: 'bg-muted text-foreground dark:bg-foreground/30 dark:text-muted',
 }
 
 export function EbitdaBridgePanel({ companyId }: EbitdaBridgePanelProps) {
@@ -395,19 +395,19 @@ export function EbitdaBridgePanel({ companyId }: EbitdaBridgePanelProps) {
               {ownerCompAdjustment > 0 && (
                 <div>
                   <span className="text-muted-foreground">+ Owner Comp: </span>
-                  <span className="font-medium text-green-600">{formatCurrency(ownerCompAdjustment)}</span>
+                  <span className="font-medium text-green-dark">{formatCurrency(ownerCompAdjustment)}</span>
                 </div>
               )}
               {totalAddBacks > 0 && (
                 <div>
                   <span className="text-muted-foreground">+ Add-Backs: </span>
-                  <span className="font-medium text-green-600">{formatCurrency(totalAddBacks)}</span>
+                  <span className="font-medium text-green-dark">{formatCurrency(totalAddBacks)}</span>
                 </div>
               )}
               {totalDeductions > 0 && (
                 <div>
                   <span className="text-muted-foreground">- Deductions: </span>
-                  <span className="font-medium text-red-600">{formatCurrency(totalDeductions)}</span>
+                  <span className="font-medium text-red-dark">{formatCurrency(totalDeductions)}</span>
                 </div>
               )}
             </div>
@@ -425,7 +425,7 @@ export function EbitdaBridgePanel({ companyId }: EbitdaBridgePanelProps) {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
-                <Search className="h-4 w-4 text-emerald-500" />
+                <Search className="h-4 w-4 text-green" />
                 Transaction Analysis
               </CardTitle>
               <Button
@@ -466,7 +466,7 @@ export function EbitdaBridgePanel({ companyId }: EbitdaBridgePanelProps) {
           {isScanning && (
             <CardContent>
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <Loader2 className="h-8 w-8 animate-spin text-emerald-500 mb-3" />
+                <Loader2 className="h-8 w-8 animate-spin text-green mb-3" />
                 <p className="text-sm font-medium text-foreground">Scanning QuickBooks transactions...</p>
                 <p className="text-xs text-muted-foreground mt-1">This may take 60-90 seconds</p>
               </div>
@@ -477,13 +477,13 @@ export function EbitdaBridgePanel({ companyId }: EbitdaBridgePanelProps) {
             <CardContent className="space-y-4">
               {/* Summary */}
               {scanSummary && (
-                <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-3">
-                  <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
+                <div className="bg-green-light dark:bg-green-dark/30 rounded-lg p-3">
+                  <p className="text-sm font-medium text-green-dark dark:text-green">
                     Found {txnFlags.length} potential add-back{txnFlags.length !== 1 ? 's' : ''} totaling{' '}
                     {formatCurrency(txnFlags.reduce((sum, f) => sum + (f.suggestedAmount || 0), 0))}
                   </p>
                   {scanSummary.buyerNarrative && (
-                    <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 italic">
+                    <p className="text-xs text-green-dark dark:text-green mt-1 italic">
                       {scanSummary.buyerNarrative}
                     </p>
                   )}
@@ -520,7 +520,7 @@ export function EbitdaBridgePanel({ companyId }: EbitdaBridgePanelProps) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-violet-500" />
+              <Sparkles className="h-4 w-4 text-purple" />
               AI Analysis
             </CardTitle>
             <div className="flex items-center gap-2">
@@ -675,7 +675,7 @@ function MarginBar({
       <div className="relative h-8 bg-muted rounded-full overflow-hidden">
         {/* Industry range */}
         <div
-          className="absolute top-0 h-full bg-blue-100 dark:bg-blue-900/30"
+          className="absolute top-0 h-full bg-accent-light dark:bg-primary/30"
           style={{
             left: `${toPercent(industryLow)}%`,
             width: `${toPercent(industryHigh) - toPercent(industryLow)}%`,
@@ -683,26 +683,26 @@ function MarginBar({
         />
         {/* Company reported marker */}
         <div
-          className="absolute top-0 h-full w-0.5 bg-amber-500"
+          className="absolute top-0 h-full w-0.5 bg-orange"
           style={{ left: `${toPercent(companyReported)}%` }}
         />
         {/* Company adjusted marker */}
         <div
-          className="absolute top-0 h-full w-0.5 bg-green-500"
+          className="absolute top-0 h-full w-0.5 bg-green"
           style={{ left: `${toPercent(companyAdjusted)}%` }}
         />
       </div>
       <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
         <span className="flex items-center gap-1">
-          <span className="w-3 h-2 rounded-sm bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800" />
+          <span className="w-3 h-2 rounded-sm bg-accent-light dark:bg-primary/30 border border-primary/20 dark:border-primary/30" />
           Industry: {(industryLow * 100).toFixed(0)}%-{(industryHigh * 100).toFixed(0)}%
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-3 h-0.5 bg-amber-500" />
+          <span className="w-3 h-0.5 bg-orange" />
           Reported: {(companyReported * 100).toFixed(1)}%
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-3 h-0.5 bg-green-500" />
+          <span className="w-3 h-0.5 bg-green" />
           Adjusted: {(companyAdjusted * 100).toFixed(1)}%
         </span>
       </div>
@@ -740,7 +740,7 @@ function ExistingReviewRow({
           )}
         </div>
         {review.buyerRiskFlag && (
-          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
+          <p className="text-xs text-orange-dark dark:text-orange mt-1 flex items-center gap-1">
             <AlertTriangle className="h-3 w-3 flex-shrink-0" />
             {review.buyerRiskFlag}
           </p>

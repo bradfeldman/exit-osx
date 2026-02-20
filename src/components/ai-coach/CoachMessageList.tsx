@@ -34,7 +34,7 @@ export function CoachMessageList({ messages, streamingContent, isStreaming }: Co
       {/* Streaming response */}
       {isStreaming && (
         <div className="flex gap-3">
-          <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center">
+          <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gradient-to-br from-primary to-purple-dark flex items-center justify-center">
             <Sparkles className="h-4 w-4 text-white" />
           </div>
           <div className="max-w-[75%] rounded-2xl rounded-tl-sm bg-muted px-4 py-3 text-sm leading-relaxed">
@@ -75,7 +75,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
 
   return (
     <div className="flex gap-3">
-      <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center">
+      <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gradient-to-br from-primary to-purple-dark flex items-center justify-center">
         <Sparkles className="h-4 w-4 text-white" />
       </div>
       <div className="max-w-[75%] rounded-2xl rounded-tl-sm bg-muted px-4 py-3 text-sm leading-relaxed">

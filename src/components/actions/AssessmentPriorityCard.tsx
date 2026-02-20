@@ -65,10 +65,10 @@ export function AssessmentPriorityCard() {
     const daysSince = daysSinceAssessment || RE_ASSESSMENT_DAYS
 
     return (
-      <div className="bg-card border-2 border-amber-200 dark:border-amber-800/30 rounded-xl p-5">
+      <div className="bg-card border-2 border-orange/20 dark:border-orange-dark/30 rounded-xl p-5">
         <div className="flex items-start gap-3">
-          <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-            <RefreshCw className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+          <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-orange-light dark:bg-orange-dark/30 flex items-center justify-center">
+            <RefreshCw className="w-5 h-5 text-orange-dark dark:text-orange" />
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-semibold text-foreground">Time to Re-Assess</h3>
@@ -143,7 +143,7 @@ export function AssessmentPriorityCard() {
                   key={cat.key}
                   className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
                     isComplete
-                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                      ? 'bg-green-light text-green-dark dark:bg-green-dark/30 dark:text-green'
                       : 'bg-muted text-muted-foreground'
                   }`}
                 >

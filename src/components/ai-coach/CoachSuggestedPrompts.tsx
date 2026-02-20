@@ -7,37 +7,37 @@ const SUGGESTED_PROMPTS = [
     icon: DollarSign,
     label: 'Valuation',
     prompt: 'What is my current valuation and how can I improve it?',
-    color: 'text-green-600 bg-green-50',
+    color: 'text-green-dark bg-green-light',
   },
   {
     icon: Shield,
     label: 'Risk',
     prompt: "What's my biggest risk right now and how do I address it?",
-    color: 'text-red-600 bg-red-50',
+    color: 'text-red-dark bg-red-light',
   },
   {
     icon: Users,
     label: 'Buyers',
     prompt: 'What type of buyer would be most interested in my business?',
-    color: 'text-blue-600 bg-blue-50',
+    color: 'text-primary bg-accent-light',
   },
   {
     icon: Clock,
     label: 'Timeline',
     prompt: 'How long will it take me to be ready for an exit?',
-    color: 'text-orange-600 bg-orange-50',
+    color: 'text-orange-dark bg-orange-light',
   },
   {
     icon: Target,
     label: 'Strategy',
     prompt: 'What should I focus on this month to increase my business value?',
-    color: 'text-purple-600 bg-purple-50',
+    color: 'text-purple-dark bg-purple-light',
   },
   {
     icon: ListChecks,
     label: 'Tasks',
     prompt: 'Which of my pending tasks will have the biggest impact on valuation?',
-    color: 'text-teal-600 bg-teal-50',
+    color: 'text-teal bg-teal-light',
   },
 ]
 

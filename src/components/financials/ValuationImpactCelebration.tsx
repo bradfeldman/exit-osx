@@ -133,12 +133,12 @@ export function ValuationImpactCelebration({
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: 'spring', damping: 10 }}
-            className="w-16 h-16 mx-auto mb-4 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center"
+            className="w-16 h-16 mx-auto mb-4 bg-green-light dark:bg-green-dark/30 rounded-full flex items-center justify-center"
           >
             {isFirstFinancials ? (
-              <Sparkles className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
+              <Sparkles className="w-8 h-8 text-green-dark dark:text-green" />
             ) : (
-              <TrendingUp className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
+              <TrendingUp className="w-8 h-8 text-green-dark dark:text-green" />
             )}
           </motion.div>
 
@@ -206,8 +206,8 @@ export function ValuationImpactCelebration({
                 transition={{ delay: 0.7 }}
                 className={`mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full ${
                   isIncrease
-                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                    : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                    ? 'bg-green-light text-green-dark dark:bg-green-dark/30 dark:text-green'
+                    : 'bg-red-light text-red-dark dark:bg-red-dark/30 dark:text-red'
                 }`}
               >
                 <TrendingUp

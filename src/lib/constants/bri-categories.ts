@@ -42,24 +42,24 @@ export const BRI_CATEGORY_SHORT_LABELS: Record<BRICategory, string> = {
  * Tailwind color classes for each category
  */
 export const BRI_CATEGORY_COLORS: Record<BRICategory, string> = {
-  FINANCIAL: 'bg-blue-100 text-blue-700',
-  TRANSFERABILITY: 'bg-green-100 text-green-700',
-  OPERATIONAL: 'bg-yellow-100 text-yellow-700',
-  MARKET: 'bg-purple-100 text-purple-700',
-  LEGAL_TAX: 'bg-red-100 text-red-700',
-  PERSONAL: 'bg-orange-100 text-orange-700',
+  FINANCIAL: 'bg-accent-light text-primary',
+  TRANSFERABILITY: 'bg-green-light text-green-dark',
+  OPERATIONAL: 'bg-orange-light text-orange-dark',
+  MARKET: 'bg-purple-light text-purple-dark',
+  LEGAL_TAX: 'bg-red-light text-red-dark',
+  PERSONAL: 'bg-orange-light text-orange-dark',
 }
 
 /**
  * Border color variants for category indicators
  */
 export const BRI_CATEGORY_BORDER_COLORS: Record<BRICategory, string> = {
-  FINANCIAL: 'border-blue-500',
-  TRANSFERABILITY: 'border-green-500',
-  OPERATIONAL: 'border-yellow-500',
-  MARKET: 'border-purple-500',
-  LEGAL_TAX: 'border-red-500',
-  PERSONAL: 'border-orange-500',
+  FINANCIAL: 'border-primary',
+  TRANSFERABILITY: 'border-green',
+  OPERATIONAL: 'border-orange',
+  MARKET: 'border-purple',
+  LEGAL_TAX: 'border-red',
+  PERSONAL: 'border-orange',
 }
 
 /**
@@ -86,5 +86,5 @@ export function getBRICategoryLabel(category: string, short: boolean = false): s
  * Helper to get color classes with fallback
  */
 export function getBRICategoryColor(category: string): string {
-  return BRI_CATEGORY_COLORS[category as BRICategory] || 'bg-gray-100 text-gray-700'
+  return BRI_CATEGORY_COLORS[category as BRICategory] || 'bg-secondary text-foreground'
 }

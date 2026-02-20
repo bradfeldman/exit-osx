@@ -228,11 +228,11 @@ export function WACCModal({ open, onClose, companyId, onSaved }: WACCModalProps)
           <div className="space-y-6 py-4">
             {/* Base Free Cash Flow Section */}
             <div>
-              <h4 className="font-medium text-gray-900 mb-3">Base Free Cash Flow (Year 0)</h4>
+              <h4 className="font-medium text-foreground mb-3">Base Free Cash Flow (Year 0)</h4>
               <div>
                 <Label htmlFor="baseFCF">Free Cash Flow ($)</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
                   <Input
                     id="baseFCF"
                     type="text"
@@ -252,7 +252,7 @@ export function WACCModal({ open, onClose, companyId, onSaved }: WACCModalProps)
                     }}
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Defaults to the most recent Free Cash Flow from your Financials
                 </p>
               </div>
@@ -260,7 +260,7 @@ export function WACCModal({ open, onClose, companyId, onSaved }: WACCModalProps)
 
             {/* Cost of Equity Section */}
             <div>
-              <h4 className="font-medium text-gray-900 mb-3">Cost of Equity (CAPM)</h4>
+              <h4 className="font-medium text-foreground mb-3">Cost of Equity (CAPM)</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="riskFreeRate">Risk-Free Rate (%)</Label>
@@ -303,14 +303,14 @@ export function WACCModal({ open, onClose, companyId, onSaved }: WACCModalProps)
                   />
                 </div>
               </div>
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-muted-foreground mt-2">
                 Cost of Equity: <span className="font-medium">{(costOfEquity * 100).toFixed(2)}%</span>
               </p>
             </div>
 
             {/* Cost of Debt Section */}
             <div>
-              <h4 className="font-medium text-gray-900 mb-3">Cost of Debt</h4>
+              <h4 className="font-medium text-foreground mb-3">Cost of Debt</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="costOfDebtOverride">Cost of Debt Override (% or leave blank for auto)</Label>
@@ -339,7 +339,7 @@ export function WACCModal({ open, onClose, companyId, onSaved }: WACCModalProps)
 
             {/* Growth Assumptions */}
             <div>
-              <h4 className="font-medium text-gray-900 mb-3">FCF Growth Assumptions</h4>
+              <h4 className="font-medium text-foreground mb-3">FCF Growth Assumptions</h4>
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                 {['year1', 'year2', 'year3', 'year4', 'year5'].map((year, idx) => (
                   <div key={year}>
@@ -359,7 +359,7 @@ export function WACCModal({ open, onClose, companyId, onSaved }: WACCModalProps)
 
             {/* Terminal Value Method */}
             <div>
-              <h4 className="font-medium text-gray-900 mb-3">Terminal Value</h4>
+              <h4 className="font-medium text-foreground mb-3">Terminal Value</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="terminalMethod">Method</Label>

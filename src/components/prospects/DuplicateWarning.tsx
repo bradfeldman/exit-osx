@@ -140,22 +140,22 @@ export function DuplicateWarning({
         exit={{ opacity: 0, y: -10, height: 0 }}
         className="overflow-hidden"
       >
-        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+        <div className="bg-orange-light dark:bg-orange-dark/30 border border-orange/20 dark:border-orange-dark rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <AlertTriangle className="h-5 w-5 text-orange-dark flex-shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
-              <h4 className="font-medium text-amber-800 dark:text-amber-200">
+              <h4 className="font-medium text-orange-dark dark:text-orange">
                 {isChecking ? 'Checking for duplicates...' : 'Potential Duplicate Found'}
               </h4>
 
               {isChecking ? (
-                <div className="flex items-center gap-2 mt-2 text-sm text-amber-600">
+                <div className="flex items-center gap-2 mt-2 text-sm text-orange-dark">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span>Searching existing records...</span>
                 </div>
               ) : (
                 <>
-                  <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                  <p className="text-sm text-orange-dark dark:text-orange mt-1">
                     We found {duplicates.length} existing record{duplicates.length > 1 ? 's' : ''}{' '}
                     that might match. Would you like to use an existing record?
                   </p>
@@ -178,7 +178,7 @@ export function DuplicateWarning({
                         setDismissed(true)
                         onCreateNew()
                       }}
-                      className="text-amber-700 border-amber-300 hover:bg-amber-100"
+                      className="text-orange-dark border-orange/30 hover:bg-orange-light"
                     >
                       <X className="h-4 w-4 mr-1" />
                       Create New Anyway
@@ -203,16 +203,16 @@ function DuplicateCard({ duplicate, onUse }: DuplicateCardProps) {
   const Icon = duplicate.type === 'company' ? Building2 : User
   const scoreColor =
     duplicate.matchScore >= 0.9
-      ? 'text-red-600 bg-red-100'
+      ? 'text-red-dark bg-red-light'
       : duplicate.matchScore >= 0.7
-        ? 'text-amber-600 bg-amber-100'
-        : 'text-yellow-600 bg-yellow-100'
+        ? 'text-orange-dark bg-orange-light'
+        : 'text-orange bg-orange-light'
 
   return (
-    <div className="flex items-center justify-between gap-3 bg-white dark:bg-gray-900 rounded-lg p-3 border border-amber-200 dark:border-amber-800">
+    <div className="flex items-center justify-between gap-3 bg-white dark:bg-foreground rounded-lg p-3 border border-orange/20 dark:border-orange-dark">
       <div className="flex items-center gap-3 min-w-0">
-        <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900 flex items-center justify-center flex-shrink-0">
-          <Icon className="h-4 w-4 text-amber-600" />
+        <div className="w-8 h-8 rounded-full bg-orange-light dark:bg-orange-dark flex items-center justify-center flex-shrink-0">
+          <Icon className="h-4 w-4 text-orange-dark" />
         </div>
         <div className="min-w-0">
           <p className="font-medium text-sm truncate">{duplicate.name}</p>

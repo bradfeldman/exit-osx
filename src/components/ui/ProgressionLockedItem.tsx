@@ -43,10 +43,10 @@ export function ProgressionLockedItem({
         </TooltipTrigger>
         <TooltipContent
           side="right"
-          className="max-w-[200px] bg-slate-800 text-white border-slate-700"
+          className="max-w-[200px] bg-foreground text-white border-foreground"
         >
           <div className="flex items-start gap-2">
-            <SparklesIcon className="h-4 w-4 shrink-0 text-amber-400 mt-0.5" />
+            <SparklesIcon className="h-4 w-4 shrink-0 text-orange mt-0.5" />
             <span className="text-sm">{unlockHint}</span>
           </div>
         </TooltipContent>

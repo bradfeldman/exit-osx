@@ -70,7 +70,7 @@ export function SensitivityTable({
     return (
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-medium text-gray-900">
+          <CardTitle className="text-base font-medium text-foreground">
             Sensitivity Analysis
           </CardTitle>
         </CardHeader>
@@ -88,24 +88,24 @@ export function SensitivityTable({
 
   // Calculate color for cell based on value relative to center
   const getCellColor = (value: number) => {
-    if (value === 0) return 'bg-gray-100 text-gray-400'
+    if (value === 0) return 'bg-secondary text-muted-foreground'
 
     const range = maxValue - minValue
-    if (range === 0) return 'bg-gray-50'
+    if (range === 0) return 'bg-secondary'
 
     const normalized = (value - minValue) / range
 
     // Use a gradient from red (low) to green (high)
     if (normalized >= 0.7) {
-      return 'bg-green-100 text-green-900'
+      return 'bg-green-light text-green-dark'
     } else if (normalized >= 0.5) {
-      return 'bg-green-50 text-green-800'
+      return 'bg-green-light/50 text-green-dark'
     } else if (normalized >= 0.3) {
-      return 'bg-yellow-50 text-yellow-800'
+      return 'bg-orange-light/50 text-orange-dark'
     } else if (normalized >= 0.15) {
-      return 'bg-orange-50 text-orange-800'
+      return 'bg-orange-light text-orange-dark'
     } else {
-      return 'bg-red-50 text-red-800'
+      return 'bg-red-light text-red-dark'
     }
   }
 
@@ -117,10 +117,10 @@ export function SensitivityTable({
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base font-medium text-gray-900">
+        <CardTitle className="text-base font-medium text-foreground">
           Sensitivity Analysis
         </CardTitle>
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-muted-foreground mt-1">
           Enterprise Value by WACC vs Terminal Growth Rate
         </p>
       </CardHeader>
@@ -129,7 +129,7 @@ export function SensitivityTable({
           <table className="w-full text-sm">
             <thead>
               <tr>
-                <th className="p-2 text-left text-xs text-gray-500 font-medium">
+                <th className="p-2 text-left text-xs text-muted-foreground font-medium">
                   WACC \ Terminal Growth
                 </th>
                 {terminalGrowthValues.map((growth) => (
@@ -138,7 +138,7 @@ export function SensitivityTable({
                     className={`p-2 text-center text-xs font-medium ${
                       growth === centerTerminalGrowth
                         ? 'bg-primary/10 text-primary'
-                        : 'text-gray-500'
+                        : 'text-muted-foreground'
                     }`}
                   >
                     {formatPercent(growth, 1)}
@@ -151,7 +151,7 @@ export function SensitivityTable({
                 <tr key={wacc}>
                   <td
                     className={`p-2 text-left text-xs font-medium ${
-                      wacc === centerWACC ? 'bg-primary/10 text-primary' : 'text-gray-500'
+                      wacc === centerWACC ? 'bg-primary/10 text-primary' : 'text-muted-foreground'
                     }`}
                   >
                     {formatPercent(wacc, 1)}
@@ -181,18 +181,18 @@ export function SensitivityTable({
         </div>
 
         {/* Legend */}
-        <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
+        <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1">
-              <div className="w-3 h-3 bg-green-100 rounded"></div>
+              <div className="w-3 h-3 bg-green-light rounded"></div>
               <span>Higher Value</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-3 h-3 bg-yellow-50 rounded"></div>
+              <div className="w-3 h-3 bg-orange-light/50 rounded"></div>
               <span>Mid Range</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-3 h-3 bg-red-50 rounded"></div>
+              <div className="w-3 h-3 bg-red-light rounded"></div>
               <span>Lower Value</span>
             </div>
           </div>
@@ -203,18 +203,18 @@ export function SensitivityTable({
         </div>
 
         {/* Quick Stats */}
-        <div className="mt-4 pt-4 border-t border-gray-200 grid grid-cols-3 gap-4 text-center">
+        <div className="mt-4 pt-4 border-t border-border grid grid-cols-3 gap-4 text-center">
           <div>
-            <p className="text-xs text-gray-500">Low Case</p>
-            <p className="text-sm font-semibold text-red-700">{formatCurrency(minValue)}</p>
+            <p className="text-xs text-muted-foreground">Low Case</p>
+            <p className="text-sm font-semibold text-red-dark">{formatCurrency(minValue)}</p>
           </div>
           <div>
-            <p className="text-xs text-gray-500">Base Case</p>
+            <p className="text-xs text-muted-foreground">Base Case</p>
             <p className="text-sm font-semibold text-primary">{formatCurrency(centerValue)}</p>
           </div>
           <div>
-            <p className="text-xs text-gray-500">High Case</p>
-            <p className="text-sm font-semibold text-green-700">{formatCurrency(maxValue)}</p>
+            <p className="text-xs text-muted-foreground">High Case</p>
+            <p className="text-sm font-semibold text-green-dark">{formatCurrency(maxValue)}</p>
           </div>
         </div>
       </CardContent>

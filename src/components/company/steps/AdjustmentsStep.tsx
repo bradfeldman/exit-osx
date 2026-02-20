@@ -100,8 +100,8 @@ export function AdjustmentsStep({ formData, updateFormData }: AdjustmentsStepPro
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">EBITDA Adjustments</h2>
-        <p className="text-sm text-gray-600 mb-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">EBITDA Adjustments</h2>
+        <p className="text-sm text-muted-foreground mb-6">
           Add-backs and deductions normalize your EBITDA to reflect true operating performance.
           This is optional but helps buyers understand your adjusted earnings.
         </p>
@@ -147,8 +147,8 @@ export function AdjustmentsStep({ formData, updateFormData }: AdjustmentsStepPro
       </div>
 
       {/* Add New Adjustment Form */}
-      <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-        <h3 className="text-sm font-medium text-gray-900 mb-3">Add Adjustment</h3>
+      <div className="p-4 bg-secondary rounded-lg border border-border">
+        <h3 className="text-sm font-medium text-foreground mb-3">Add Adjustment</h3>
         <div className="grid gap-4 md:grid-cols-4">
           <div className="md:col-span-2">
             <Label htmlFor="description">Description</Label>
@@ -163,7 +163,7 @@ export function AdjustmentsStep({ formData, updateFormData }: AdjustmentsStepPro
           <div>
             <Label htmlFor="amount">Amount</Label>
             <div className="relative mt-1">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
               <Input
                 id="amount"
                 type="text"
@@ -203,24 +203,24 @@ export function AdjustmentsStep({ formData, updateFormData }: AdjustmentsStepPro
       {formData.adjustments.length > 0 && (
         <div className="space-y-2">
           <Label>Your Adjustments</Label>
-          <div className="border border-gray-200 rounded-lg divide-y divide-gray-200">
+          <div className="border border-border rounded-lg divide-y divide-border">
             {formData.adjustments.map((adjustment, index) => (
               <div key={index} className="flex items-center justify-between p-3">
                 <div className="flex items-center gap-3">
                   <span
                     className={`px-2 py-0.5 text-xs font-medium rounded ${
                       adjustment.type === 'ADD_BACK'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-red-100 text-red-700'
+                        ? 'bg-green-light text-green-dark'
+                        : 'bg-red-light text-red-dark'
                     }`}
                   >
                     {adjustment.type === 'ADD_BACK' ? '+' : '-'}
                   </span>
-                  <span className="text-sm text-gray-900">{adjustment.description}</span>
+                  <span className="text-sm text-foreground">{adjustment.description}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className={`text-sm font-medium ${
-                    adjustment.type === 'ADD_BACK' ? 'text-green-600' : 'text-red-600'
+                    adjustment.type === 'ADD_BACK' ? 'text-green-dark' : 'text-red-dark'
                   }`}>
                     {adjustment.type === 'ADD_BACK' ? '+' : '-'}{formatCurrency(adjustment.amount)}
                   </span>
@@ -229,7 +229,7 @@ export function AdjustmentsStep({ formData, updateFormData }: AdjustmentsStepPro
                     variant="ghost"
                     size="sm"
                     onClick={() => handleRemoveAdjustment(index)}
-                    className="text-gray-400 hover:text-red-600"
+                    className="text-muted-foreground hover:text-red-dark"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -243,28 +243,28 @@ export function AdjustmentsStep({ formData, updateFormData }: AdjustmentsStepPro
       )}
 
       {/* Summary */}
-      <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-        <h3 className="text-sm font-medium text-blue-800 mb-3">Adjusted EBITDA Summary</h3>
+      <div className="p-4 bg-accent-light rounded-lg border border-primary/20">
+        <h3 className="text-sm font-medium text-primary mb-3">Adjusted EBITDA Summary</h3>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <span className="text-blue-700">Reported EBITDA</span>
-            <span className="font-medium text-blue-900">{formatCurrency(formData.annualEbitda)}</span>
+            <span className="text-primary">Reported EBITDA</span>
+            <span className="font-medium text-primary">{formatCurrency(formData.annualEbitda)}</span>
           </div>
           {totalAddBacks > 0 && (
             <div className="flex justify-between">
-              <span className="text-green-700">+ Total Add-Backs</span>
-              <span className="font-medium text-green-700">{formatCurrency(totalAddBacks)}</span>
+              <span className="text-green-dark">+ Total Add-Backs</span>
+              <span className="font-medium text-green-dark">{formatCurrency(totalAddBacks)}</span>
             </div>
           )}
           {totalDeductions > 0 && (
             <div className="flex justify-between">
-              <span className="text-red-700">- Total Deductions</span>
-              <span className="font-medium text-red-700">{formatCurrency(totalDeductions)}</span>
+              <span className="text-red-dark">- Total Deductions</span>
+              <span className="font-medium text-red-dark">{formatCurrency(totalDeductions)}</span>
             </div>
           )}
-          <div className="border-t border-blue-200 pt-2 flex justify-between">
-            <span className="font-medium text-blue-800">Adjusted EBITDA</span>
-            <span className="font-bold text-blue-900">{formatCurrency(adjustedEbitda)}</span>
+          <div className="border-t border-primary/20 pt-2 flex justify-between">
+            <span className="font-medium text-primary">Adjusted EBITDA</span>
+            <span className="font-bold text-primary">{formatCurrency(adjustedEbitda)}</span>
           </div>
         </div>
       </div>

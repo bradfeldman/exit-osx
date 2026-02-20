@@ -58,11 +58,11 @@ export function RequestAccessFeature({
         <button
           onClick={() => setShowRequestModal(true)}
           className={cn(
-            'inline-flex items-center gap-2 rounded-md border border-dashed border-amber-500/30 bg-amber-500/5 px-3 py-1.5 text-sm text-muted-foreground hover:border-amber-500/50 hover:bg-amber-500/10 hover:text-foreground transition-colors',
+            'inline-flex items-center gap-2 rounded-md border border-dashed border-orange/30 bg-orange/5 px-3 py-1.5 text-sm text-muted-foreground hover:border-orange/50 hover:bg-orange/10 hover:text-foreground transition-colors',
             className
           )}
         >
-          <KeyRound className="h-3.5 w-3.5 text-amber-500" />
+          <KeyRound className="h-3.5 w-3.5 text-orange" />
           <span>{displayName}</span>
           <span className="text-xs">(Request access)</span>
         </button>
@@ -81,12 +81,12 @@ export function RequestAccessFeature({
     <>
       <div
         className={cn(
-          'flex flex-col items-center justify-center rounded-lg border border-dashed border-amber-500/30 bg-amber-500/5 p-8 text-center',
+          'flex flex-col items-center justify-center rounded-lg border border-dashed border-orange/30 bg-orange/5 p-8 text-center',
           className
         )}
       >
-        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/10">
-          <KeyRound className="h-6 w-6 text-amber-600" />
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-orange/10">
+          <KeyRound className="h-6 w-6 text-orange-dark" />
         </div>
         <h3 className="mb-2 text-lg font-semibold">
           {displayName}
@@ -96,7 +96,7 @@ export function RequestAccessFeature({
         </p>
         <Button
           variant="outline"
-          className="border-amber-500/50 hover:bg-amber-500/10"
+          className="border-orange/50 hover:bg-orange/10"
           onClick={() => setShowRequestModal(true)}
         >
           Request Access

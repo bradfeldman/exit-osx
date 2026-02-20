@@ -323,9 +323,9 @@ export function WhatIfScenarios({
           <div
             className={`rounded-lg border p-4 ${
               result.valueDelta > 0
-                ? 'border-emerald-200 bg-emerald-50/50'
+                ? 'border-green/20 bg-green-light/50'
                 : result.valueDelta < 0
-                  ? 'border-red-200 bg-red-50/50'
+                  ? 'border-red/20 bg-red-light/50'
                   : 'border-border bg-muted/30'
             }`}
           >
@@ -333,16 +333,16 @@ export function WhatIfScenarios({
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   {result.valueDelta > 0 ? (
-                    <TrendingUp className="h-4 w-4 text-emerald-600" />
+                    <TrendingUp className="h-4 w-4 text-green-dark" />
                   ) : result.valueDelta < 0 ? (
-                    <TrendingDown className="h-4 w-4 text-red-600" />
+                    <TrendingDown className="h-4 w-4 text-red" />
                   ) : null}
                   <span
                     className={`text-lg font-bold ${
                       result.valueDelta > 0
-                        ? 'text-emerald-700'
+                        ? 'text-green-dark'
                         : result.valueDelta < 0
-                          ? 'text-red-700'
+                          ? 'text-red-dark'
                           : 'text-foreground'
                     }`}
                   >

@@ -90,15 +90,15 @@ function getImpactLevel(score: number): ImpactLevel {
 const IMPACT_CONFIG: Record<ImpactLevel, { label: string; className: string }> = {
   helping: {
     label: 'Helping',
-    className: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    className: 'bg-green-light text-green-dark dark:bg-green-dark/30 dark:text-green',
   },
   neutral: {
     label: 'Neutral',
-    className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+    className: 'bg-primary/10 text-primary dark:bg-primary/30 dark:text-primary',
   },
   limiting: {
     label: 'Limiting',
-    className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    className: 'bg-orange-light text-orange-dark dark:bg-orange-dark/30 dark:text-orange',
   },
 }
 

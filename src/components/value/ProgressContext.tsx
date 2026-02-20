@@ -43,12 +43,12 @@ export function ProgressContext({
       {/* Recovered */}
       <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <div className="flex items-center gap-2 mb-1">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50">
-            <TrendingUp className="h-4 w-4 text-emerald-600" />
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-green-light">
+            <TrendingUp className="h-4 w-4 text-green-dark" />
           </div>
           <span className="text-sm font-medium text-muted-foreground">Recovered</span>
         </div>
-        <p className="text-2xl font-semibold text-emerald-700 tracking-tight mt-2">
+        <p className="text-2xl font-semibold text-green-dark tracking-tight mt-2">
           {recoveredDisplay}
         </p>
         <p className="text-xs text-muted-foreground mt-1">
@@ -59,12 +59,12 @@ export function ProgressContext({
       {/* At Risk */}
       <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <div className="flex items-center gap-2 mb-1">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50">
-            <AlertTriangle className="h-4 w-4 text-amber-600" />
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-light">
+            <AlertTriangle className="h-4 w-4 text-orange-dark" />
           </div>
           <span className="text-sm font-medium text-muted-foreground">At Risk</span>
         </div>
-        <p className="text-2xl font-semibold text-amber-700 tracking-tight mt-2">
+        <p className="text-2xl font-semibold text-orange-dark tracking-tight mt-2">
           {atRiskDisplay}
         </p>
         <p className="text-xs text-muted-foreground mt-1">
@@ -75,8 +75,8 @@ export function ProgressContext({
       {/* Gap Remaining */}
       <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <div className="flex items-center gap-2 mb-1">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-100">
-            <Target className="h-4 w-4 text-zinc-600" />
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-muted">
+            <Target className="h-4 w-4 text-muted-foreground" />
           </div>
           <span className="text-sm font-medium text-muted-foreground">Gap Remaining</span>
         </div>
@@ -85,7 +85,7 @@ export function ProgressContext({
         </p>
         <p className="text-xs text-muted-foreground mt-1">
           {valueGapDelta !== null && valueGapDelta < 0 ? (
-            <span className="text-emerald-600">{gapDeltaText}</span>
+            <span className="text-green-dark">{gapDeltaText}</span>
           ) : (
             gapDeltaText
           )}

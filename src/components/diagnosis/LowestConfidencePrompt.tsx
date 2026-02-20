@@ -49,11 +49,11 @@ export function LowestConfidencePrompt({
   }
 
   return (
-    <Card className="border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/30">
+    <Card className="border-orange/20 bg-orange-light/50 dark:border-orange-dark dark:bg-orange-dark/30">
       <div className="p-6">
         <div className="flex items-start gap-4">
           <div className="flex-shrink-0 mt-0.5">
-            <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-500" />
+            <AlertTriangle className="h-5 w-5 text-orange-dark dark:text-orange" />
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-semibold text-foreground mb-1">

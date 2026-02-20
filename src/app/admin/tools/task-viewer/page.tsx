@@ -84,12 +84,12 @@ const STATUS_CONFIG: Record<string, { label: string; statCard: string; statNumbe
 
 // Badge color classes (Tailwind — retained since Badge is a kept shadcn component)
 const STATUS_BADGE: Record<string, { color: string; bgColor: string }> = {
-  PENDING:     { color: 'text-gray-600',   bgColor: 'bg-gray-100'   },
-  IN_PROGRESS: { color: 'text-blue-600',   bgColor: 'bg-blue-100'   },
-  COMPLETED:   { color: 'text-green-600',  bgColor: 'bg-green-100'  },
-  DEFERRED:    { color: 'text-yellow-600', bgColor: 'bg-yellow-100' },
-  BLOCKED:     { color: 'text-red-600',    bgColor: 'bg-red-100'    },
-  CANCELLED:   { color: 'text-gray-400',   bgColor: 'bg-gray-50'    },
+  PENDING:     { color: 'text-muted-foreground', bgColor: 'bg-muted'        },
+  IN_PROGRESS: { color: 'text-primary',          bgColor: 'bg-accent-light' },
+  COMPLETED:   { color: 'text-green-dark',       bgColor: 'bg-green-light'  },
+  DEFERRED:    { color: 'text-orange',            bgColor: 'bg-orange-light' },
+  BLOCKED:     { color: 'text-red',               bgColor: 'bg-red-light'    },
+  CANCELLED:   { color: 'text-muted-foreground',  bgColor: 'bg-secondary'    },
 }
 
 const CATEGORY_LABELS: Record<string, string> = {

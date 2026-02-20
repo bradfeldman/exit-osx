@@ -107,7 +107,7 @@ function OptionCard({ selected, onClick, label, sublabel, description, icon, com
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 400, damping: 15 }}
-          className="absolute -top-2 -right-2 w-5 h-5 bg-gradient-to-br from-primary to-amber-600 rounded-full flex items-center justify-center shadow-lg shadow-primary/40"
+          className="absolute -top-2 -right-2 w-5 h-5 bg-gradient-to-br from-primary to-orange-dark rounded-full flex items-center justify-center shadow-lg shadow-primary/40"
         >
           <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
@@ -194,7 +194,7 @@ function FactorSection({ title, description, value, onChange, options, columns =
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", stiffness: 400, damping: 15 }}
-            className="w-5 h-5 bg-gradient-to-br from-primary to-amber-600 rounded-full flex items-center justify-center shadow-md shadow-primary/30"
+            className="w-5 h-5 bg-gradient-to-br from-primary to-orange-dark rounded-full flex items-center justify-center shadow-md shadow-primary/30"
           >
             <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
@@ -262,7 +262,7 @@ export function BusinessProfileStep({ formData, updateFormData }: BusinessProfil
           <span className="text-sm font-bold text-foreground">{completedCount}/4</span>
           <div className="w-20 h-2.5 bg-muted-foreground/20 rounded-full overflow-hidden">
             <motion.div
-              className="h-full bg-gradient-to-r from-primary to-amber-500 rounded-full"
+              className="h-full bg-gradient-to-r from-primary to-orange rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${(completedCount / 4) * 100}%` }}
               transition={{ duration: 0.5, ease: "easeOut" }}
@@ -329,7 +329,7 @@ export function BusinessProfileStep({ formData, updateFormData }: BusinessProfil
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ type: "spring", stiffness: 200, damping: 20 }}
-          className="relative overflow-hidden p-5 bg-gradient-to-br from-primary/15 via-primary/10 to-amber-500/5 rounded-2xl border border-primary/30 shadow-lg shadow-primary/10"
+          className="relative overflow-hidden p-5 bg-gradient-to-br from-primary/15 via-primary/10 to-orange/5 rounded-2xl border border-primary/30 shadow-lg shadow-primary/10"
         >
           {/* Decorative glow */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
@@ -339,7 +339,7 @@ export function BusinessProfileStep({ formData, updateFormData }: BusinessProfil
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-              className="w-12 h-12 bg-gradient-to-br from-primary to-amber-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/30"
+              className="w-12 h-12 bg-gradient-to-br from-primary to-orange-dark rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/30"
             >
               <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />

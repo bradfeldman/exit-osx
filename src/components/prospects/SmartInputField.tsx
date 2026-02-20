@@ -99,7 +99,7 @@ export function SmartInputField({
           rows={minRows}
           className={cn(
             'resize-none transition-all',
-            hasContent && hasResults && 'border-green-300 dark:border-green-700'
+            hasContent && hasResults && 'border-green/30 dark:border-green-dark'
           )}
         />
 
@@ -113,37 +113,37 @@ export function SmartInputField({
               className="flex items-center gap-3 text-xs text-muted-foreground rounded-md px-1 py-1.5 mt-1.5"
             >
               {parsed.people.length > 0 && (
-                <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
+                <span className="flex items-center gap-1 text-primary dark:text-primary">
                   <User className="h-3 w-3" />
                   {parsed.people.length} person{parsed.people.length > 1 ? 's' : ''}
                 </span>
               )}
               {parsed.companies.length > 0 && (
-                <span className="flex items-center gap-1 text-purple-600 dark:text-purple-400">
+                <span className="flex items-center gap-1 text-purple-dark dark:text-purple">
                   <Building2 className="h-3 w-3" />
                   {parsed.companies.length} compan{parsed.companies.length > 1 ? 'ies' : 'y'}
                 </span>
               )}
               {parsed.emails.length > 0 && (
-                <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                <span className="flex items-center gap-1 text-green-dark dark:text-green">
                   <Mail className="h-3 w-3" />
                   {parsed.emails.length}
                 </span>
               )}
               {parsed.phones.length > 0 && (
-                <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                <span className="flex items-center gap-1 text-orange-dark dark:text-orange">
                   <Phone className="h-3 w-3" />
                   {parsed.phones.length}
                 </span>
               )}
               {parsed.linkedInUrls.length > 0 && (
-                <span className="flex items-center gap-1 text-sky-600 dark:text-sky-400">
+                <span className="flex items-center gap-1 text-primary dark:text-primary">
                   <Linkedin className="h-3 w-3" />
                   {parsed.linkedInUrls.length}
                 </span>
               )}
               {parsed.domains.length > 0 && (
-                <span className="flex items-center gap-1 text-teal-600 dark:text-teal-400">
+                <span className="flex items-center gap-1 text-teal dark:text-teal">
                   <Globe className="h-3 w-3" />
                   {parsed.domains.length}
                 </span>

@@ -370,7 +370,7 @@ export function FinancialTable({
     return (
       <Card>
         <CardContent className="py-12">
-          <p className="text-center text-gray-500">
+          <p className="text-center text-muted-foreground">
             No fiscal years yet. Click &quot;Add Year&quot; to get started.
           </p>
         </CardContent>
@@ -384,15 +384,15 @@ export function FinancialTable({
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-gray-50">
-                <th className="text-left py-3 px-4 font-medium text-gray-600 sticky left-0 bg-gray-50 min-w-[200px]">
+              <tr className="border-b bg-secondary">
+                <th className="text-left py-3 px-4 font-medium text-muted-foreground sticky left-0 bg-secondary min-w-[200px]">
                   {/* Empty header for row labels */}
                 </th>
                 {sortedPeriods.map((period) => (
                   <th
                     key={period.id}
                     className={cn(
-                      "text-right py-3 px-4 font-semibold text-gray-900 min-w-[120px] transition-colors",
+                      "text-right py-3 px-4 font-semibold text-foreground min-w-[120px] transition-colors",
                       !bulkEditMode && onYearClick && "cursor-pointer hover:bg-primary/10"
                     )}
                     onClick={() => !bulkEditMode && onYearClick?.(period.id)}
@@ -407,10 +407,10 @@ export function FinancialTable({
                 // Skip rendering data for header rows
                 if (row.isHeader) {
                   return (
-                    <tr key={rowIndex} className="border-b bg-gray-50/50">
+                    <tr key={rowIndex} className="border-b bg-secondary/50">
                       <td
                         colSpan={sortedPeriods.length + 1}
-                        className="py-2 px-4 font-semibold text-gray-700 text-xs uppercase tracking-wide"
+                        className="py-2 px-4 font-semibold text-foreground text-xs uppercase tracking-wide"
                       >
                         {row.label}
                       </td>
@@ -425,14 +425,14 @@ export function FinancialTable({
                   <tr
                     key={rowIndex}
                     className={cn(
-                      'border-b hover:bg-gray-50/50 transition-colors',
-                      row.isTotal && 'bg-gray-50/30'
+                      'border-b hover:bg-secondary/50 transition-colors',
+                      row.isTotal && 'bg-secondary/30'
                     )}
                   >
                     <td
                       className={cn(
                         'py-2 px-4 sticky left-0 bg-white',
-                        row.isTotal ? 'font-semibold text-gray-900' : 'text-gray-700',
+                        row.isTotal ? 'font-semibold text-foreground' : 'text-foreground',
                         row.indent === 1 && 'pl-8',
                         row.indent === 2 && 'pl-12'
                       )}
@@ -451,7 +451,7 @@ export function FinancialTable({
                             key={period.id}
                             className={cn(
                               'py-1 px-2 text-right font-mono',
-                              row.isTotal ? 'font-semibold text-gray-900' : 'text-gray-600'
+                              row.isTotal ? 'font-semibold text-foreground' : 'text-muted-foreground'
                             )}
                           >
                             <EditableCell
@@ -471,7 +471,7 @@ export function FinancialTable({
                           key={period.id}
                           className={cn(
                             'py-2 px-4 text-right font-mono transition-colors',
-                            row.isTotal ? 'font-semibold text-gray-900' : 'text-gray-600',
+                            row.isTotal ? 'font-semibold text-foreground' : 'text-muted-foreground',
                             !bulkEditMode && onYearClick && 'cursor-pointer hover:bg-primary/5'
                           )}
                           onClick={() => !bulkEditMode && onYearClick?.(period.id)}

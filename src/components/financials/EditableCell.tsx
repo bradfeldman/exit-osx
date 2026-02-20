@@ -114,7 +114,7 @@ export function EditableCell({
 
   if (disabled) {
     return (
-      <span className="text-gray-400">
+      <span className="text-muted-foreground">
         {formatDisplayValue(value, format, showFullPrecision)}
       </span>
     )
@@ -173,7 +173,7 @@ export function EditableCell({
         'block px-2 py-1 rounded cursor-pointer transition-colors',
         'hover:bg-primary/10',
         'focus:outline-none focus:ring-2 focus:ring-primary/50',
-        isDirty && 'bg-amber-100 border border-amber-300'
+        isDirty && 'bg-orange-light border border-orange/30'
       )}
       // FIN-001 FIX: Show full value on hover for abbreviated display
       title={showFullPrecision ? undefined : formatDisplayValue(value, format, true)}

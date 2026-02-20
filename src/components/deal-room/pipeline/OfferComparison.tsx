@@ -27,8 +27,8 @@ interface OfferComparisonProps {
 function getDeadlineStyle(deadline: string | null): string {
   if (!deadline) return 'text-muted-foreground'
   const days = Math.ceil((new Date(deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-  if (days < 3) return 'text-rose-600 font-medium'
-  if (days <= 7) return 'text-amber-600'
+  if (days < 3) return 'text-red-dark font-medium'
+  if (days <= 7) return 'text-orange-dark'
   return 'text-muted-foreground'
 }
 
@@ -54,7 +54,7 @@ export function OfferComparison({ offers, onBuyerClick }: OfferComparisonProps) 
     }).format(amount)
 
   return (
-    <div className="rounded-xl border border-amber-200/50 bg-amber-50/30 dark:bg-amber-900/10 p-6 mb-6">
+    <div className="rounded-xl border border-orange/20 bg-orange-light/30 dark:bg-orange-dark/10 p-6 mb-6">
       <h3 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
         OFFERS ON THE TABLE
       </h3>

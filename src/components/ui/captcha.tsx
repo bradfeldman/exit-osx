@@ -130,7 +130,7 @@ export function Captcha({ onVerify, onExpire, onError }: CaptchaProps) {
     // In development without CAPTCHA configured, show a placeholder
     if (process.env.NODE_ENV !== 'production') {
       return (
-        <div className="p-4 border border-dashed border-yellow-400 bg-yellow-50 rounded-lg text-sm text-yellow-800">
+        <div className="p-4 border border-dashed border-orange bg-orange-light rounded-lg text-sm text-orange-dark">
           CAPTCHA disabled in development. Configure NEXT_PUBLIC_HCAPTCHA_SITE_KEY or NEXT_PUBLIC_RECAPTCHA_SITE_KEY.
         </div>
       )

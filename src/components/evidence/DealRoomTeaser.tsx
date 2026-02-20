@@ -29,15 +29,15 @@ export function DealRoomTeaser({
       className={cn(
         'rounded-xl border p-6',
         isReady
-          ? 'border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-900/10'
+          ? 'border-green/30 bg-green-light/50 dark:bg-green-dark/10'
           : 'border-dashed border-border/50'
       )}
     >
       {isReady ? (
         <>
           <div className="flex items-center gap-2">
-            <Check className="w-5 h-5 text-emerald-500" />
-            <span className="text-sm font-semibold tracking-wider text-emerald-600 uppercase">
+            <Check className="w-5 h-5 text-green" />
+            <span className="text-sm font-semibold tracking-wider text-green-dark uppercase">
               DEAL ROOM READY
             </span>
           </div>
@@ -60,7 +60,7 @@ export function DealRoomTeaser({
             <span className="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
               DEAL ROOM
             </span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+            <span className="text-xs px-2 py-0.5 rounded-full bg-orange-light text-orange-dark dark:bg-orange-dark/30 dark:text-orange">
               Almost Ready
             </span>
           </div>

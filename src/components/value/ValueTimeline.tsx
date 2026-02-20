@@ -44,7 +44,7 @@ function _AnnotationTooltipContent({ annotation }: { annotation: TimelineAnnotat
       <div className="text-xs text-muted-foreground mt-1">{annotation.detail}</div>
       <div className={cn(
         'text-xs font-medium mt-1',
-        annotation.type === 'positive' ? 'text-emerald-600' :
+        annotation.type === 'positive' ? 'text-green-dark' :
         annotation.type === 'negative' ? 'text-destructive' :
         'text-muted-foreground'
       )}>
@@ -123,8 +123,8 @@ export function ValueTimeline({ valueTrend, annotations }: ValueTimelineProps) {
   })
 
   const dotColors = {
-    positive: '#22c55e',
-    negative: '#ef4444',
+    positive: 'var(--green)',
+    negative: 'var(--red)',
     neutral: '#6b7280',
   }
 
@@ -199,10 +199,10 @@ export function ValueTimeline({ valueTrend, annotations }: ValueTimelineProps) {
         {hasDcfData && (
           <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
-              <span className="inline-block w-4 h-0.5 bg-[#0071E3]" /> EBITDA Multiple
+              <span className="inline-block w-4 h-0.5 bg-primary" /> EBITDA Multiple
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="inline-block w-4 h-0.5 border-t-[1.5px] border-dashed border-gray-500" /> DCF
+              <span className="inline-block w-4 h-0.5 border-t-[1.5px] border-dashed border-muted-foreground" /> DCF
             </span>
           </div>
         )}
@@ -215,7 +215,7 @@ export function ValueTimeline({ valueTrend, annotations }: ValueTimelineProps) {
                 <div
                   className={cn(
                     'mt-1.5 h-2 w-2 rounded-full shrink-0',
-                    ann.type === 'positive' ? 'bg-emerald-500' :
+                    ann.type === 'positive' ? 'bg-green' :
                     ann.type === 'negative' ? 'bg-destructive' :
                     'bg-muted-foreground'
                   )}
@@ -228,7 +228,7 @@ export function ValueTimeline({ valueTrend, annotations }: ValueTimelineProps) {
                   {ann.impact && ann.impact !== 'Baseline' && (
                     <span className={cn(
                       'ml-2 text-xs font-medium',
-                      ann.type === 'positive' ? 'text-emerald-600' :
+                      ann.type === 'positive' ? 'text-green-dark' :
                       ann.type === 'negative' ? 'text-destructive' :
                       'text-muted-foreground'
                     )}>

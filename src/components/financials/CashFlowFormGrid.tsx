@@ -212,7 +212,7 @@ export function CashFlowFormGrid({ companyId }: CashFlowFormGridProps) {
     <div className="space-y-6">
       {/* Info banner for periods that can't calculate */}
       {cashFlowPeriods.some(p => !periodCF[p.id]?.data) && (
-        <div className="flex items-start gap-2 p-3 bg-amber-50 text-amber-800 rounded-lg border border-amber-200 text-sm">
+        <div className="flex items-start gap-2 p-3 bg-orange-light text-orange-dark rounded-lg border border-orange/20 text-sm">
           <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
           <span>
             Cash flow is auto-calculated from P&L and Balance Sheet data. Some periods are missing data.
@@ -227,7 +227,7 @@ export function CashFlowFormGrid({ companyId }: CashFlowFormGridProps) {
 
           {/* ── Operating Activities ── */}
           <div className="space-y-3 mb-6">
-            <SectionHeader icon={Activity} label="Operating Activities" bgColor="bg-emerald-100" textColor="text-emerald-600" />
+            <SectionHeader icon={Activity} label="Operating Activities" bgColor="bg-green-light" textColor="text-green-dark" />
 
             <FormRow label="Net Income" periods={cashFlowPeriods}>
               {(p) => <CashFlowCell periodId={p.id} field="netIncome" />}
@@ -239,7 +239,7 @@ export function CashFlowFormGrid({ companyId }: CashFlowFormGridProps) {
               {(p) => <CashFlowCell periodId={p.id} field="amortization" />}
             </FormRow>
 
-            <p className="text-xs text-gray-500 pl-8 font-medium uppercase tracking-wide">Working Capital Changes</p>
+            <p className="text-xs text-muted-foreground pl-8 font-medium uppercase tracking-wide">Working Capital Changes</p>
             <FormRow label="Chg. in A/R" periods={cashFlowPeriods}>
               {(p) => <CashFlowCell periodId={p.id} field="changeInAccountsReceivable" />}
             </FormRow>
@@ -272,7 +272,7 @@ export function CashFlowFormGrid({ companyId }: CashFlowFormGridProps) {
 
           {/* ── Investing Activities ── */}
           <div className="space-y-3 mb-6">
-            <SectionHeader icon={TrendingDown} label="Investing Activities" bgColor="bg-orange-100" textColor="text-orange-600" />
+            <SectionHeader icon={TrendingDown} label="Investing Activities" bgColor="bg-orange-light" textColor="text-orange" />
 
             <FormRow label="Capital Expenditures" periods={cashFlowPeriods}>
               {(p) => <CashFlowCell periodId={p.id} field="capitalExpenditures" />}
@@ -291,7 +291,7 @@ export function CashFlowFormGrid({ companyId }: CashFlowFormGridProps) {
 
           {/* ── Financing Activities ── */}
           <div className="space-y-3 mb-6">
-            <SectionHeader icon={Wallet} label="Financing Activities" bgColor="bg-purple-100" textColor="text-purple-600" />
+            <SectionHeader icon={Wallet} label="Financing Activities" bgColor="bg-purple-light" textColor="text-purple-dark" />
 
             <FormRow label="Chg. in Current LTD" periods={cashFlowPeriods}>
               {(p) => <CashFlowCell periodId={p.id} field="changeInCurrentPortionLtd" />}
@@ -313,7 +313,7 @@ export function CashFlowFormGrid({ companyId }: CashFlowFormGridProps) {
 
           {/* ── Summary ── */}
           <div className="space-y-3">
-            <SectionHeader icon={BarChart3} label="Summary" bgColor="bg-blue-100" textColor="text-blue-600" />
+            <SectionHeader icon={BarChart3} label="Summary" bgColor="bg-accent-light" textColor="text-primary" />
 
             <FormRow label="Net Change in Cash" periods={cashFlowPeriods}>
               {(p) => <CashFlowSubtotal periodId={p.id} field="netChangeInCash" />}

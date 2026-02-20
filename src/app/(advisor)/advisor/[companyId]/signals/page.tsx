@@ -243,7 +243,7 @@ export default function AdvisorSignalsPage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="text-emerald-700 border-emerald-200 hover:bg-emerald-50"
+                        className="text-green-dark border-green/20 hover:bg-green-light"
                         onClick={() => handleConfirm(signal.id)}
                         disabled={actionLoading === signal.id}
                       >
@@ -253,7 +253,7 @@ export default function AdvisorSignalsPage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="text-red-700 border-red-200 hover:bg-red-50"
+                        className="text-red-dark border-red/20 hover:bg-red-light"
                         onClick={() => setDismissDialogSignal(signal)}
                         disabled={actionLoading === signal.id}
                       >

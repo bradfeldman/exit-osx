@@ -117,7 +117,7 @@ export function buildWaterfallData(
     base: 0,
     value: reportedEbitda,
     total: reportedEbitda,
-    fill: '#3b82f6', // blue
+    fill: 'var(--primary)', // blue
   })
 
   // 2. Owner Comp Adjustment (if positive)
@@ -127,7 +127,7 @@ export function buildWaterfallData(
       base: runningTotal,
       value: ownerCompAdjustment,
       total: runningTotal + ownerCompAdjustment,
-      fill: '#22c55e', // green
+      fill: 'var(--green)', // green
     })
     runningTotal += ownerCompAdjustment
   }
@@ -147,7 +147,7 @@ export function buildWaterfallData(
       base: isPositive ? runningTotal : runningTotal + amount,
       value: Math.abs(amount),
       total: runningTotal + amount,
-      fill: isPositive ? '#22c55e' : '#ef4444', // green / red
+      fill: isPositive ? 'var(--green)' : 'var(--red)', // green / red
     })
     runningTotal += amount
   }
@@ -158,7 +158,7 @@ export function buildWaterfallData(
     base: 0,
     value: runningTotal,
     total: runningTotal,
-    fill: '#3b82f6', // blue
+    fill: 'var(--primary)', // blue
   })
 
   return items

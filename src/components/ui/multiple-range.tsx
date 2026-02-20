@@ -116,19 +116,19 @@ export function MultipleRange({ low, high, current, onDragChange, onDragEnd }: M
         onTouchStart={handleTouchStart}
       >
         {/* Background - full track */}
-        <div className="absolute inset-0 bg-gray-100 dark:bg-gray-800" />
+        <div className="absolute inset-0 bg-muted dark:bg-muted" />
 
         {/* Discount zone (below industry low) */}
         {isBelowRange && (
           <div
-            className="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-amber-200 to-amber-100 dark:from-amber-900/50 dark:to-amber-800/30"
+            className="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-orange-light to-orange-light/50 dark:from-orange-dark/50 dark:to-orange-dark/30"
             style={{ width: `${industryLowPercent}%` }}
           />
         )}
 
         {/* Industry range zone */}
         <div
-          className="absolute top-0 bottom-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700"
+          className="absolute top-0 bottom-0 bg-gradient-to-r from-border via-muted-foreground/30 to-border dark:from-border dark:via-muted-foreground/30 dark:to-border"
           style={{
             left: `${industryLowPercent}%`,
             width: `${industryWidthPercent}%`,
@@ -138,7 +138,7 @@ export function MultipleRange({ low, high, current, onDragChange, onDragEnd }: M
         {/* Premium zone (above industry high) */}
         {isAboveRange && (
           <div
-            className="absolute top-0 bottom-0 right-0 bg-gradient-to-r from-emerald-100 to-emerald-200 dark:from-emerald-900/30 dark:to-emerald-800/50"
+            className="absolute top-0 bottom-0 right-0 bg-gradient-to-r from-green-light/50 to-green-light dark:from-green-dark/30 dark:to-green-dark/50"
             style={{
               left: `${industryHighPercent}%`,
               width: `${100 - industryHighPercent}%`,
@@ -149,14 +149,14 @@ export function MultipleRange({ low, high, current, onDragChange, onDragEnd }: M
         {/* Industry high boundary marker */}
         {isAboveRange && (
           <div
-            className="absolute top-0 bottom-0 w-0.5 bg-gray-400 dark:bg-gray-500"
+            className="absolute top-0 bottom-0 w-0.5 bg-muted-foreground/50 dark:bg-muted-foreground/50"
             style={{ left: `${industryHighPercent}%` }}
           />
         )}
         {/* Industry low boundary marker */}
         {isBelowRange && (
           <div
-            className="absolute top-0 bottom-0 w-0.5 bg-gray-400 dark:bg-gray-500"
+            className="absolute top-0 bottom-0 w-0.5 bg-muted-foreground/50 dark:bg-muted-foreground/50"
             style={{ left: `${industryLowPercent}%` }}
           />
         )}
@@ -164,7 +164,7 @@ export function MultipleRange({ low, high, current, onDragChange, onDragEnd }: M
         {/* Base position marker (ghost) - shows where the actual value is when dragging */}
         {current !== null && isDragging && (
           <div
-            className="absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-gray-300 border-2 border-white shadow-sm opacity-50"
+            className="absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-muted-foreground/30 border-2 border-white shadow-sm opacity-50"
             style={{ left: `calc(${basePosition}% - 10px)` }}
           />
         )}
@@ -176,9 +176,9 @@ export function MultipleRange({ low, high, current, onDragChange, onDragEnd }: M
               isDragging ? 'cursor-grabbing scale-110' : 'cursor-grab'
             } transition-transform ${
               isAboveRange && !isDragging
-                ? 'bg-emerald-500'
+                ? 'bg-green'
                 : isBelowRange && !isDragging
-                  ? 'bg-amber-500'
+                  ? 'bg-orange'
                   : 'bg-primary'
             }`}
             style={{ left: `calc(${displayPosition}% - 10px)` }}
@@ -240,12 +240,12 @@ export function MultipleRange({ low, high, current, onDragChange, onDragEnd }: M
 
       {/* Premium/discount indicator with current value prominently displayed */}
       {isAboveRange && !isDragging && (
-        <p className="text-xs text-emerald-600 dark:text-emerald-400 text-center mt-2 font-medium">
+        <p className="text-xs text-green-dark dark:text-green text-center mt-2 font-medium">
           <span className="text-sm font-bold">{current!.toFixed(1)}x</span> — Premium ({((current! - high) / high * 100).toFixed(0)}% above industry max)
         </p>
       )}
       {isBelowRange && !isDragging && (
-        <p className="text-xs text-amber-600 dark:text-amber-400 text-center mt-2 font-medium">
+        <p className="text-xs text-orange-dark dark:text-orange text-center mt-2 font-medium">
           <span className="text-sm font-bold">{current!.toFixed(1)}x</span> — Discount ({((low - current!) / low * 100).toFixed(0)}% below industry min)
         </p>
       )}

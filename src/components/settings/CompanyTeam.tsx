@@ -80,8 +80,8 @@ const roleDescriptions: Record<CompanyRole, string> = {
 }
 
 const roleColors: Record<CompanyRole, string> = {
-  LEAD: 'bg-purple-100 text-purple-800 border-purple-200',
-  CONTRIBUTOR: 'bg-blue-100 text-blue-800 border-blue-200',
+  LEAD: 'bg-purple-light text-purple-dark border-purple/20',
+  CONTRIBUTOR: 'bg-accent-light text-primary border-primary/20',
   VIEWER: 'bg-muted text-muted-foreground border-border',
 }
 

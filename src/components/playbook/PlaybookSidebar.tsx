@@ -59,7 +59,7 @@ export function PlaybookSidebar({
             {Math.round(percentComplete)}%
           </span>
         </div>
-        <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
+        <div className="h-1.5 rounded-full bg-muted overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-500"
             style={{
@@ -95,7 +95,7 @@ export function PlaybookSidebar({
                     href={`/playbook/${playbookId}/${section.order}`}
                     onClick={onNavigate}
                     className={`flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${
-                      isActive ? 'border-l-[3px]' : 'border-l-[3px] border-transparent hover:bg-gray-50'
+                      isActive ? 'border-l-[3px]' : 'border-l-[3px] border-transparent hover:bg-secondary'
                     }`}
                     style={
                       isActive

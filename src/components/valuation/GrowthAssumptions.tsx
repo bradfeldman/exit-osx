@@ -30,10 +30,10 @@ function FCFTooltip({ active, payload }: { active?: boolean; payload?: Array<{ p
   if (active && payload && payload.length) {
     const data = payload[0].payload
     return (
-      <div className="bg-white p-2 border border-gray-200 rounded shadow-sm">
+      <div className="bg-white p-2 border border-border rounded shadow-sm">
         <p className="text-sm font-medium">{data.year}</p>
-        <p className="text-sm text-gray-600">FCF: {formatCurrency(data.fcf)}</p>
-        <p className="text-sm text-gray-600">Growth: {formatPercent(data.growth)}</p>
+        <p className="text-sm text-muted-foreground">FCF: {formatCurrency(data.fcf)}</p>
+        <p className="text-sm text-muted-foreground">Growth: {formatPercent(data.growth)}</p>
       </div>
     )
   }
@@ -78,7 +78,7 @@ export function GrowthAssumptions({
     <Card>
       <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
-          <CardTitle className="text-base font-medium text-gray-900">Growth Assumptions</CardTitle>
+          <CardTitle className="text-base font-medium text-foreground">Growth Assumptions</CardTitle>
           <Button variant="outline" size="sm" onClick={applyLinearDecline} className="text-xs">
             Linear Decline
           </Button>
@@ -87,11 +87,11 @@ export function GrowthAssumptions({
       <CardContent className="space-y-5">
         {/* Base FCF Input */}
         <div className="space-y-2">
-          <Label htmlFor="baseFCF" className="text-sm text-gray-700">
+          <Label htmlFor="baseFCF" className="text-sm text-foreground">
             Base Free Cash Flow (Year 0)
           </Label>
           <div className="flex items-center gap-2">
-            <span className="text-gray-500">$</span>
+            <span className="text-muted-foreground">$</span>
             <CurrencyInput
               id="baseFCF"
               value={baseFCF}
@@ -100,7 +100,7 @@ export function GrowthAssumptions({
             />
           </div>
           {fcfIsEstimated && (
-            <p className="text-xs text-amber-600 mt-1">
+            <p className="text-xs text-orange-dark mt-1">
               Estimated from your revenue and industry benchmarks. Add detailed financials for a more accurate figure.
             </p>
           )}
@@ -108,11 +108,11 @@ export function GrowthAssumptions({
 
         {/* Growth Rate Inputs */}
         <div className="space-y-4">
-          <Label className="text-sm text-gray-700">FCF Growth Rates</Label>
+          <Label className="text-sm text-foreground">FCF Growth Rates</Label>
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
             {YEARS.map((year, index) => (
               <div key={year} className="space-y-2">
-                <Label htmlFor={year} className="text-xs text-gray-500">
+                <Label htmlFor={year} className="text-xs text-muted-foreground">
                   Year {index + 1}
                 </Label>
                 <div className="flex flex-col gap-2">
@@ -124,7 +124,7 @@ export function GrowthAssumptions({
                     decimals={1}
                     className="text-sm h-8 text-center min-w-0"
                   />
-                  <span className="text-xs text-gray-400 text-center">%</span>
+                  <span className="text-xs text-muted-foreground text-center">%</span>
                 </div>
               </div>
             ))}
@@ -134,7 +134,7 @@ export function GrowthAssumptions({
 
         {/* FCF Projection Chart */}
         <div className="pt-4">
-          <Label className="text-sm text-gray-700 mb-3 block">Projected FCF Trajectory</Label>
+          <Label className="text-sm text-foreground mb-3 block">Projected FCF Trajectory</Label>
           <div className="h-48 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart

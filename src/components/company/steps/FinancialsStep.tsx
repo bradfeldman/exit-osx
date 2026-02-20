@@ -29,8 +29,8 @@ export function FinancialsStep({ formData, updateFormData }: FinancialsStepProps
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Financial Information</h2>
-        <p className="text-sm text-gray-600 mb-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">Financial Information</h2>
+        <p className="text-sm text-muted-foreground mb-6">
           Enter your company&apos;s annual financial data. These figures form the foundation of your valuation calculation.
         </p>
       </div>
@@ -39,7 +39,7 @@ export function FinancialsStep({ formData, updateFormData }: FinancialsStepProps
         <div>
           <Label htmlFor="annualRevenue">Annual Revenue</Label>
           <div className="relative mt-1">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
             <Input
               id="annualRevenue"
               type="text"
@@ -50,7 +50,7 @@ export function FinancialsStep({ formData, updateFormData }: FinancialsStepProps
               className="pl-7"
             />
           </div>
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             Your total revenue for the most recent fiscal year
           </p>
         </div>
@@ -58,7 +58,7 @@ export function FinancialsStep({ formData, updateFormData }: FinancialsStepProps
         <div>
           <Label htmlFor="annualEbitda">Annual EBITDA</Label>
           <div className="relative mt-1">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
             <Input
               id="annualEbitda"
               type="text"
@@ -69,7 +69,7 @@ export function FinancialsStep({ formData, updateFormData }: FinancialsStepProps
               className="pl-7"
             />
           </div>
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             Earnings Before Interest, Taxes, Depreciation, and Amortization
           </p>
         </div>
@@ -77,7 +77,7 @@ export function FinancialsStep({ formData, updateFormData }: FinancialsStepProps
         <div>
           <Label htmlFor="ownerCompensation">Owner&apos;s Total Compensation</Label>
           <div className="relative mt-1">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
             <Input
               id="ownerCompensation"
               type="text"
@@ -88,26 +88,26 @@ export function FinancialsStep({ formData, updateFormData }: FinancialsStepProps
               className="pl-7"
             />
           </div>
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             Include salary, bonuses, distributions, and any personal expenses run through the business
           </p>
         </div>
 
         {/* Calculated preview */}
         {formData.annualRevenue > 0 && (
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">Financial Summary</h3>
+          <div className="mt-6 p-4 bg-secondary rounded-lg border border-border">
+            <h3 className="text-sm font-medium text-foreground mb-3">Financial Summary</h3>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="text-gray-500">Revenue</p>
+                <p className="text-muted-foreground">Revenue</p>
                 <p className="font-medium">{formatCurrency(formData.annualRevenue)}</p>
               </div>
               <div>
-                <p className="text-gray-500">EBITDA</p>
+                <p className="text-muted-foreground">EBITDA</p>
                 <p className="font-medium">{formatCurrency(formData.annualEbitda)}</p>
               </div>
               <div>
-                <p className="text-gray-500">EBITDA Margin</p>
+                <p className="text-muted-foreground">EBITDA Margin</p>
                 <p className="font-medium">
                   {formData.annualRevenue > 0
                     ? `${((formData.annualEbitda / formData.annualRevenue) * 100).toFixed(1)}%`
@@ -115,7 +115,7 @@ export function FinancialsStep({ formData, updateFormData }: FinancialsStepProps
                 </p>
               </div>
               <div>
-                <p className="text-gray-500">Owner Compensation</p>
+                <p className="text-muted-foreground">Owner Compensation</p>
                 <p className="font-medium">{formatCurrency(formData.ownerCompensation)}</p>
               </div>
             </div>

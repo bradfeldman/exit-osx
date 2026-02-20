@@ -39,7 +39,7 @@ export function Slider({
         onChange={handleChange}
         disabled={disabled}
         className={cn(
-          'w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer',
+          'w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer',
           'accent-primary',
           '[&::-webkit-slider-thumb]:appearance-none',
           '[&::-webkit-slider-thumb]:h-4',

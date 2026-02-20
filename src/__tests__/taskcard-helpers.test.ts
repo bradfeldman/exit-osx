@@ -13,12 +13,12 @@ const CATEGORY_LABELS: Record<string, string> = {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  FINANCIAL: 'bg-blue-100 text-blue-700',
-  TRANSFERABILITY: 'bg-green-100 text-green-700',
-  OPERATIONAL: 'bg-yellow-100 text-yellow-700',
-  MARKET: 'bg-purple-100 text-purple-700',
-  LEGAL_TAX: 'bg-red-100 text-red-700',
-  PERSONAL: 'bg-orange-100 text-orange-700',
+  FINANCIAL: 'bg-accent-light text-primary',
+  TRANSFERABILITY: 'bg-green-light text-green-dark',
+  OPERATIONAL: 'bg-orange-light text-orange-dark',
+  MARKET: 'bg-purple-light text-purple-dark',
+  LEGAL_TAX: 'bg-red-light text-red-dark',
+  PERSONAL: 'bg-orange-light text-orange-dark',
 }
 
 function getEffortLevel(effort: string): string {
@@ -53,18 +53,18 @@ function getImpactEffortColor(effort: string, issueTier: string | null | undefin
   const isHighEffort = effort === 'HIGH' || effort === 'MAJOR'
 
   if (issueTier === 'CRITICAL') {
-    if (isLowEffort) return 'bg-red-100 text-red-700'
-    return 'bg-red-50 text-red-600'
+    if (isLowEffort) return 'bg-red-light text-red-dark'
+    return 'bg-red-light text-red-dark'
   }
 
   if (issueTier === 'SIGNIFICANT') {
-    if (isLowEffort) return 'bg-orange-100 text-orange-700'
-    return 'bg-yellow-100 text-yellow-700'
+    if (isLowEffort) return 'bg-orange-light text-orange-dark'
+    return 'bg-orange-light text-orange-dark'
   }
 
-  if (isLowEffort) return 'bg-green-100 text-green-700'
-  if (isHighEffort) return 'bg-gray-100 text-gray-600'
-  return 'bg-blue-100 text-blue-700'
+  if (isLowEffort) return 'bg-green-light text-green-dark'
+  if (isHighEffort) return 'bg-secondary text-muted-foreground'
+  return 'bg-accent-light text-primary'
 }
 
 function getInitials(name: string | null, email: string): string {
@@ -82,13 +82,13 @@ function formatDueDate(dateStr: string): { text: string; className: string } {
   const formatted = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 
   if (diffDays < 0) {
-    return { text: `Overdue (${formatted})`, className: 'text-red-600' }
+    return { text: `Overdue (${formatted})`, className: 'text-red-dark' }
   } else if (diffDays === 0) {
-    return { text: 'Due today', className: 'text-orange-600' }
+    return { text: 'Due today', className: 'text-orange-dark' }
   } else if (diffDays <= 3) {
-    return { text: `Due ${formatted}`, className: 'text-yellow-600' }
+    return { text: `Due ${formatted}`, className: 'text-orange' }
   }
-  return { text: `Due ${formatted}`, className: 'text-gray-500' }
+  return { text: `Due ${formatted}`, className: 'text-muted-foreground' }
 }
 
 describe('TaskCard Helper Functions', () => {
@@ -116,7 +116,7 @@ describe('TaskCard Helper Functions', () => {
 
     it('should have valid tailwind classes', () => {
       Object.values(CATEGORY_COLORS).forEach(color => {
-        expect(color).toMatch(/bg-\w+-\d+ text-\w+-\d+/)
+        expect(color).toMatch(/bg-\S+ text-\S+/)
       })
     })
   })
@@ -176,40 +176,40 @@ describe('TaskCard Helper Functions', () => {
 
   describe('getImpactEffortColor', () => {
     describe('Critical issues', () => {
-      it('should return red-100 for low effort critical', () => {
-        expect(getImpactEffortColor('LOW', 'CRITICAL')).toBe('bg-red-100 text-red-700')
-        expect(getImpactEffortColor('MINIMAL', 'CRITICAL')).toBe('bg-red-100 text-red-700')
+      it('should return red-light for low effort critical', () => {
+        expect(getImpactEffortColor('LOW', 'CRITICAL')).toBe('bg-red-light text-red-dark')
+        expect(getImpactEffortColor('MINIMAL', 'CRITICAL')).toBe('bg-red-light text-red-dark')
       })
 
-      it('should return red-50 for other effort levels on critical', () => {
-        expect(getImpactEffortColor('MODERATE', 'CRITICAL')).toBe('bg-red-50 text-red-600')
-        expect(getImpactEffortColor('HIGH', 'CRITICAL')).toBe('bg-red-50 text-red-600')
+      it('should return red-light for other effort levels on critical', () => {
+        expect(getImpactEffortColor('MODERATE', 'CRITICAL')).toBe('bg-red-light text-red-dark')
+        expect(getImpactEffortColor('HIGH', 'CRITICAL')).toBe('bg-red-light text-red-dark')
       })
     })
 
     describe('Significant issues', () => {
       it('should return orange for low effort significant', () => {
-        expect(getImpactEffortColor('LOW', 'SIGNIFICANT')).toBe('bg-orange-100 text-orange-700')
+        expect(getImpactEffortColor('LOW', 'SIGNIFICANT')).toBe('bg-orange-light text-orange-dark')
       })
 
-      it('should return yellow for other effort levels on significant', () => {
-        expect(getImpactEffortColor('MODERATE', 'SIGNIFICANT')).toBe('bg-yellow-100 text-yellow-700')
+      it('should return orange for other effort levels on significant', () => {
+        expect(getImpactEffortColor('MODERATE', 'SIGNIFICANT')).toBe('bg-orange-light text-orange-dark')
       })
     })
 
     describe('Optimization issues', () => {
       it('should return green for low effort optimization', () => {
-        expect(getImpactEffortColor('LOW', 'OPTIMIZATION')).toBe('bg-green-100 text-green-700')
-        expect(getImpactEffortColor('LOW', null)).toBe('bg-green-100 text-green-700')
+        expect(getImpactEffortColor('LOW', 'OPTIMIZATION')).toBe('bg-green-light text-green-dark')
+        expect(getImpactEffortColor('LOW', null)).toBe('bg-green-light text-green-dark')
       })
 
       it('should return gray for high effort optimization', () => {
-        expect(getImpactEffortColor('HIGH', 'OPTIMIZATION')).toBe('bg-gray-100 text-gray-600')
-        expect(getImpactEffortColor('MAJOR', null)).toBe('bg-gray-100 text-gray-600')
+        expect(getImpactEffortColor('HIGH', 'OPTIMIZATION')).toBe('bg-secondary text-muted-foreground')
+        expect(getImpactEffortColor('MAJOR', null)).toBe('bg-secondary text-muted-foreground')
       })
 
       it('should return blue for moderate effort optimization', () => {
-        expect(getImpactEffortColor('MODERATE', 'OPTIMIZATION')).toBe('bg-blue-100 text-blue-700')
+        expect(getImpactEffortColor('MODERATE', 'OPTIMIZATION')).toBe('bg-accent-light text-primary')
       })
     })
   })
@@ -254,25 +254,25 @@ describe('TaskCard Helper Functions', () => {
     it('should return Overdue with red for past dates', () => {
       const result = formatDueDate('2024-01-10')
       expect(result.text).toContain('Overdue')
-      expect(result.className).toBe('text-red-600')
+      expect(result.className).toBe('text-red-dark')
     })
 
     it('should return Due today with orange for today', () => {
       const result = formatDueDate('2024-01-15')
       expect(result.text).toBe('Due today')
-      expect(result.className).toBe('text-orange-600')
+      expect(result.className).toBe('text-orange-dark')
     })
 
-    it('should return yellow for dates within 3 days', () => {
+    it('should return orange for dates within 3 days', () => {
       const result = formatDueDate('2024-01-17')
       expect(result.text).toContain('Due')
-      expect(result.className).toBe('text-yellow-600')
+      expect(result.className).toBe('text-orange')
     })
 
-    it('should return gray for dates more than 3 days away', () => {
+    it('should return muted for dates more than 3 days away', () => {
       const result = formatDueDate('2024-01-25')
       expect(result.text).toContain('Due')
-      expect(result.className).toBe('text-gray-500')
+      expect(result.className).toBe('text-muted-foreground')
     })
 
     it('should format date correctly', () => {

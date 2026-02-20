@@ -124,7 +124,7 @@ export function DisclosurePrompt({ promptSet, onClose, onComplete }: DisclosureP
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 transition-colors"
+          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
         >
           <X className="h-5 w-5" />
         </button>
@@ -133,11 +133,11 @@ export function DisclosurePrompt({ promptSet, onClose, onComplete }: DisclosureP
           {isDone ? (
             /* Completion state */
             <div className="text-center py-8">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
-                <CheckCircle className="h-6 w-6 text-emerald-600" />
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-light">
+                <CheckCircle className="h-6 w-6 text-green-dark" />
               </div>
-              <h3 className="text-lg font-semibold text-zinc-900">Check-in Complete</h3>
-              <p className="text-sm text-zinc-500 mt-2">
+              <h3 className="text-lg font-semibold text-foreground">Check-in Complete</h3>
+              <p className="text-sm text-muted-foreground mt-2">
                 {signalsCreated > 0
                   ? `${signalsCreated} signal${signalsCreated !== 1 ? 's' : ''} detected. We'll track the impact on your exit readiness.`
                   : 'No changes detected — your value story is up to date.'}
@@ -154,14 +154,14 @@ export function DisclosurePrompt({ promptSet, onClose, onComplete }: DisclosureP
               {/* Progress */}
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-lg font-semibold text-zinc-900">Quick Check</h3>
-                  <span className="text-sm text-zinc-400">
+                  <h3 className="text-lg font-semibold text-foreground">Quick Check</h3>
+                  <span className="text-sm text-muted-foreground">
                     {currentIndex + 1} of {totalQuestions}
                   </span>
                 </div>
-                <div className="h-1 bg-zinc-100 rounded-full overflow-hidden">
+                <div className="h-1 bg-muted rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-blue-500 rounded-full transition-all duration-300"
+                    className="h-full bg-primary rounded-full transition-all duration-300"
                     style={{ width: `${((currentIndex + 1) / totalQuestions) * 100}%` }}
                   />
                 </div>
@@ -172,9 +172,9 @@ export function DisclosurePrompt({ promptSet, onClose, onComplete }: DisclosureP
                 <div className="space-y-6">
                   <div className="flex gap-3">
                     <AlertTriangle className={`h-5 w-5 flex-shrink-0 mt-0.5 ${
-                      currentQuestion.signalType === 'negative' ? 'text-amber-500' : 'text-emerald-500'
+                      currentQuestion.signalType === 'negative' ? 'text-orange' : 'text-green'
                     }`} />
-                    <p className="text-base text-zinc-800 leading-relaxed">
+                    <p className="text-base text-foreground leading-relaxed">
                       {currentQuestion.text}
                     </p>
                   </div>
@@ -201,7 +201,7 @@ export function DisclosurePrompt({ promptSet, onClose, onComplete }: DisclosureP
               {/* Follow-up */}
               {showFollowUp && currentQuestion && (
                 <div className="space-y-4">
-                  <p className="text-base text-zinc-800 leading-relaxed">
+                  <p className="text-base text-foreground leading-relaxed">
                     {currentQuestion.followUpText}
                   </p>
                   <textarea
@@ -209,7 +209,7 @@ export function DisclosurePrompt({ promptSet, onClose, onComplete }: DisclosureP
                     onChange={(e) => setFollowUpText(e.target.value)}
                     placeholder="Brief description (optional)"
                     rows={3}
-                    className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-700 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
                   />
                   <div className="flex gap-3 justify-end">
                     <Button
@@ -222,7 +222,7 @@ export function DisclosurePrompt({ promptSet, onClose, onComplete }: DisclosureP
                     <Button
                       size="sm"
                       onClick={handleFollowUpSubmit}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      className="bg-primary hover:bg-primary/90 text-white"
                     >
                       Continue
                       <ChevronRight className="h-4 w-4 ml-1" />
@@ -233,7 +233,7 @@ export function DisclosurePrompt({ promptSet, onClose, onComplete }: DisclosureP
 
               {isSubmitting && (
                 <div className="text-center py-8">
-                  <p className="text-sm text-zinc-500 animate-pulse">Processing...</p>
+                  <p className="text-sm text-muted-foreground animate-pulse">Processing...</p>
                 </div>
               )}
             </>

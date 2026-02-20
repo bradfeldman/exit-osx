@@ -20,13 +20,13 @@ export function EnrichmentBanner({ alertId, message }: EnrichmentBannerProps) {
   }
 
   return (
-    <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-800/30 px-4 py-3 flex items-center justify-between">
-      <p className="text-sm text-emerald-700 dark:text-emerald-400">
+    <div className="rounded-lg bg-green-light dark:bg-green-dark/20 border border-green/20 dark:border-green-dark/30 px-4 py-3 flex items-center justify-between">
+      <p className="text-sm text-green-dark dark:text-green">
         {message}
       </p>
       <button
         onClick={handleDismiss}
-        className="ml-3 shrink-0 rounded-md p-1 text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
+        className="ml-3 shrink-0 rounded-md p-1 text-green hover:text-green-dark dark:hover:text-green hover:bg-green-light dark:hover:bg-green-dark/30 transition-colors"
         aria-label="Dismiss"
       >
         <X className="h-4 w-4" />

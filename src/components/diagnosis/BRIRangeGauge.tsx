@@ -86,39 +86,39 @@ export function BRIRangeGauge({ briScore, isEstimated = false }: BRIRangeGaugePr
             </div>
           </div>
 
-          <div className="relative h-3 rounded-full overflow-hidden bg-zinc-100">
+          <div className="relative h-3 rounded-full overflow-hidden bg-muted">
             {/* Poor zone (0-40) */}
             <div
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-red-300 to-red-200"
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-red/30 to-red/20"
               style={{ width: '40%' }}
             />
             {/* Average zone (40-60) */}
             <div
-              className="absolute inset-y-0 bg-gradient-to-r from-amber-200 to-amber-100"
+              className="absolute inset-y-0 bg-gradient-to-r from-orange/20 to-orange-light"
               style={{ left: '40%', width: '20%' }}
             />
             {/* Good zone (60-80) */}
             <div
-              className="absolute inset-y-0 bg-gradient-to-r from-zinc-200 to-zinc-300"
+              className="absolute inset-y-0 bg-gradient-to-r from-border to-border"
               style={{ left: '60%', width: '20%' }}
             />
             {/* Excellent zone (80-100) */}
             <div
-              className="absolute inset-y-0 bg-gradient-to-r from-emerald-200 to-emerald-300"
+              className="absolute inset-y-0 bg-gradient-to-r from-green/20 to-green/30"
               style={{ left: '80%', width: '20%' }}
             />
 
             {/* Zone boundary markers */}
             <div
-              className="absolute top-0 bottom-0 w-px bg-zinc-400/40"
+              className="absolute top-0 bottom-0 w-px bg-muted-foreground/40"
               style={{ left: '40%' }}
             />
             <div
-              className="absolute top-0 bottom-0 w-px bg-zinc-400/40"
+              className="absolute top-0 bottom-0 w-px bg-muted-foreground/40"
               style={{ left: '60%' }}
             />
             <div
-              className="absolute top-0 bottom-0 w-px bg-zinc-400/40"
+              className="absolute top-0 bottom-0 w-px bg-muted-foreground/40"
               style={{ left: '80%' }}
             />
 
@@ -129,12 +129,12 @@ export function BRIRangeGauge({ briScore, isEstimated = false }: BRIRangeGaugePr
                 left: `${position}%`,
                 backgroundColor:
                   zone === 'excellent'
-                    ? '#059669'
+                    ? 'var(--green-dark)'
                     : zone === 'strong'
                       ? '#1D1D1F'
                       : zone === 'developing'
-                        ? '#d97706'
-                        : '#dc2626',
+                        ? 'var(--orange-dark)'
+                        : 'var(--red-dark)',
               }}
             />
           </div>
@@ -159,7 +159,7 @@ export function BRIRangeGauge({ briScore, isEstimated = false }: BRIRangeGaugePr
 
         {/* Estimated badge */}
         {isEstimated && (
-          <p className="text-xs text-amber-600 font-medium">
+          <p className="text-xs text-orange-dark font-medium">
             Preview estimate — Complete all assessments for your final score
           </p>
         )}

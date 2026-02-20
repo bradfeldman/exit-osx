@@ -29,16 +29,16 @@ export function CompanyContextBlock({ companyContext, taskId, financialDrift }: 
 
 function HighTierBlock({ context, financialDrift }: { context: CompanyContextData; financialDrift?: FinancialDriftResult | null }) {
   return (
-    <div className="mt-4 p-4 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-800/30">
+    <div className="mt-4 p-4 rounded-lg bg-green-light/50 dark:bg-green-dark/20 border border-green/20 dark:border-green-dark/30">
       {/* Drift indicator */}
       {financialDrift?.hasDrift && (
-        <div className="mb-3 p-2.5 rounded-md bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/30">
-          <p className="text-xs font-medium text-amber-700 dark:text-amber-400">
+        <div className="mb-3 p-2.5 rounded-md bg-orange-light dark:bg-orange-dark/20 border border-orange/20 dark:border-orange-dark/30">
+          <p className="text-xs font-medium text-orange-dark dark:text-orange">
             Financials changed since this was personalized — updating...
           </p>
           <div className="mt-1 space-y-0.5">
             {financialDrift.items.map(item => (
-              <p key={item.metric} className="text-xs text-amber-600 dark:text-amber-500">
+              <p key={item.metric} className="text-xs text-orange-dark dark:text-orange">
                 {item.metric}: {item.oldValue} &rarr; {item.newValue}
               </p>
             ))}
@@ -46,7 +46,7 @@ function HighTierBlock({ context, financialDrift }: { context: CompanyContextDat
         </div>
       )}
 
-      <p className="text-xs font-semibold tracking-wider text-emerald-700 dark:text-emerald-400 uppercase mb-3">
+      <p className="text-xs font-semibold tracking-wider text-green-dark dark:text-green uppercase mb-3">
         YOUR NUMBERS
       </p>
 
@@ -93,14 +93,14 @@ function HighTierBlock({ context, financialDrift }: { context: CompanyContextDat
 
         {/* Financial impact */}
         {context.financialImpact && (
-          <div className="mt-2 pt-2 border-t border-emerald-200/30 dark:border-emerald-800/20 space-y-1">
+          <div className="mt-2 pt-2 border-t border-green/30 dark:border-green-dark/20 space-y-1">
             <p className="text-sm text-foreground font-medium">
               {context.financialImpact.gapDescription}
             </p>
             <p className="text-sm text-foreground">
               Impact: <span className="font-semibold">{context.financialImpact.dollarImpact}</span>
               {' → '}
-              <span className="font-semibold text-emerald-700 dark:text-emerald-400">
+              <span className="font-semibold text-green-dark dark:text-green">
                 {context.financialImpact.enterpriseValueImpact}
               </span>
             </p>
@@ -125,8 +125,8 @@ function HighTierBlock({ context, financialDrift }: { context: CompanyContextDat
 
 function ModerateTierBlock({ context, taskId }: { context: CompanyContextData; taskId: string }) {
   return (
-    <div className="mt-4 p-4 rounded-lg bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-800/30">
-      <p className="text-xs font-semibold tracking-wider text-blue-700 dark:text-blue-400 uppercase mb-2">
+    <div className="mt-4 p-4 rounded-lg bg-accent-light/50 dark:bg-primary/20 border border-primary/20 dark:border-primary/30">
+      <p className="text-xs font-semibold tracking-wider text-primary dark:text-primary uppercase mb-2">
         YOUR CONTEXT
       </p>
 
@@ -147,7 +147,7 @@ function ModerateTierBlock({ context, taskId }: { context: CompanyContextData; t
       {context.addFinancialsCTA && (
         <Link
           href="/dashboard/evidence"
-          className="inline-flex items-center gap-1 mt-3 text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline"
+          className="inline-flex items-center gap-1 mt-3 text-xs font-medium text-primary dark:text-primary hover:underline"
           onClick={() => analytics.track('financial_upload_cta_clicked', {
             taskId,
             ctaLocation: 'company_context_moderate',

@@ -41,17 +41,17 @@ interface ApprovalHistoryProps {
 // Icon mapping for approval status
 const STATUS_ICONS: Record<ApprovalStatus, React.ReactNode> = {
   PENDING: <Clock className="h-4 w-4" />,
-  APPROVED: <CheckCircle className="h-4 w-4 text-green-600" />,
-  HOLD: <Pause className="h-4 w-4 text-orange-600" />,
-  DENIED: <XCircle className="h-4 w-4 text-red-600" />,
+  APPROVED: <CheckCircle className="h-4 w-4 text-green-dark" />,
+  HOLD: <Pause className="h-4 w-4 text-orange-dark" />,
+  DENIED: <XCircle className="h-4 w-4 text-red-dark" />,
 }
 
 // Color mapping for status badges
 const STATUS_COLORS: Record<ApprovalStatus, string> = {
-  PENDING: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
-  APPROVED: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-  HOLD: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
-  DENIED: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+  PENDING: 'bg-orange-light text-orange-dark dark:bg-orange-dark/30 dark:text-orange',
+  APPROVED: 'bg-green-light text-green-dark dark:bg-green-dark/30 dark:text-green',
+  HOLD: 'bg-orange-light text-orange-dark dark:bg-orange-dark/30 dark:text-orange',
+  DENIED: 'bg-red-light text-red-dark dark:bg-red-dark/30 dark:text-red',
 }
 
 const itemVariants = {

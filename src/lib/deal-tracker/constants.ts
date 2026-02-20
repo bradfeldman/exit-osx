@@ -116,44 +116,44 @@ export const STAGE_LABELS: Record<DealStage, string> = {
 // Stage colors for UI
 export const STAGE_COLORS: Record<DealStage, { bg: string; text: string; border: string }> = {
   // Identification - Gray/Slate
-  [DealStage.IDENTIFIED]: { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-300' },
-  [DealStage.SELLER_REVIEWING]: { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-300' },
-  [DealStage.APPROVED]: { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-300' },
-  [DealStage.DECLINED]: { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-300' },
+  [DealStage.IDENTIFIED]: { bg: 'bg-secondary', text: 'text-foreground', border: 'border-border' },
+  [DealStage.SELLER_REVIEWING]: { bg: 'bg-orange-light', text: 'text-orange-dark', border: 'border-orange/30' },
+  [DealStage.APPROVED]: { bg: 'bg-green-light', text: 'text-green-dark', border: 'border-green/30' },
+  [DealStage.DECLINED]: { bg: 'bg-red-light', text: 'text-red-dark', border: 'border-red/30' },
   // Marketing - Blue
-  [DealStage.TEASER_SENT]: { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-300' },
-  [DealStage.INTERESTED]: { bg: 'bg-blue-200', text: 'text-blue-800', border: 'border-blue-400' },
-  [DealStage.PASSED]: { bg: 'bg-gray-100', text: 'text-gray-600', border: 'border-gray-300' },
+  [DealStage.TEASER_SENT]: { bg: 'bg-accent-light', text: 'text-primary', border: 'border-primary/30' },
+  [DealStage.INTERESTED]: { bg: 'bg-primary/20', text: 'text-primary', border: 'border-primary/40' },
+  [DealStage.PASSED]: { bg: 'bg-secondary', text: 'text-muted-foreground', border: 'border-border' },
   // NDA - Indigo
-  [DealStage.NDA_SENT]: { bg: 'bg-indigo-100', text: 'text-indigo-700', border: 'border-indigo-300' },
-  [DealStage.NDA_NEGOTIATING]: { bg: 'bg-indigo-200', text: 'text-indigo-800', border: 'border-indigo-400' },
-  [DealStage.NDA_EXECUTED]: { bg: 'bg-indigo-300', text: 'text-indigo-900', border: 'border-indigo-500' },
+  [DealStage.NDA_SENT]: { bg: 'bg-accent-light', text: 'text-primary', border: 'border-primary/30' },
+  [DealStage.NDA_NEGOTIATING]: { bg: 'bg-primary/20', text: 'text-primary', border: 'border-primary/40' },
+  [DealStage.NDA_EXECUTED]: { bg: 'bg-primary/30', text: 'text-primary', border: 'border-primary' },
   // Diligence - Purple
-  [DealStage.CIM_ACCESS]: { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-300' },
-  [DealStage.LEVEL_2_ACCESS]: { bg: 'bg-purple-200', text: 'text-purple-800', border: 'border-purple-400' },
-  [DealStage.LEVEL_3_ACCESS]: { bg: 'bg-purple-300', text: 'text-purple-900', border: 'border-purple-500' },
+  [DealStage.CIM_ACCESS]: { bg: 'bg-purple-light', text: 'text-purple-dark', border: 'border-purple/30' },
+  [DealStage.LEVEL_2_ACCESS]: { bg: 'bg-purple/20', text: 'text-purple-dark', border: 'border-purple/40' },
+  [DealStage.LEVEL_3_ACCESS]: { bg: 'bg-purple/30', text: 'text-purple-dark', border: 'border-purple' },
   // Management - Violet
-  [DealStage.MANAGEMENT_MEETING_SCHEDULED]: { bg: 'bg-violet-100', text: 'text-violet-700', border: 'border-violet-300' },
-  [DealStage.MANAGEMENT_MEETING_COMPLETED]: { bg: 'bg-violet-200', text: 'text-violet-800', border: 'border-violet-400' },
+  [DealStage.MANAGEMENT_MEETING_SCHEDULED]: { bg: 'bg-purple-light', text: 'text-purple-dark', border: 'border-purple/30' },
+  [DealStage.MANAGEMENT_MEETING_COMPLETED]: { bg: 'bg-purple/20', text: 'text-purple-dark', border: 'border-purple/40' },
   // IOI - Cyan
-  [DealStage.IOI_REQUESTED]: { bg: 'bg-cyan-100', text: 'text-cyan-700', border: 'border-cyan-300' },
-  [DealStage.IOI_RECEIVED]: { bg: 'bg-cyan-200', text: 'text-cyan-800', border: 'border-cyan-400' },
-  [DealStage.IOI_ACCEPTED]: { bg: 'bg-cyan-300', text: 'text-cyan-900', border: 'border-cyan-500' },
-  [DealStage.IOI_DECLINED]: { bg: 'bg-gray-100', text: 'text-gray-600', border: 'border-gray-300' },
+  [DealStage.IOI_REQUESTED]: { bg: 'bg-teal/10', text: 'text-teal', border: 'border-teal/30' },
+  [DealStage.IOI_RECEIVED]: { bg: 'bg-teal/20', text: 'text-teal', border: 'border-teal/40' },
+  [DealStage.IOI_ACCEPTED]: { bg: 'bg-teal/30', text: 'text-teal', border: 'border-teal' },
+  [DealStage.IOI_DECLINED]: { bg: 'bg-secondary', text: 'text-muted-foreground', border: 'border-border' },
   // LOI - Teal
-  [DealStage.LOI_REQUESTED]: { bg: 'bg-teal-100', text: 'text-teal-700', border: 'border-teal-300' },
-  [DealStage.LOI_RECEIVED]: { bg: 'bg-teal-200', text: 'text-teal-800', border: 'border-teal-400' },
-  [DealStage.LOI_SELECTED]: { bg: 'bg-teal-300', text: 'text-teal-900', border: 'border-teal-500' },
-  [DealStage.LOI_BACKUP]: { bg: 'bg-teal-100', text: 'text-teal-600', border: 'border-teal-300' },
+  [DealStage.LOI_REQUESTED]: { bg: 'bg-teal/10', text: 'text-teal', border: 'border-teal/30' },
+  [DealStage.LOI_RECEIVED]: { bg: 'bg-teal/20', text: 'text-teal', border: 'border-teal/40' },
+  [DealStage.LOI_SELECTED]: { bg: 'bg-teal/30', text: 'text-teal', border: 'border-teal' },
+  [DealStage.LOI_BACKUP]: { bg: 'bg-teal/10', text: 'text-teal', border: 'border-teal/30' },
   // Close - Emerald/Green
-  [DealStage.DUE_DILIGENCE]: { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-300' },
-  [DealStage.PA_DRAFTING]: { bg: 'bg-emerald-200', text: 'text-emerald-800', border: 'border-emerald-400' },
-  [DealStage.PA_NEGOTIATING]: { bg: 'bg-emerald-300', text: 'text-emerald-900', border: 'border-emerald-500' },
-  [DealStage.CLOSING]: { bg: 'bg-green-200', text: 'text-green-800', border: 'border-green-400' },
-  [DealStage.CLOSED]: { bg: 'bg-green-500', text: 'text-white', border: 'border-green-600' },
+  [DealStage.DUE_DILIGENCE]: { bg: 'bg-green-light', text: 'text-green-dark', border: 'border-green/30' },
+  [DealStage.PA_DRAFTING]: { bg: 'bg-green/20', text: 'text-green-dark', border: 'border-green/40' },
+  [DealStage.PA_NEGOTIATING]: { bg: 'bg-green/30', text: 'text-green-dark', border: 'border-green' },
+  [DealStage.CLOSING]: { bg: 'bg-green/20', text: 'text-green-dark', border: 'border-green/40' },
+  [DealStage.CLOSED]: { bg: 'bg-green', text: 'text-white', border: 'border-green-dark' },
   // Exit - Gray/Red
-  [DealStage.WITHDRAWN]: { bg: 'bg-gray-200', text: 'text-gray-700', border: 'border-gray-400' },
-  [DealStage.TERMINATED]: { bg: 'bg-red-200', text: 'text-red-800', border: 'border-red-400' },
+  [DealStage.WITHDRAWN]: { bg: 'bg-muted', text: 'text-foreground', border: 'border-muted-foreground' },
+  [DealStage.TERMINATED]: { bg: 'bg-red/20', text: 'text-red-dark', border: 'border-red/40' },
 }
 
 // Buyer type labels
@@ -168,12 +168,12 @@ export const BUYER_TYPE_LABELS: Record<BuyerType, string> = {
 
 // Buyer type colors
 export const BUYER_TYPE_COLORS: Record<BuyerType, { bg: string; text: string }> = {
-  [BuyerType.STRATEGIC]: { bg: 'bg-blue-100', text: 'text-blue-700' },
-  [BuyerType.FINANCIAL]: { bg: 'bg-purple-100', text: 'text-purple-700' },
-  [BuyerType.INDIVIDUAL]: { bg: 'bg-amber-100', text: 'text-amber-700' },
-  [BuyerType.MANAGEMENT]: { bg: 'bg-green-100', text: 'text-green-700' },
-  [BuyerType.ESOP]: { bg: 'bg-cyan-100', text: 'text-cyan-700' },
-  [BuyerType.OTHER]: { bg: 'bg-gray-100', text: 'text-gray-700' },
+  [BuyerType.STRATEGIC]: { bg: 'bg-accent-light', text: 'text-primary' },
+  [BuyerType.FINANCIAL]: { bg: 'bg-purple-light', text: 'text-purple-dark' },
+  [BuyerType.INDIVIDUAL]: { bg: 'bg-orange-light', text: 'text-orange-dark' },
+  [BuyerType.MANAGEMENT]: { bg: 'bg-green-light', text: 'text-green-dark' },
+  [BuyerType.ESOP]: { bg: 'bg-teal/10', text: 'text-teal' },
+  [BuyerType.OTHER]: { bg: 'bg-secondary', text: 'text-foreground' },
 }
 
 // Buyer tier labels and colors
@@ -185,10 +185,10 @@ export const BUYER_TIER_LABELS: Record<BuyerTier, string> = {
 }
 
 export const BUYER_TIER_COLORS: Record<BuyerTier, { bg: string; text: string }> = {
-  [BuyerTier.A_TIER]: { bg: 'bg-green-100', text: 'text-green-700' },
-  [BuyerTier.B_TIER]: { bg: 'bg-blue-100', text: 'text-blue-700' },
-  [BuyerTier.C_TIER]: { bg: 'bg-amber-100', text: 'text-amber-700' },
-  [BuyerTier.D_TIER]: { bg: 'bg-gray-100', text: 'text-gray-700' },
+  [BuyerTier.A_TIER]: { bg: 'bg-green-light', text: 'text-green-dark' },
+  [BuyerTier.B_TIER]: { bg: 'bg-accent-light', text: 'text-primary' },
+  [BuyerTier.C_TIER]: { bg: 'bg-orange-light', text: 'text-orange-dark' },
+  [BuyerTier.D_TIER]: { bg: 'bg-secondary', text: 'text-foreground' },
 }
 
 // Contact role labels
@@ -364,9 +364,9 @@ export const PROSPECT_STATUS_LABELS: Record<ProspectApprovalStatus, string> = {
 
 // Prospect approval status colors
 export const PROSPECT_STATUS_COLORS: Record<ProspectApprovalStatus, { bg: string; text: string; border: string }> = {
-  [ProspectApprovalStatus.UNDECIDED]: { bg: 'bg-gray-100', text: 'text-gray-700', border: 'border-gray-300' },
-  [ProspectApprovalStatus.APPROVED]: { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-300' },
-  [ProspectApprovalStatus.DENIED]: { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-300' },
+  [ProspectApprovalStatus.UNDECIDED]: { bg: 'bg-secondary', text: 'text-foreground', border: 'border-border' },
+  [ProspectApprovalStatus.APPROVED]: { bg: 'bg-green-light', text: 'text-green-dark', border: 'border-green/30' },
+  [ProspectApprovalStatus.DENIED]: { bg: 'bg-red-light', text: 'text-red-dark', border: 'border-red/30' },
 }
 
 // Simplified buyer type for prospects (Strategic, Financial, Hybrid/Other)
@@ -377,9 +377,9 @@ export const PROSPECT_BUYER_TYPE_LABELS: Record<string, string> = {
 }
 
 export const PROSPECT_BUYER_TYPE_COLORS: Record<string, { bg: string; text: string }> = {
-  STRATEGIC: { bg: 'bg-blue-100', text: 'text-blue-700' },
-  FINANCIAL: { bg: 'bg-purple-100', text: 'text-purple-700' },
-  OTHER: { bg: 'bg-amber-100', text: 'text-amber-700' },
+  STRATEGIC: { bg: 'bg-accent-light', text: 'text-primary' },
+  FINANCIAL: { bg: 'bg-purple-light', text: 'text-purple-dark' },
+  OTHER: { bg: 'bg-orange-light', text: 'text-orange-dark' },
 }
 
 // CSV template headers

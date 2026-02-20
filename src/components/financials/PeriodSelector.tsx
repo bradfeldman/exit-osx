@@ -96,7 +96,7 @@ export function PeriodSelector({
     return (
       <div className={`flex items-center gap-2 ${className}`}>
         <Calendar className="h-4 w-4 text-muted-foreground" />
-        <span className="text-sm font-medium text-gray-700">{periods[0].label}</span>
+        <span className="text-sm font-medium text-foreground">{periods[0].label}</span>
       </div>
     )
   }

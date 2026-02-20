@@ -13,18 +13,18 @@ import { getPlaybooksForCategory } from '@/lib/playbook/playbook-surface-mapping
 import type { PlanTier } from '@/lib/pricing'
 
 const CATEGORY_DOT_COLORS: Record<string, string> = {
-  FINANCIAL: 'bg-blue-500',
-  TRANSFERABILITY: 'bg-green-500',
-  OPERATIONAL: 'bg-yellow-500',
-  MARKET: 'bg-purple-500',
-  LEGAL_TAX: 'bg-red-500',
-  PERSONAL: 'bg-orange-500',
+  FINANCIAL: 'bg-primary',
+  TRANSFERABILITY: 'bg-green',
+  OPERATIONAL: 'bg-orange',
+  MARKET: 'bg-purple',
+  LEGAL_TAX: 'bg-red',
+  PERSONAL: 'bg-orange',
 }
 
 function getScoreColor(score: number): string {
-  if (score >= 80) return 'text-emerald-600'
+  if (score >= 80) return 'text-green-dark'
   if (score >= 60) return 'text-primary'
-  if (score >= 40) return 'text-amber-700'
+  if (score >= 40) return 'text-orange-dark'
   return 'text-destructive'
 }
 
@@ -141,7 +141,7 @@ export function CategoryPanel({
     <div className={cn(
       'bg-card border rounded-xl p-4 sm:p-5 transition-all',
       'border-border hover:border-primary/20 hover:shadow-sm',
-      isLowestConfidence && isAssessed && 'border-amber-300/50',
+      isLowestConfidence && isAssessed && 'border-orange/50',
       isExpanded && 'border-primary/40 shadow-md border-solid'
     )}>
       {/* Header: Dot + Label + Score */}
@@ -149,7 +149,7 @@ export function CategoryPanel({
         <div className="flex items-center gap-2">
           <div className={cn(
             'h-2.5 w-2.5 rounded-full',
-            CATEGORY_DOT_COLORS[category] || 'bg-gray-400'
+            CATEGORY_DOT_COLORS[category] || 'bg-muted-foreground'
           )} />
           <span className="text-sm font-semibold text-foreground">{label}</span>
         </div>
@@ -157,7 +157,7 @@ export function CategoryPanel({
           <div className="flex items-center gap-1.5">
             {playbookBoost && playbookBoost.points > 0 && (
               <span
-                className="text-xs font-semibold text-emerald-600 dark:text-emerald-400"
+                className="text-xs font-semibold text-green-dark dark:text-green"
                 title={`+${playbookBoost.points} pts from ${playbookBoost.playbookTitle}`}
               >
                 +{playbookBoost.points}
@@ -206,7 +206,7 @@ export function CategoryPanel({
             </p>
           )}
           {financialContext.dollarContext && (
-            <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 mt-0.5">
+            <p className="text-xs font-medium text-green-dark dark:text-green mt-0.5">
               {financialContext.dollarContext}
             </p>
           )}
@@ -219,7 +219,7 @@ export function CategoryPanel({
       </p>
 
       {/* Last updated */}
-      <p className={cn('text-xs mt-1', confidence.isStale ? 'text-amber-700' : 'text-muted-foreground')}>
+      <p className={cn('text-xs mt-1', confidence.isStale ? 'text-orange-dark' : 'text-muted-foreground')}>
         {confidence.lastUpdated
           ? `Last updated: ${new Date(confidence.lastUpdated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}${confidence.isStale ? ' — may need refresh' : ''}`
           : 'Not yet assessed'}
@@ -236,7 +236,7 @@ export function CategoryPanel({
 
       {/* Lowest confidence highlight — only for assessed categories */}
       {isAssessed && isLowestConfidence && confidence.dots < 4 && (
-        <div className="flex items-center gap-1.5 mt-2 text-xs text-amber-700">
+        <div className="flex items-center gap-1.5 mt-2 text-xs text-orange-dark">
           <AlertTriangle className="h-3.5 w-3.5" />
           <span>Lowest confidence — improve this first</span>
         </div>

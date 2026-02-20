@@ -253,15 +253,15 @@ function SignupPageContent() {
                 </p>
                 <ul className={styles.signupSuccessBoxList}>
                   <li className={styles.signupSuccessBoxItem}>
-                    <CheckIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                    <CheckIcon className="w-4 h-4 text-green-dark mt-0.5 shrink-0" />
                     <span>View your assigned task and details</span>
                   </li>
                   <li className={styles.signupSuccessBoxItem}>
-                    <CheckIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                    <CheckIcon className="w-4 h-4 text-green-dark mt-0.5 shrink-0" />
                     <span>Track progress and upload evidence</span>
                   </li>
                   <li className={styles.signupSuccessBoxItem}>
-                    <CheckIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                    <CheckIcon className="w-4 h-4 text-green-dark mt-0.5 shrink-0" />
                     <span>Collaborate with your team</span>
                   </li>
                 </ul>
@@ -273,15 +273,15 @@ function SignupPageContent() {
                 </p>
                 <ul className={styles.signupSuccessBoxList}>
                   <li className={styles.signupSuccessBoxItem}>
-                    <CheckIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                    <CheckIcon className="w-4 h-4 text-green-dark mt-0.5 shrink-0" />
                     <span>Hidden buyer risks</span>
                   </li>
                   <li className={styles.signupSuccessBoxItem}>
-                    <CheckIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                    <CheckIcon className="w-4 h-4 text-green-dark mt-0.5 shrink-0" />
                     <span>Valuation blind spots</span>
                   </li>
                   <li className={styles.signupSuccessBoxItem}>
-                    <CheckIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                    <CheckIcon className="w-4 h-4 text-green-dark mt-0.5 shrink-0" />
                     <span>Clear opportunities to increase exit leverage</span>
                   </li>
                 </ul>
@@ -445,19 +445,19 @@ function SignupPageContent() {
               <p className={styles.signupBenefitsIntro}>Within minutes, you&apos;ll get:</p>
               <ul className={styles.signupBenefitsList}>
                 <li className={styles.signupBenefitsItem}>
-                  <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+                  <CheckIcon className="w-5 h-5 text-green-dark mt-0.5 shrink-0" />
                   <span>Your Buyer Readiness Index</span>
                 </li>
                 <li className={styles.signupBenefitsItem}>
-                  <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+                  <CheckIcon className="w-5 h-5 text-green-dark mt-0.5 shrink-0" />
                   <span>A breakdown of buyer risk categories</span>
                 </li>
                 <li className={styles.signupBenefitsItem}>
-                  <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+                  <CheckIcon className="w-5 h-5 text-green-dark mt-0.5 shrink-0" />
                   <span>Where your valuation is most exposed</span>
                 </li>
                 <li className={styles.signupBenefitsItem}>
-                  <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+                  <CheckIcon className="w-5 h-5 text-green-dark mt-0.5 shrink-0" />
                   <span>What matters now vs later</span>
                 </li>
               </ul>
@@ -569,15 +569,15 @@ function SignupPageContent() {
                 {/* Trust Microcopy */}
                 <div className={styles.signupTrustList}>
                   <div className={styles.signupTrustItem}>
-                    <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />
+                    <CheckIcon className="w-4 h-4 text-green-dark shrink-0" />
                     <span>Free plan. No credit card required.</span>
                   </div>
                   <div className={styles.signupTrustItem}>
-                    <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />
+                    <CheckIcon className="w-4 h-4 text-green-dark shrink-0" />
                     <span>No sales calls. Ever.</span>
                   </div>
                   <div className={styles.signupTrustItem}>
-                    <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />
+                    <CheckIcon className="w-4 h-4 text-green-dark shrink-0" />
                     <span>Your data is private and never shared.</span>
                   </div>
                 </div>
@@ -622,19 +622,19 @@ function SignupPageContent() {
           <p className={styles.signupBenefitsIntro}>Within minutes, you&apos;ll get:</p>
           <ul className={styles.signupBenefitsList}>
             <li className={styles.signupBenefitsItem} style={{ gap: '12px' }}>
-              <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+              <CheckIcon className="w-5 h-5 text-green-dark mt-0.5 shrink-0" />
               <span>Your Buyer Readiness Index</span>
             </li>
             <li className={styles.signupBenefitsItem} style={{ gap: '12px' }}>
-              <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+              <CheckIcon className="w-5 h-5 text-green-dark mt-0.5 shrink-0" />
               <span>A breakdown of buyer risk categories</span>
             </li>
             <li className={styles.signupBenefitsItem} style={{ gap: '12px' }}>
-              <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+              <CheckIcon className="w-5 h-5 text-green-dark mt-0.5 shrink-0" />
               <span>Where your valuation is most exposed</span>
             </li>
             <li className={styles.signupBenefitsItem} style={{ gap: '12px' }}>
-              <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+              <CheckIcon className="w-5 h-5 text-green-dark mt-0.5 shrink-0" />
               <span>What matters now vs later</span>
             </li>
           </ul>

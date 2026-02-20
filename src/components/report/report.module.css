@@ -479,7 +479,7 @@
 }
 
 .ctaLink:hover {
-  background: #A0632D;
+  background: color-mix(in srgb, var(--primary) 85%, black);
 }
 
 /* Footer */

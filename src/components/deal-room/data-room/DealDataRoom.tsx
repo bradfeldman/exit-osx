@@ -76,7 +76,7 @@ export function DealDataRoom({ dataRoom }: DealDataRoomProps) {
         </div>
         <div className="h-2 rounded-full bg-muted overflow-hidden">
           <div
-            className="h-full rounded-full bg-emerald-500 transition-all"
+            className="h-full rounded-full bg-green transition-all"
             style={{ width: `${dataRoom.evidenceScore}%` }}
           />
         </div>
@@ -88,7 +88,7 @@ export function DealDataRoom({ dataRoom }: DealDataRoomProps) {
           <MessageSquare className="w-4 h-4 text-muted-foreground" />
           <h3 className="text-sm font-medium">Q&A</h3>
           {dataRoom.openQuestions > 0 && (
-            <span className="text-xs font-medium text-amber-600 dark:text-amber-400 ml-auto">
+            <span className="text-xs font-medium text-orange-dark dark:text-orange ml-auto">
               {dataRoom.openQuestions} open questions
             </span>
           )}

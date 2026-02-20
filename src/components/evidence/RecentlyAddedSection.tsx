@@ -47,7 +47,7 @@ export function RecentlyAddedSection({ documents }: RecentlyAddedSectionProps) {
             className="w-full text-left flex items-center justify-between py-2 px-2 rounded hover:bg-muted/20 cursor-pointer group transition-colors"
           >
             <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+              <Check className="w-4 h-4 text-green shrink-0" />
               <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
                 {doc.name}
               </span>

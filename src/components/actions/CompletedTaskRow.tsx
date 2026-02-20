@@ -27,7 +27,7 @@ export function CompletedTaskRow({ title, completedValue, completedAt, completio
         onClick={() => hasNotes && setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+          <Check className="w-4 h-4 text-green shrink-0" />
           <span className="text-sm text-muted-foreground truncate">{title}</span>
           {hasNotes && (
             <div className="flex items-center gap-1 shrink-0">
@@ -41,7 +41,7 @@ export function CompletedTaskRow({ title, completedValue, completedAt, completio
           )}
         </div>
         <div className="flex items-center gap-4 shrink-0 ml-4">
-          <span className="text-sm font-medium text-emerald-600">
+          <span className="text-sm font-medium text-green-dark">
             +{formatCurrency(completedValue)} recovered
           </span>
           <span className="text-xs text-muted-foreground">{formatShortDate(completedAt)}</span>

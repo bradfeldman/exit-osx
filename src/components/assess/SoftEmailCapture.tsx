@@ -61,8 +61,8 @@ export function SoftEmailCapture({ onEmailCaptured, onSkip, assessmentData }: So
         style={{ borderLeft: '3px solid var(--accent, #3B82F6)' }}
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
-            <Check className="w-5 h-5 text-green-600" />
+          <div className="w-10 h-10 rounded-full bg-green-light dark:bg-green-dark/30 flex items-center justify-center shrink-0">
+            <Check className="w-5 h-5 text-green-dark" />
           </div>
           <div>
             <p className="font-semibold text-foreground">Sent! Check your inbox.</p>
@@ -120,7 +120,7 @@ export function SoftEmailCapture({ onEmailCaptured, onSkip, assessmentData }: So
       </div>
 
       {error && (
-        <p className="text-sm text-red-500 mt-2">{error}</p>
+        <p className="text-sm text-red mt-2">{error}</p>
       )}
 
       <div className="mt-3 flex items-center justify-between">

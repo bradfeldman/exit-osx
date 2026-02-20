@@ -60,24 +60,24 @@ const IMPORTANCE_LABELS: Record<string, string> = {
 }
 
 const IMPORTANCE_STYLES: Record<string, string> = {
-  required: 'text-rose-600',
-  expected: 'text-amber-600',
-  helpful: 'text-sky-600',
-  custom: 'text-violet-600',
+  required: 'text-red-dark',
+  expected: 'text-orange-dark',
+  helpful: 'text-primary',
+  custom: 'text-purple',
 }
 
 const FRESHNESS_STYLES: Record<string, { bg: string; text: string; border: string }> = {
-  fresh: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
-  current: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
-  due_soon: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
-  overdue: { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200' },
+  fresh: { bg: 'bg-green-light', text: 'text-green-dark', border: 'border-green/20' },
+  current: { bg: 'bg-green-light', text: 'text-green-dark', border: 'border-green/20' },
+  due_soon: { bg: 'bg-orange-light', text: 'text-orange-dark', border: 'border-orange/20' },
+  overdue: { bg: 'bg-red-light', text: 'text-red-dark', border: 'border-red/20' },
 }
 
 const FRESHNESS_BORDER_COLORS: Record<string, string> = {
-  fresh: 'border-l-emerald-500',
-  current: 'border-l-emerald-500',
-  due_soon: 'border-l-amber-500',
-  overdue: 'border-l-rose-500',
+  fresh: 'border-l-green',
+  current: 'border-l-green',
+  due_soon: 'border-l-orange',
+  overdue: 'border-l-red',
 }
 
 const FRESHNESS_LABELS: Record<string, string> = {
@@ -304,10 +304,10 @@ export function DocumentSlotCard({
   // SUCCESS STATE
   if (uploadStatus === 'success') {
     return (
-      <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
+      <div className="rounded-xl border border-green/20 bg-green-light/50 p-4">
         <div className="flex items-center gap-2">
-          <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span className="text-sm font-medium text-emerald-700">Uploaded successfully</span>
+          <CheckCircle className="w-4 h-4 text-green-dark shrink-0" />
+          <span className="text-sm font-medium text-green-dark">Uploaded successfully</span>
         </div>
       </div>
     )
@@ -336,7 +336,7 @@ export function DocumentSlotCard({
             </div>
           </div>
           {slot.importance === 'custom' && (
-            <span className="text-xs font-semibold text-violet-600 shrink-0">ADDED</span>
+            <span className="text-xs font-semibold text-purple shrink-0">ADDED</span>
           )}
         </div>
 
@@ -379,7 +379,7 @@ export function DocumentSlotCard({
           </span>
 
           {doc.source === 'task' && (
-            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border bg-blue-50 text-blue-700 border-blue-200">
+            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border bg-accent-light text-primary border-primary/20">
               From Action
             </span>
           )}
@@ -394,7 +394,7 @@ export function DocumentSlotCard({
                 type="button"
                 onClick={handleDeleteConfirm}
                 disabled={isDeleting}
-                className="inline-flex items-center gap-1 text-sm font-medium text-rose-600 hover:underline disabled:opacity-50"
+                className="inline-flex items-center gap-1 text-sm font-medium text-red-dark hover:underline disabled:opacity-50"
               >
                 {isDeleting ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Yes'}
               </button>
@@ -436,7 +436,7 @@ export function DocumentSlotCard({
               <button
                 type="button"
                 onClick={handleDeleteClick}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-rose-600 hover:underline ml-auto"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-red-dark hover:underline ml-auto"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 Remove
@@ -467,14 +467,14 @@ export function DocumentSlotCard({
           'rounded-xl border-2 border-dashed p-4 transition-all',
           isDragOver
             ? 'border-[var(--burnt-orange)] border-solid bg-primary/5'
-            : 'border-violet-300/60 bg-violet-50/30',
+            : 'border-purple/30 bg-purple-light/30',
         )}
       >
         <div className="flex justify-center mb-3">
           <CloudUpload
             className={cn(
               'w-6 h-6 transition-colors',
-              isDragOver ? 'text-[var(--burnt-orange)]' : 'text-violet-400/50',
+              isDragOver ? 'text-[var(--burnt-orange)]' : 'text-purple/50',
             )}
           />
         </div>
@@ -484,7 +484,7 @@ export function DocumentSlotCard({
         </div>
 
         <div className="flex justify-center mb-3">
-          <span className="text-xs font-semibold text-violet-600">ADDED</span>
+          <span className="text-xs font-semibold text-purple">ADDED</span>
         </div>
 
         {uploadError && (
@@ -514,7 +514,7 @@ export function DocumentSlotCard({
                 type="button"
                 onClick={handleDeleteConfirm}
                 disabled={isDeleting}
-                className="text-sm font-medium text-rose-600 hover:underline disabled:opacity-50"
+                className="text-sm font-medium text-red-dark hover:underline disabled:opacity-50"
               >
                 {isDeleting ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Yes'}
               </button>
@@ -530,7 +530,7 @@ export function DocumentSlotCard({
             <button
               type="button"
               onClick={handleDeleteClick}
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-rose-600 hover:underline"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-red-dark hover:underline"
             >
               <Trash2 className="w-3.5 h-3.5" />
               Remove

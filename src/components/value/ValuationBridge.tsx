@@ -31,18 +31,18 @@ function getHealthLevel(score: number): HealthLevel {
 const HEALTH_CONFIG: Record<HealthLevel, { label: string; dotClass: string; tagClass: string }> = {
   strong: {
     label: 'Strong',
-    dotClass: 'bg-emerald-500',
-    tagClass: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    dotClass: 'bg-green',
+    tagClass: 'bg-green-light text-green-dark dark:bg-green-dark/30 dark:text-green',
   },
   moderate: {
     label: 'Moderate',
-    dotClass: 'bg-blue-500',
-    tagClass: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+    dotClass: 'bg-primary',
+    tagClass: 'bg-primary/10 text-primary dark:bg-primary/30 dark:text-primary',
   },
   'needs-work': {
     label: 'Needs Work',
-    dotClass: 'bg-amber-500',
-    tagClass: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    dotClass: 'bg-orange',
+    tagClass: 'bg-orange-light text-orange-dark dark:bg-orange-dark/30 dark:text-orange',
   },
 }
 

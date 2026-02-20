@@ -77,7 +77,7 @@ export function FocusModeContent({
             className="fixed inset-x-0 bottom-0 z-[202] bg-white rounded-t-2xl shadow-xl lg:hidden max-h-[75vh] overflow-hidden animate-in slide-in-from-bottom duration-300 pb-[env(safe-area-inset-bottom)]"
           >
             <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full bg-gray-300" />
+              <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
             </div>
             <div className="overflow-y-auto max-h-[calc(75vh-20px)]">
               <PlaybookSidebar

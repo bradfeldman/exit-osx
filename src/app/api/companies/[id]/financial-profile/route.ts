@@ -191,7 +191,7 @@ export async function GET(
       {
         name: 'Profitability',
         icon: 'trending-up',
-        color: 'text-emerald-600',
+        color: 'text-green-dark',
         metrics: [
           {
             label: 'Gross Margin',
@@ -221,7 +221,7 @@ export async function GET(
       {
         name: 'Liquidity',
         icon: 'droplets',
-        color: 'text-blue-600',
+        color: 'text-primary',
         metrics: [
           {
             label: 'Current Ratio',
@@ -249,7 +249,7 @@ export async function GET(
       {
         name: 'Leverage',
         icon: 'scale',
-        color: 'text-purple-600',
+        color: 'text-purple-dark',
         metrics: [
           {
             label: 'Debt-to-Equity',
@@ -277,7 +277,7 @@ export async function GET(
       {
         name: 'Efficiency',
         icon: 'zap',
-        color: 'text-orange-600',
+        color: 'text-orange-dark',
         metrics: [
           {
             label: 'DSO',

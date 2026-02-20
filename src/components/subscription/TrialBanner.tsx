@@ -90,7 +90,7 @@ export function TrialBanner() {
         showExpiredBanner
           ? 'bg-destructive/10 border-b border-destructive/20'
           : isUrgent
-          ? 'bg-amber-500/10 border-b border-amber-500/20'
+          ? 'bg-orange/10 border-b border-orange/20'
           : isEndingSoon
           ? 'bg-primary/10 border-b border-primary/20'
           : 'bg-muted/50 border-b border-border/50'
@@ -104,7 +104,7 @@ export function TrialBanner() {
               showExpiredBanner
                 ? 'bg-destructive/10'
                 : isUrgent
-                ? 'bg-amber-500/10'
+                ? 'bg-orange/10'
                 : isEndingSoon
                 ? 'bg-primary/10'
                 : 'bg-muted'
@@ -116,7 +116,7 @@ export function TrialBanner() {
               <Sparkles
                 className={cn(
                   'h-4 w-4',
-                  isUrgent ? 'text-amber-600' : isEndingSoon ? 'text-primary' : 'text-muted-foreground'
+                  isUrgent ? 'text-orange-dark' : isEndingSoon ? 'text-primary' : 'text-muted-foreground'
                 )}
               />
             )}
@@ -136,7 +136,7 @@ export function TrialBanner() {
                 <p
                   className={cn(
                     'text-sm font-medium',
-                    isUrgent ? 'text-amber-700 dark:text-amber-500' : 'text-foreground'
+                    isUrgent ? 'text-orange-dark dark:text-orange' : 'text-foreground'
                   )}
                 >
                   {trialDaysRemaining === 0

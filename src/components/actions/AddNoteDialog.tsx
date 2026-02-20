@@ -97,7 +97,7 @@ export function AddNoteDialog({ taskId, taskTitle, onSuccess, onCancel }: AddNot
           </div>
 
           {error && (
-            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            <div className="text-sm text-red-dark bg-red-light border border-red/20 rounded-lg px-3 py-2">
               {error}
             </div>
           )}

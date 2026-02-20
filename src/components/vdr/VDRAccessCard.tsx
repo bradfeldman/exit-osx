@@ -30,34 +30,34 @@ const ACCESS_LEVELS = ['NONE', 'TEASER', 'POST_NDA', 'LEVEL_2', 'LEVEL_3', 'FULL
 // Access level colors
 const ACCESS_COLORS: Record<string, { bg: string; text: string; border: string }> = {
   NONE: {
-    bg: 'bg-gray-100 dark:bg-gray-900/30',
-    text: 'text-gray-600 dark:text-gray-400',
-    border: 'border-gray-200',
+    bg: 'bg-muted dark:bg-muted',
+    text: 'text-muted-foreground dark:text-muted-foreground',
+    border: 'border-border',
   },
   TEASER: {
-    bg: 'bg-blue-100 dark:bg-blue-900/30',
-    text: 'text-blue-600 dark:text-blue-400',
-    border: 'border-blue-200',
+    bg: 'bg-accent-light dark:bg-primary/30',
+    text: 'text-primary dark:text-primary',
+    border: 'border-primary/20',
   },
   POST_NDA: {
-    bg: 'bg-green-100 dark:bg-green-900/30',
-    text: 'text-green-600 dark:text-green-400',
-    border: 'border-green-200',
+    bg: 'bg-green-light dark:bg-green-dark/30',
+    text: 'text-green-dark dark:text-green',
+    border: 'border-green/20',
   },
   LEVEL_2: {
-    bg: 'bg-amber-100 dark:bg-amber-900/30',
-    text: 'text-amber-600 dark:text-amber-400',
-    border: 'border-amber-200',
+    bg: 'bg-orange-light dark:bg-orange-dark/30',
+    text: 'text-orange-dark dark:text-orange',
+    border: 'border-orange/20',
   },
   LEVEL_3: {
-    bg: 'bg-orange-100 dark:bg-orange-900/30',
-    text: 'text-orange-600 dark:text-orange-400',
-    border: 'border-orange-200',
+    bg: 'bg-orange-light dark:bg-orange-dark/30',
+    text: 'text-orange-dark dark:text-orange',
+    border: 'border-orange/20',
   },
   FULL: {
-    bg: 'bg-purple-100 dark:bg-purple-900/30',
-    text: 'text-purple-600 dark:text-purple-400',
-    border: 'border-purple-200',
+    bg: 'bg-purple-light dark:bg-purple-dark/30',
+    text: 'text-purple-dark dark:text-purple',
+    border: 'border-purple/20',
   },
 }
 
@@ -137,17 +137,17 @@ export function VDRAccessCard({
             <div className={cn(
               'w-8 h-8 rounded-lg flex items-center justify-center',
               isExpired
-                ? 'bg-red-100 dark:bg-red-900/30'
+                ? 'bg-red-light dark:bg-red-dark/30'
                 : level !== 'NONE'
-                  ? 'bg-green-100 dark:bg-green-900/30'
-                  : 'bg-gray-100 dark:bg-gray-900/30'
+                  ? 'bg-green-light dark:bg-green-dark/30'
+                  : 'bg-muted dark:bg-muted'
             )}>
               {isExpired ? (
-                <AlertCircle className="h-4 w-4 text-red-600" />
+                <AlertCircle className="h-4 w-4 text-red-dark" />
               ) : level !== 'NONE' ? (
-                <CheckCircle className="h-4 w-4 text-green-600" />
+                <CheckCircle className="h-4 w-4 text-green-dark" />
               ) : (
-                <Shield className="h-4 w-4 text-gray-400" />
+                <Shield className="h-4 w-4 text-muted-foreground" />
               )}
             </div>
             <div>
@@ -176,7 +176,7 @@ export function VDRAccessCard({
         {/* Expiration warning */}
         {expiresAt && !isExpired && (
           <div className="pt-2 border-t">
-            <div className="flex items-center gap-2 text-xs text-amber-600">
+            <div className="flex items-center gap-2 text-xs text-orange-dark">
               <AlertCircle className="h-3.5 w-3.5" />
               Expires {new Date(expiresAt).toLocaleDateString()}
             </div>

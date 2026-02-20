@@ -420,26 +420,26 @@ export function LandingPage() {
               <AnimatedSection>
                 <div className="bg-card border border-border rounded-2xl p-8 h-full">
                   <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <svg className="w-5 h-5 text-green-dark" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                     </svg>
                     Exit OSx is for you if:
                   </h3>
                   <ul className="space-y-3 text-muted-foreground">
                     <li className="flex items-start gap-3">
-                      <span className="text-green-600 mt-1">&bull;</span>
+                      <span className="text-green-dark mt-1">&bull;</span>
                       You&apos;re 2&ndash;5 years from a potential exit and want to maximize your outcome
                     </li>
                     <li className="flex items-start gap-3">
-                      <span className="text-green-600 mt-1">&bull;</span>
+                      <span className="text-green-dark mt-1">&bull;</span>
                       You suspect your business has risks that would reduce your price in diligence
                     </li>
                     <li className="flex items-start gap-3">
-                      <span className="text-green-600 mt-1">&bull;</span>
+                      <span className="text-green-dark mt-1">&bull;</span>
                       You want an exit readiness opinion that isn&apos;t tied to advisory fees
                     </li>
                     <li className="flex items-start gap-3">
-                      <span className="text-green-600 mt-1">&bull;</span>
+                      <span className="text-green-dark mt-1">&bull;</span>
                       You&apos;ve been told your business is worth $X but aren&apos;t sure it would hold up in a real deal
                     </li>
                   </ul>

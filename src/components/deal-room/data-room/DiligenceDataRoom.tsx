@@ -69,9 +69,9 @@ interface DiligenceData {
 
 function CompletenessBar({ percentage }: { percentage: number }) {
   const color =
-    percentage >= 80 ? 'bg-emerald-500'
-    : percentage >= 50 ? 'bg-amber-500'
-    : percentage > 0 ? 'bg-rose-400'
+    percentage >= 80 ? 'bg-green'
+    : percentage >= 50 ? 'bg-orange'
+    : percentage > 0 ? 'bg-red'
     : 'bg-muted-foreground/20'
 
   return (
@@ -102,9 +102,9 @@ function SectionRow({
   const ChevronIcon = isExpanded ? ChevronDown : ChevronRight
 
   const statusIcon = section.completeness === 100
-    ? <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+    ? <CheckCircle2 className="w-4 h-4 text-green shrink-0" />
     : section.completeness > 0
-    ? <FileText className="w-4 h-4 text-amber-500 shrink-0" />
+    ? <FileText className="w-4 h-4 text-orange shrink-0" />
     : <AlertTriangle className="w-4 h-4 text-muted-foreground/40 shrink-0" />
 
   const handleViewDocument = (docId: string) => {
@@ -162,7 +162,7 @@ function SectionRow({
                     className="w-full text-left flex items-start justify-between py-2 px-2 -mx-2 rounded-md hover:bg-muted/30 transition-colors cursor-pointer group"
                   >
                     <div className="flex items-start gap-2 min-w-0">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-green mt-0.5 shrink-0" />
                       <div className="min-w-0">
                         <p className="text-sm text-foreground group-hover:text-primary transition-colors truncate">
                           {doc.name}
@@ -181,7 +181,7 @@ function SectionRow({
                             </span>
                           )}
                           {!isBuyerPreview && doc.isStale && doc.staleReason && (
-                            <span className="text-[11px] text-amber-600">
+                            <span className="text-[11px] text-orange-dark">
                               {doc.staleReason}
                             </span>
                           )}
@@ -210,17 +210,17 @@ function SectionRow({
                     key={doc.id}
                     className="flex items-start gap-2 py-1"
                   >
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
+                    <AlertTriangle className="w-3.5 h-3.5 text-orange mt-0.5 shrink-0" />
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-foreground">{doc.name}</span>
                         <span className={cn(
                           'text-[10px] font-semibold px-1.5 py-0.5 rounded-full capitalize',
                           doc.importance === 'required'
-                            ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'
+                            ? 'bg-red-light text-red-dark dark:bg-red-dark/30 dark:text-red'
                             : doc.importance === 'expected'
-                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                            : 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400'
+                            ? 'bg-orange-light text-orange-dark dark:bg-orange-dark/30 dark:text-orange'
+                            : 'bg-accent-light text-primary dark:bg-primary/30 dark:text-primary'
                         )}>
                           {doc.importance}
                         </span>
@@ -359,9 +359,9 @@ export function DiligenceDataRoom() {
           <div
             className={cn(
               'h-full rounded-full transition-all duration-700 ease-out',
-              data.overallCompleteness >= 80 ? 'bg-emerald-500'
-              : data.overallCompleteness >= 50 ? 'bg-amber-500'
-              : 'bg-rose-400'
+              data.overallCompleteness >= 80 ? 'bg-green'
+              : data.overallCompleteness >= 50 ? 'bg-orange'
+              : 'bg-red'
             )}
             style={{ width: `${data.overallCompleteness}%` }}
           />

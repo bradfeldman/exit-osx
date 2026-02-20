@@ -19,9 +19,9 @@ interface MissingDocumentCardProps {
 }
 
 const IMPORTANCE_STYLES: Record<string, string> = {
-  required: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
-  expected: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-  helpful: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400',
+  required: 'bg-red-light text-red-dark dark:bg-red-dark/30 dark:text-red',
+  expected: 'bg-orange-light text-orange-dark dark:bg-orange-dark/30 dark:text-orange',
+  helpful: 'bg-accent-light text-primary dark:bg-primary/30 dark:text-primary',
 }
 
 const EVIDENCE_ACCEPTED_TYPES = new Set([
@@ -154,10 +154,10 @@ export function MissingDocumentCard({
 
   if (uploadStatus === 'success') {
     return (
-      <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 dark:border-emerald-800 dark:bg-emerald-950/20 p-3">
+      <div className="rounded-lg border border-green/20 bg-green-light/50 dark:border-green-dark dark:bg-green-dark/20 p-3">
         <div className="flex items-center gap-2">
-          <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+          <CheckCircle className="w-4 h-4 text-green-dark shrink-0" />
+          <span className="text-sm font-medium text-green-dark dark:text-green">
             {successCount === 1 ? '1 file uploaded' : `${successCount} files uploaded`}
           </span>
         </div>
@@ -197,7 +197,7 @@ export function MissingDocumentCard({
           {isDragOver ? (
             <Upload className="w-4 h-4 text-primary shrink-0" />
           ) : (
-            <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
+            <AlertTriangle className="w-4 h-4 text-orange shrink-0" />
           )}
           <span className="text-sm font-medium text-foreground">{name}</span>
           <span className={cn(

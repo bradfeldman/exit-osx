@@ -41,9 +41,9 @@ function getPasswordStrength(pw: string): { label: string; color: string; width:
   if (/\d/.test(pw)) score++
   if (/[^A-Za-z0-9]/.test(pw)) score++
 
-  if (score <= 2) return { label: 'Weak', color: '#EF4444', width: 33 }
-  if (score <= 3) return { label: 'Fair', color: '#F59E0B', width: 66 }
-  return { label: 'Strong', color: '#22C55E', width: 100 }
+  if (score <= 2) return { label: 'Weak', color: 'var(--red)', width: 33 }
+  if (score <= 3) return { label: 'Fair', color: 'var(--orange)', width: 66 }
+  return { label: 'Strong', color: 'var(--green)', width: 100 }
 }
 
 export function AccountGate({
@@ -156,7 +156,7 @@ export function AccountGate({
               <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full ${
-                    score >= 0.75 ? 'bg-green-500' : score >= 0.5 ? 'bg-amber-500' : 'bg-red-500'
+                    score >= 0.75 ? 'bg-green' : score >= 0.5 ? 'bg-orange' : 'bg-red'
                   }`}
                   style={{ width: `${Math.max(8, score * 100)}%` }}
                 />
@@ -178,15 +178,15 @@ export function AccountGate({
           </h3>
           <ul className="mt-4 space-y-2 text-sm text-muted-foreground text-left max-w-sm mx-auto">
             <li className="flex items-start gap-2">
-              <Check className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+              <Check className="w-4 h-4 text-green-dark mt-0.5 shrink-0" />
               <span>Detailed risk breakdown across 6 buyer confidence factors</span>
             </li>
             <li className="flex items-start gap-2">
-              <Check className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+              <Check className="w-4 h-4 text-green-dark mt-0.5 shrink-0" />
               <span>Prioritized action plan with estimated value impact</span>
             </li>
             <li className="flex items-start gap-2">
-              <Check className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+              <Check className="w-4 h-4 text-green-dark mt-0.5 shrink-0" />
               <span>Track your progress and improve your score over time</span>
             </li>
           </ul>
@@ -270,7 +270,7 @@ export function AccountGate({
           </div>
 
           {saveError && (
-            <p className="text-sm text-red-500">{saveError}</p>
+            <p className="text-sm text-red">{saveError}</p>
           )}
 
           {/* Create Account button */}

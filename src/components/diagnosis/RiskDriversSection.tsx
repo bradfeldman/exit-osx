@@ -64,8 +64,8 @@ export function RiskDriversSection({
         </div>
         <div className="bg-card border border-border rounded-xl p-8 text-center">
           <div className="max-w-md mx-auto space-y-4">
-            <div className="h-10 w-10 rounded-full bg-amber-50 flex items-center justify-center mx-auto">
-              <AlertTriangle className="h-5 w-5 text-amber-600" />
+            <div className="h-10 w-10 rounded-full bg-orange-light flex items-center justify-center mx-auto">
+              <AlertTriangle className="h-5 w-5 text-orange-dark" />
             </div>
             <div>
               <p className="text-2xl font-bold text-destructive">$200K &ndash; $1.2M</p>
@@ -122,7 +122,7 @@ export function RiskDriversSection({
         <div className="text-right shrink-0 ml-4">
           <p className="text-lg font-bold text-destructive">-{formatCurrency(totalAtRisk)}</p>
           {recoveredValue > 0 && (
-            <p className="text-sm font-medium text-emerald-600">
+            <p className="text-sm font-medium text-green-dark">
               Recovered: +{formatCurrency(recoveredValue)}
             </p>
           )}

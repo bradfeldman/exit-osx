@@ -434,7 +434,7 @@ export function RiskAssessmentStep({
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                           >
-                            <Check className="w-5 h-5 text-emerald-600" />
+                            <Check className="w-5 h-5 text-green-dark" />
                           </motion.div>
                         ) : isCurrent ? (
                           <div className={styles.riskAssessCompletingStepIconCurrent}>
@@ -442,7 +442,7 @@ export function RiskAssessmentStep({
                               className={styles.riskAssessCompletingStepDot}
                               animate={{ scale: [1, 1.3, 1] }}
                               transition={{ duration: 0.8, repeat: Infinity }}
-                              style={{ background: '#10b981', borderRadius: '50%', width: '0.75rem', height: '0.75rem' }}
+                              style={{ background: 'var(--green)', borderRadius: '50%', width: '0.75rem', height: '0.75rem' }}
                             />
                           </div>
                         ) : (
@@ -579,7 +579,7 @@ export function RiskAssessmentStep({
             exit={{ opacity: 0, y: -10 }}
             className={styles.riskAssessError}
           >
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+            <AlertCircle className="w-5 h-5 text-red-dark flex-shrink-0" />
             <span className={styles.riskAssessErrorText}>{error}</span>
           </motion.div>
         )}
@@ -710,7 +710,7 @@ export function RiskAssessmentStep({
           <Button
             onClick={handleComplete}
             disabled={saving || completing}
-            className="gap-2 px-6 bg-emerald-600 hover:bg-emerald-700"
+            className="gap-2 px-6 bg-green-dark hover:bg-green-dark"
           >
             {completing ? (
               <>

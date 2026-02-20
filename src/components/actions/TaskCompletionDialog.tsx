@@ -36,7 +36,7 @@ export function TaskCompletionDialog({ task, onConfirm, onCancel }: TaskCompleti
       <DialogContent className="sm:max-w-md" showCloseButton={false}>
         {/* Header */}
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-emerald-600">
+          <DialogTitle className="flex items-center gap-2 text-green-dark">
             <Check className="h-5 w-5" />
             <span>Task Complete</span>
           </DialogTitle>

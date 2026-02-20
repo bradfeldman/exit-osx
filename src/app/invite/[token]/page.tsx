@@ -170,7 +170,7 @@ export default function InviteAcceptPage() {
           {inviteStatus === 'invalid' && (
             <div className={styles.invalidState}>
               <div className={styles.iconCircleRed}>
-                <XCircle style={{ width: 32, height: 32, color: '#ef4444' }} />
+                <XCircle style={{ width: 32, height: 32, color: 'var(--red)' }} />
               </div>
               <div>
                 <h1 className={styles.stateTitle}>Invitation Not Found</h1>
@@ -334,7 +334,7 @@ export default function InviteAcceptPage() {
                 <div className={styles.featureChips}>
                   {['Scorecard', 'Action Plan', 'Data Room', 'Valuations'].map((feature) => (
                     <span key={feature} className={styles.featureChip}>
-                      <CheckCircle2 style={{ width: 14, height: 14, color: '#10b981' }} />
+                      <CheckCircle2 style={{ width: 14, height: 14, color: 'var(--green)' }} />
                       {feature}
                     </span>
                   ))}

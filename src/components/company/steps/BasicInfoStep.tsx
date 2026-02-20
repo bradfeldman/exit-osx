@@ -164,7 +164,7 @@ export function BasicInfoStep({ formData, updateFormData, businessDescription, o
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", stiffness: 400, damping: 15 }}
-              className="w-6 h-6 bg-gradient-to-br from-primary to-amber-600 rounded-full flex items-center justify-center shadow-lg shadow-primary/30"
+              className="w-6 h-6 bg-gradient-to-br from-primary to-orange-dark rounded-full flex items-center justify-center shadow-lg shadow-primary/30"
             >
               <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
@@ -173,7 +173,7 @@ export function BasicInfoStep({ formData, updateFormData, businessDescription, o
           )}
         </div>
         <div className="relative group">
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/50 to-amber-500/50 rounded-xl opacity-0 group-focus-within:opacity-100 blur transition-all duration-300" />
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/50 to-orange/50 rounded-xl opacity-0 group-focus-within:opacity-100 blur transition-all duration-300" />
           <input
             id="name"
             type="text"
@@ -201,7 +201,7 @@ export function BasicInfoStep({ formData, updateFormData, businessDescription, o
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", stiffness: 400, damping: 15 }}
-              className="w-6 h-6 bg-gradient-to-br from-primary to-amber-600 rounded-full flex items-center justify-center shadow-lg shadow-primary/30"
+              className="w-6 h-6 bg-gradient-to-br from-primary to-orange-dark rounded-full flex items-center justify-center shadow-lg shadow-primary/30"
             >
               <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
@@ -216,10 +216,10 @@ export function BasicInfoStep({ formData, updateFormData, businessDescription, o
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative overflow-hidden p-4 bg-gradient-to-br from-primary/15 via-primary/10 to-amber-500/5 rounded-xl border border-primary/30"
+            className="relative overflow-hidden p-4 bg-gradient-to-br from-primary/15 via-primary/10 to-orange/5 rounded-xl border border-primary/30"
           >
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary to-amber-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-md shadow-primary/20">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary to-orange-dark rounded-lg flex items-center justify-center flex-shrink-0 shadow-md shadow-primary/20">
                 <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
                 </svg>
@@ -246,10 +246,10 @@ export function BasicInfoStep({ formData, updateFormData, businessDescription, o
                   onBusinessDescriptionChange('')
                   setIndustryMatchResult(null)
                 }}
-                className="p-1.5 hover:bg-red-100 rounded-full transition-colors group"
+                className="p-1.5 hover:bg-red-light rounded-full transition-colors group"
                 title="Remove selection"
               >
-                <svg className="w-4 h-4 text-muted-foreground group-hover:text-red-600" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <svg className="w-4 h-4 text-muted-foreground group-hover:text-red-dark" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -303,7 +303,7 @@ export function BasicInfoStep({ formData, updateFormData, businessDescription, o
 
             {/* AI Match Error */}
             {industryMatchError && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+              <div className="p-3 bg-red-light border border-red/20 rounded-lg text-sm text-red-dark">
                 {industryMatchError}
               </div>
             )}
@@ -324,21 +324,21 @@ export function BasicInfoStep({ formData, updateFormData, businessDescription, o
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-4 bg-amber-50 border border-amber-200 rounded-xl"
+                className="p-4 bg-orange-light border border-orange/20 rounded-xl"
               >
                 <div className="space-y-3">
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <svg className="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div className="w-8 h-8 bg-orange-light rounded-full flex items-center justify-center flex-shrink-0">
+                      <svg className="w-4 h-4 text-orange-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                       </svg>
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-semibold text-amber-900">
+                      <p className="text-sm font-semibold text-orange-dark">
                         {industryMatchResult.source === 'ai' ? 'Recommended Classification' : 'Keyword Classification'}
                       </p>
-                      <p className="text-base font-bold text-amber-800 mt-1">{industryMatchResult.subSectorLabel}</p>
-                      <p className="text-xs text-amber-700 mt-1">{industryMatchResult.reasoning}</p>
+                      <p className="text-base font-bold text-orange-dark mt-1">{industryMatchResult.subSectorLabel}</p>
+                      <p className="text-xs text-orange-dark mt-1">{industryMatchResult.reasoning}</p>
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -386,7 +386,7 @@ export function BasicInfoStep({ formData, updateFormData, businessDescription, o
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                className="w-6 h-6 bg-gradient-to-br from-primary to-amber-600 rounded-full flex items-center justify-center shadow-lg shadow-primary/30"
+                className="w-6 h-6 bg-gradient-to-br from-primary to-orange-dark rounded-full flex items-center justify-center shadow-lg shadow-primary/30"
               >
                 <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />

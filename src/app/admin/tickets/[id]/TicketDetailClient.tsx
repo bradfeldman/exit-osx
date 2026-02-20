@@ -68,18 +68,18 @@ interface TicketDetailClientProps {
 }
 
 const statusBadgeClass: Record<string, string> = {
-  open: 'bg-blue-100 text-blue-800',
-  in_progress: 'bg-yellow-100 text-yellow-800',
-  waiting: 'bg-purple-100 text-purple-800',
-  resolved: 'bg-green-100 text-green-800',
-  closed: 'bg-gray-100 text-gray-800',
+  open: 'bg-accent-light text-primary',
+  in_progress: 'bg-orange-light text-orange-dark',
+  waiting: 'bg-purple-light text-purple-dark',
+  resolved: 'bg-green-light text-green-dark',
+  closed: 'bg-muted text-foreground',
 }
 
 const priorityBadgeClass: Record<string, string> = {
-  low: 'bg-gray-100 text-gray-800',
-  normal: 'bg-blue-100 text-blue-800',
-  high: 'bg-orange-100 text-orange-800',
-  urgent: 'bg-red-100 text-red-800',
+  low: 'bg-muted text-foreground',
+  normal: 'bg-accent-light text-primary',
+  high: 'bg-orange-light text-orange-dark',
+  urgent: 'bg-red-light text-red-dark',
 }
 
 export function TicketDetailClient({ ticket, admins }: TicketDetailClientProps) {

@@ -294,12 +294,12 @@ export function ContactsView({ dealId, companyId, onNavigateToPipeline }: Contac
         {parsed && parsed.people.length > 0 && (
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="text-muted-foreground text-xs">Detected:</span>
-            <span className="flex items-center gap-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded text-xs">
+            <span className="flex items-center gap-1 bg-accent-light dark:bg-primary/20 text-primary dark:text-primary px-2 py-0.5 rounded text-xs">
               <User className="h-3 w-3" />
               {parsed.people[0].fullName}
             </span>
             {parsed.companies[0] && (
-              <span className="flex items-center gap-1 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded text-xs">
+              <span className="flex items-center gap-1 bg-purple-light dark:bg-purple-dark/20 text-purple-dark dark:text-purple px-2 py-0.5 rounded text-xs">
                 <Building2 className="h-3 w-3" />
                 {parsed.companies[0].name}
               </span>
@@ -362,7 +362,7 @@ export function ContactsView({ dealId, companyId, onNavigateToPipeline }: Contac
         </div>
 
         {addError && (
-          <p className="text-xs text-red-600 dark:text-red-400">{addError}</p>
+          <p className="text-xs text-red-dark dark:text-red">{addError}</p>
         )}
 
         {/* Or search existing */}
@@ -408,7 +408,7 @@ export function ContactsView({ dealId, companyId, onNavigateToPipeline }: Contac
             <button
               type="button"
               onClick={() => setCompanyFilter(null)}
-              className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 rounded-full hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors"
+              className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-purple-light text-purple-dark dark:bg-purple-dark/30 dark:text-purple rounded-full hover:bg-purple/20 dark:hover:bg-purple-dark/50 transition-colors"
             >
               <Building2 className="h-3 w-3" />
               {companyFilter}
@@ -473,7 +473,7 @@ export function ContactsView({ dealId, companyId, onNavigateToPipeline }: Contac
                           {p.canonicalPerson.firstName} {p.canonicalPerson.lastName}
                         </span>
                         {p.isPrimary && (
-                          <span className="text-[9px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                          <span className="text-[9px] font-semibold uppercase tracking-wider text-orange-dark dark:text-orange">
                             Primary
                           </span>
                         )}

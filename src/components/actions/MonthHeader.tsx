@@ -79,7 +79,7 @@ export function MonthHeader({
             {subtitle}
           </p>
           {paceMessage && (
-            <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-1">
+            <p className="text-xs text-green-dark dark:text-green font-medium mt-1">
               {paceMessage}
             </p>
           )}

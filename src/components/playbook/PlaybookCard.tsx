@@ -54,7 +54,7 @@ export function PlaybookCard({ definition, progress, planTier, rationale }: Play
           </p>
           {isLocked && (
             <span
-              className="shrink-0 text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-gray-100"
+              className="shrink-0 text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-muted"
               style={{ color: 'var(--text-tertiary, #8E8E93)' }}
             >
               Growth
@@ -85,7 +85,7 @@ export function PlaybookCard({ definition, progress, planTier, rationale }: Play
         </div>
 
         {percent > 0 && percent < 100 && (
-          <div className="mt-2 h-1 rounded-full bg-gray-100 overflow-hidden">
+          <div className="mt-2 h-1 rounded-full bg-muted overflow-hidden">
             <div
               className="h-full rounded-full"
               style={{

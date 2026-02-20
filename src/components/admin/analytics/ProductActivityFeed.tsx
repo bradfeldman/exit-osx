@@ -53,13 +53,13 @@ interface ProductActivityFeedProps {
 }
 
 const categoryBadgeClass: Record<string, string> = {
-  auth: 'bg-purple-100 text-purple-800',
-  navigation: 'bg-blue-100 text-blue-800',
-  onboarding: 'bg-green-100 text-green-800',
-  assessment: 'bg-yellow-100 text-yellow-800',
-  task: 'bg-orange-100 text-orange-800',
-  valuation: 'bg-pink-100 text-pink-800',
-  subscription: 'bg-indigo-100 text-indigo-800',
+  auth: 'bg-purple-light text-purple-dark',
+  navigation: 'bg-accent-light text-primary',
+  onboarding: 'bg-green-light text-green-dark',
+  assessment: 'bg-orange-light text-orange-dark',
+  task: 'bg-orange-light text-orange-dark',
+  valuation: 'bg-purple-light text-purple-dark',
+  subscription: 'bg-accent-light text-primary',
 }
 
 const categories = ['auth', 'navigation', 'onboarding', 'assessment', 'task', 'valuation', 'subscription']
@@ -257,7 +257,7 @@ export function ProductActivityFeed({ initialEvents, initialPagination }: Produc
                   <TableCell>
                     <Badge
                       variant="secondary"
-                      className={categoryBadgeClass[event.eventCategory] || 'bg-gray-100 text-gray-800'}
+                      className={categoryBadgeClass[event.eventCategory] || 'bg-muted text-foreground'}
                     >
                       {event.eventCategory}
                     </Badge>

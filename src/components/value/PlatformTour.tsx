@@ -140,7 +140,7 @@ const MINI_NAV: MiniNavItem[] = [
 
 function TourMiniNav({ activeHighlightId }: { activeHighlightId: string }) {
   return (
-    <div className="w-[140px] shrink-0 rounded-lg bg-zinc-950/80 dark:bg-zinc-900/80 p-3 flex flex-col gap-0.5 self-center">
+    <div className="w-[140px] shrink-0 rounded-lg bg-foreground/80 dark:bg-foreground/80 p-3 flex flex-col gap-0.5 self-center">
       {MINI_NAV.map((item, i) => {
         const isActive = item.highlightId === activeHighlightId
 
@@ -151,7 +151,7 @@ function TourMiniNav({ activeHighlightId }: { activeHighlightId: string }) {
               className={`mt-3 first:mt-0 px-2 py-1 text-[9px] font-semibold tracking-wider rounded ${
                 isActive
                   ? 'bg-primary/20 text-primary'
-                  : 'text-zinc-500'
+                  : 'text-muted-foreground'
               }`}
             >
               {item.label}
@@ -163,7 +163,7 @@ function TourMiniNav({ activeHighlightId }: { activeHighlightId: string }) {
           return (
             <div
               key={i}
-              className="pl-4 py-0.5 text-[10px] text-zinc-600"
+              className="pl-4 py-0.5 text-[10px] text-muted-foreground"
             >
               {item.label}
             </div>
@@ -178,7 +178,7 @@ function TourMiniNav({ activeHighlightId }: { activeHighlightId: string }) {
             className={`flex items-center gap-2 px-2 py-1.5 rounded text-[11px] font-medium transition-colors duration-200 ${
               isActive
                 ? 'bg-primary/20 text-primary'
-                : 'text-zinc-500'
+                : 'text-muted-foreground'
             }`}
           >
             <NavIcon className="h-3.5 w-3.5 shrink-0" />

@@ -64,12 +64,12 @@ export function RiskDriverRow({
   const isCompleted = linkedTaskStatus === 'COMPLETED'
 
   return (
-    <div className={cn('py-4', isCompleted && 'bg-emerald-50/30')}>
+    <div className={cn('py-4', isCompleted && 'bg-green-light/30')}>
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-3">
           <span className={cn(
             'text-lg font-bold w-6 shrink-0 relative',
-            isCompleted ? 'text-emerald-500' : 'text-muted-foreground/50'
+            isCompleted ? 'text-green' : 'text-muted-foreground/50'
           )}>
             {isCompleted ? '\u2713' : rank}
           </span>
@@ -110,7 +110,7 @@ export function RiskDriverRow({
                 </>
               ) : hasLinkedTask ? (
                 isCompleted ? (
-                  <Button size="sm" variant="ghost" disabled className="text-emerald-600 opacity-100">
+                  <Button size="sm" variant="ghost" disabled className="text-green-dark opacity-100">
                     Resolved
                   </Button>
                 ) : (

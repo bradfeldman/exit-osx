@@ -53,24 +53,24 @@ export function EmailVerificationBanner({ emailVerified }: EmailVerificationBann
           transition={{ duration: 0.3 }}
           className="mb-6"
         >
-          <div className="relative p-4 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50">
+          <div className="relative p-4 rounded-lg bg-orange-light dark:bg-orange-dark/30 border border-orange/20 dark:border-orange-dark/50">
             <button
               onClick={() => setDismissed(true)}
               className="absolute top-3 right-3 p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
               aria-label="Dismiss"
             >
-              <X className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              <X className="w-4 h-4 text-orange-dark dark:text-orange" />
             </button>
 
             <div className="flex items-start gap-3 pr-6">
               <div className="flex-shrink-0 mt-0.5">
-                <Mail className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <Mail className="w-5 h-5 text-orange-dark dark:text-orange" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-amber-900 dark:text-amber-200 mb-1">
+                <p className="text-sm font-medium text-orange-dark dark:text-orange/80 mb-1">
                   Verify your email to unlock full access
                 </p>
-                <ul className="text-xs text-amber-700 dark:text-amber-300/80 space-y-0.5 mb-3">
+                <ul className="text-xs text-orange-dark dark:text-orange/80 space-y-0.5 mb-3">
                   <li className="flex items-center gap-1.5">
                     <Lock className="w-3 h-3 flex-shrink-0" />
                     Team invites &amp; task delegation
@@ -87,13 +87,13 @@ export function EmailVerificationBanner({ emailVerified }: EmailVerificationBann
 
                 {sent ? (
                   <div className="space-y-1.5">
-                    <p className="text-xs font-medium text-green-700 dark:text-green-400">
+                    <p className="text-xs font-medium text-green-dark dark:text-green">
                       Verification email sent! Check your inbox.
                     </p>
                     <button
                       onClick={() => { setSent(false); handleResend() }}
                       disabled={sending}
-                      className="text-xs text-amber-600 dark:text-amber-400 hover:underline disabled:opacity-50"
+                      className="text-xs text-orange-dark dark:text-orange hover:underline disabled:opacity-50"
                     >
                       {sending ? 'Sending...' : 'Didn\u2019t receive it? Resend'}
                     </button>
@@ -102,7 +102,7 @@ export function EmailVerificationBanner({ emailVerified }: EmailVerificationBann
                   <button
                     onClick={handleResend}
                     disabled={sending}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-orange-dark text-white hover:bg-orange-dark/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     <Send className="w-3 h-3" />
                     {sending ? 'Sending...' : 'Send Verification Email'}
@@ -110,7 +110,7 @@ export function EmailVerificationBanner({ emailVerified }: EmailVerificationBann
                 )}
 
                 {error && (
-                  <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">{error}</p>
+                  <p className="mt-1.5 text-xs text-red dark:text-red">{error}</p>
                 )}
               </div>
             </div>

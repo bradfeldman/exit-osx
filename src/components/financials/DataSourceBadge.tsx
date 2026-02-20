@@ -23,7 +23,7 @@ export function DataSourceBadge({
       <div
         className={cn(
           "inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium",
-          "bg-green-50 text-green-700 border border-green-200",
+          "bg-green-light text-green-dark border border-green/20",
           className
         )}
         title={lastSyncedAt ? `Synced from QuickBooks` : 'QuickBooks connected'}
@@ -31,7 +31,7 @@ export function DataSourceBadge({
         <Cloud className="h-3 w-3" />
         {showLabel && <span>QuickBooks</span>}
         {lastSyncedAt && (
-          <RefreshCw className="h-2.5 w-2.5 text-green-500" />
+          <RefreshCw className="h-2.5 w-2.5 text-green" />
         )}
       </div>
     )
@@ -42,7 +42,7 @@ export function DataSourceBadge({
       <div
         className={cn(
           "inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium",
-          "bg-amber-50 text-amber-700 border border-amber-200",
+          "bg-orange-light text-orange-dark border border-orange/20",
           className
         )}
         title="Mixed data sources - some from QuickBooks, some manual"
@@ -59,7 +59,7 @@ export function DataSourceBadge({
     <div
       className={cn(
         "inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium",
-        "bg-gray-50 text-gray-600 border border-gray-200",
+        "bg-secondary text-muted-foreground border border-border",
         className
       )}
       title="Manually entered - Connect QuickBooks to auto-sync"

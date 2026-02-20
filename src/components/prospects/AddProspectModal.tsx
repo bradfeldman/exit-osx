@@ -278,13 +278,13 @@ export function AddProspectModal({
                         <p className="text-sm font-medium">Detected:</p>
                         <div className="flex flex-wrap gap-2">
                           {hasCompanies && (
-                            <div className="flex items-center gap-1.5 text-sm bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-2 py-1 rounded">
+                            <div className="flex items-center gap-1.5 text-sm bg-purple-light dark:bg-purple-dark/30 text-purple-dark dark:text-purple px-2 py-1 rounded">
                               <Building2 className="h-3.5 w-3.5" />
                               {parsed!.companies[0].name}
                             </div>
                           )}
                           {hasPeople && (
-                            <div className="flex items-center gap-1.5 text-sm bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
+                            <div className="flex items-center gap-1.5 text-sm bg-accent-light dark:bg-primary/30 text-primary dark:text-primary px-2 py-1 rounded">
                               <User className="h-3.5 w-3.5" />
                               {parsed!.people[0].fullName || parsed!.people[0].email}
                             </div>
@@ -310,8 +310,8 @@ export function AddProspectModal({
                 className="space-y-4"
               >
                 {selectedExistingCompany && (
-                  <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg p-3">
-                    <p className="text-sm text-green-700 dark:text-green-300">
+                  <div className="bg-green-light dark:bg-green-dark/30 border border-green/20 dark:border-green-dark rounded-lg p-3">
+                    <p className="text-sm text-green-dark dark:text-green">
                       Using existing company record
                     </p>
                   </div>
@@ -325,8 +325,8 @@ export function AddProspectModal({
                 />
 
                 {dealId && (
-                  <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                  <div className="bg-accent-light dark:bg-primary/30 border border-primary/20 dark:border-primary rounded-lg p-3">
+                    <p className="text-sm text-primary dark:text-primary">
                       This company will be added as a buyer to the current deal.
                     </p>
                   </div>
@@ -342,7 +342,7 @@ export function AddProspectModal({
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="mt-4 flex items-center gap-2 text-sm text-red-600 bg-red-50 dark:bg-red-950/30 p-3 rounded-lg"
+                className="mt-4 flex items-center gap-2 text-sm text-red-dark bg-red-light dark:bg-red-dark/30 p-3 rounded-lg"
               >
                 <AlertCircle className="h-4 w-4 flex-shrink-0" />
                 {error}

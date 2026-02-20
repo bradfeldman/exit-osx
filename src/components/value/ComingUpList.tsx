@@ -25,8 +25,8 @@ function truncate(str: string, max: number): string {
 }
 
 function getImpactIndicator(rawImpact: number): { color: string; label: string } {
-  if (rawImpact >= 100000) return { color: 'bg-emerald-500', label: 'High' }
-  if (rawImpact >= 25000) return { color: 'bg-blue-500', label: 'Med' }
+  if (rawImpact >= 100000) return { color: 'bg-green', label: 'High' }
+  if (rawImpact >= 25000) return { color: 'bg-primary', label: 'Med' }
   return { color: 'bg-muted-foreground/40', label: 'Low' }
 }
 

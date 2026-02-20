@@ -37,7 +37,7 @@ export function FocusBar({
   return (
     <div className="fixed top-0 left-0 right-0 z-[200] bg-white border-b" style={{ borderColor: 'var(--border, #E5E7EB)' }}>
       {/* Progress bar (thin line at very top) */}
-      <div className="h-[3px] bg-gray-100 w-full">
+      <div className="h-[3px] bg-muted w-full">
         <div
           className="h-full transition-all duration-500 ease-out"
           style={{
@@ -53,7 +53,7 @@ export function FocusBar({
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <Link
             href={`/playbook/${playbookId}`}
-            className="shrink-0 w-11 h-11 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+            className="shrink-0 w-11 h-11 flex items-center justify-center rounded-lg hover:bg-muted transition-colors"
             aria-label="Back to playbook overview"
           >
             <ArrowLeft className="w-4 h-4" style={{ color: 'var(--text-secondary, #6E6E73)' }} />
@@ -104,7 +104,7 @@ export function FocusBar({
           {onMenuToggle && (
             <button
               onClick={onMenuToggle}
-              className="lg:hidden w-11 h-11 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+              className="lg:hidden w-11 h-11 flex items-center justify-center rounded-lg hover:bg-muted transition-colors"
               aria-label="Open section menu"
             >
               <Menu className="w-4 h-4" style={{ color: 'var(--text-secondary, #6E6E73)' }} />
@@ -113,7 +113,7 @@ export function FocusBar({
 
           <button
             onClick={handleClose}
-            className="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+            className="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-muted transition-colors"
             aria-label="Close playbook"
           >
             <X className="w-4 h-4" style={{ color: 'var(--text-secondary, #6E6E73)' }} />

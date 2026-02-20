@@ -97,7 +97,7 @@ export function DataRoomDocCard({ doc, isDragging, onDragStart, onDragEnd }: Dat
             {CATEGORY_LABELS[doc.category]}
           </Badge>
           {doc.fileUrl ? (
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" title="File uploaded" />
+            <span className="w-1.5 h-1.5 rounded-full bg-green shrink-0" title="File uploaded" />
           ) : (
             <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 shrink-0" title="No file" />
           )}

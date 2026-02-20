@@ -33,21 +33,21 @@ export type DataRoomStageType =
  * Category metadata for UI display
  */
 export const CATEGORY_INFO: Record<DataRoomCategoryType, { label: string; icon: string; color: string }> = {
-  CORPORATE: { label: 'Corporate & Legal', icon: 'Building2', color: 'bg-blue-100 text-blue-700' },
-  LEGAL: { label: 'Legal', icon: 'Scale', color: 'bg-purple-100 text-purple-700' },
-  FINANCIAL: { label: 'Financial', icon: 'DollarSign', color: 'bg-green-100 text-green-700' },
-  TAX: { label: 'Tax', icon: 'Receipt', color: 'bg-orange-100 text-orange-700' },
-  OPERATIONS: { label: 'Operations', icon: 'Settings', color: 'bg-gray-100 text-gray-700' },
-  EMPLOYEES: { label: 'Human Resources', icon: 'Users', color: 'bg-pink-100 text-pink-700' },
-  CUSTOMERS: { label: 'Customers', icon: 'UserCheck', color: 'bg-cyan-100 text-cyan-700' },
-  SALES_MARKETING: { label: 'Sales & Marketing', icon: 'TrendingUp', color: 'bg-yellow-100 text-yellow-700' },
-  IP: { label: 'Intellectual Property', icon: 'Lightbulb', color: 'bg-amber-100 text-amber-700' },
-  TECHNOLOGY: { label: 'Technology', icon: 'Code', color: 'bg-indigo-100 text-indigo-700' },
-  INSURANCE: { label: 'Insurance', icon: 'Shield', color: 'bg-teal-100 text-teal-700' },
-  REAL_ESTATE: { label: 'Real Estate', icon: 'Home', color: 'bg-stone-100 text-stone-700' },
-  ENVIRONMENTAL: { label: 'Environmental', icon: 'Leaf', color: 'bg-lime-100 text-lime-700' },
-  CUSTOM: { label: 'Other', icon: 'Folder', color: 'bg-slate-100 text-slate-700' },
-  TASK_PROOF: { label: 'Task Proof', icon: 'CheckCircle', color: 'bg-emerald-100 text-emerald-700' },
+  CORPORATE: { label: 'Corporate & Legal', icon: 'Building2', color: 'bg-accent-light text-primary' },
+  LEGAL: { label: 'Legal', icon: 'Scale', color: 'bg-purple-light text-purple-dark' },
+  FINANCIAL: { label: 'Financial', icon: 'DollarSign', color: 'bg-green-light text-green-dark' },
+  TAX: { label: 'Tax', icon: 'Receipt', color: 'bg-orange-light text-orange-dark' },
+  OPERATIONS: { label: 'Operations', icon: 'Settings', color: 'bg-secondary text-foreground' },
+  EMPLOYEES: { label: 'Human Resources', icon: 'Users', color: 'bg-red-light text-red-dark' },
+  CUSTOMERS: { label: 'Customers', icon: 'UserCheck', color: 'bg-teal/10 text-teal' },
+  SALES_MARKETING: { label: 'Sales & Marketing', icon: 'TrendingUp', color: 'bg-orange-light text-orange-dark' },
+  IP: { label: 'Intellectual Property', icon: 'Lightbulb', color: 'bg-orange-light text-orange-dark' },
+  TECHNOLOGY: { label: 'Technology', icon: 'Code', color: 'bg-accent-light text-primary' },
+  INSURANCE: { label: 'Insurance', icon: 'Shield', color: 'bg-teal/10 text-teal' },
+  REAL_ESTATE: { label: 'Real Estate', icon: 'Home', color: 'bg-secondary text-foreground' },
+  ENVIRONMENTAL: { label: 'Environmental', icon: 'Leaf', color: 'bg-green-light text-green-dark' },
+  CUSTOM: { label: 'Other', icon: 'Folder', color: 'bg-secondary text-foreground' },
+  TASK_PROOF: { label: 'Task Proof', icon: 'CheckCircle', color: 'bg-green-light text-green-dark' },
 }
 
 /**

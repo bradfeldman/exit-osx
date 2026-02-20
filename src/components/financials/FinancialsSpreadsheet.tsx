@@ -514,7 +514,7 @@ function SpreadsheetCell({
       {showYoY && (
         <span className={cn(
           'text-xs',
-          yoyChange > 0 ? 'text-green-600' : yoyChange < 0 ? 'text-red-600' : 'text-muted-foreground'
+          yoyChange > 0 ? 'text-green-dark' : yoyChange < 0 ? 'text-red-dark' : 'text-muted-foreground'
         )}>
           {yoyChange > 0 ? <TrendingUp className="h-3 w-3" /> :
            yoyChange < 0 ? <TrendingDown className="h-3 w-3" /> :
@@ -1402,8 +1402,8 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
       <Card>
         <CardContent className="py-12">
           <div className="flex flex-col items-center gap-4 text-center">
-            <AlertCircle className="h-10 w-10 text-red-500" />
-            <p className="text-red-600">{error}</p>
+            <AlertCircle className="h-10 w-10 text-red" />
+            <p className="text-red-dark">{error}</p>
             <Button onClick={loadData}>Try Again</Button>
           </div>
         </CardContent>
@@ -1428,18 +1428,18 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg"
+                className="flex items-center gap-2 px-3 py-1.5 bg-green-light dark:bg-green-dark/20 border border-green/20 dark:border-green-dark rounded-lg"
               >
-                <DollarSign className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">
+                <DollarSign className="h-4 w-4 text-green-dark dark:text-green" />
+                <span className="text-sm font-semibold text-green-dark dark:text-green">
                   {formatCurrency(currentValuation)}
                 </span>
                 {sessionStartValuation !== null && currentValuation !== sessionStartValuation && (
                   <span className={cn(
                     'text-xs font-medium',
                     currentValuation > sessionStartValuation
-                      ? 'text-emerald-600 dark:text-emerald-400'
-                      : 'text-red-600 dark:text-red-400'
+                      ? 'text-green-dark dark:text-green'
+                      : 'text-red-dark dark:text-red'
                   )}>
                     {currentValuation > sessionStartValuation ? '+' : ''}
                     {formatCurrency(currentValuation - sessionStartValuation)} this session
@@ -1459,8 +1459,8 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
                 className={cn(
                   'flex items-center gap-2 text-sm px-3 py-1 rounded-full',
                   saveStatus === 'saving' && 'bg-muted text-muted-foreground',
-                  saveStatus === 'saved' && 'bg-green-100 text-green-700',
-                  saveStatus === 'error' && 'bg-red-100 text-red-700'
+                  saveStatus === 'saved' && 'bg-green-light text-green-dark',
+                  saveStatus === 'error' && 'bg-red-light text-red-dark'
                 )}
               >
                 {saveStatus === 'saving' && <Loader2 className="h-3 w-3 animate-spin" />}
@@ -1484,29 +1484,29 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4"
+            className="bg-green-light dark:bg-green-dark/20 border border-green/20 dark:border-green-dark rounded-lg p-4"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-emerald-100 dark:bg-emerald-900/40 rounded-full">
+                <div className="p-2 bg-green-light dark:bg-green-dark/40 rounded-full">
                   {lastValuationChange.isFirstFinancials
-                    ? <Sparkles className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                    : <TrendingUp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                    ? <Sparkles className="h-5 w-5 text-green-dark dark:text-green" />
+                    : <TrendingUp className="h-5 w-5 text-green-dark dark:text-green" />
                   }
                 </div>
                 <div>
                   {lastValuationChange.isFirstFinancials ? (
                     <>
-                      <p className="font-medium text-emerald-800 dark:text-emerald-200">
+                      <p className="font-medium text-green-dark dark:text-green">
                         Your valuation is live! {formatCurrency(lastValuationChange.newValue)}
                       </p>
-                      <p className="text-sm text-emerald-600 dark:text-emerald-400">
+                      <p className="text-sm text-green-dark dark:text-green">
                         Your financials are now powering a more accurate valuation.
                       </p>
                     </>
                   ) : (
                     <>
-                      <p className="font-medium text-emerald-800 dark:text-emerald-200">
+                      <p className="font-medium text-green-dark dark:text-green">
                         {lastValuationChange.previousValue
                           ? `${formatCurrency(lastValuationChange.previousValue)} → ${formatCurrency(lastValuationChange.newValue)}`
                           : formatCurrency(lastValuationChange.newValue)
@@ -1514,7 +1514,7 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
                         {lastValuationChange.change !== 0 && (
                           <span className={cn(
                             'ml-2 text-sm',
-                            lastValuationChange.change > 0 ? 'text-emerald-600' : 'text-red-600'
+                            lastValuationChange.change > 0 ? 'text-green-dark' : 'text-red-dark'
                           )}>
                             ({lastValuationChange.change > 0 ? '+' : ''}{formatCurrency(lastValuationChange.change)}
                             {lastValuationChange.percentChange !== null &&
@@ -1523,7 +1523,7 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
                           </span>
                         )}
                       </p>
-                      <p className="text-sm text-emerald-600 dark:text-emerald-400">
+                      <p className="text-sm text-green-dark dark:text-green">
                         Your valuation has been updated based on your financial data.
                       </p>
                     </>
@@ -1532,14 +1532,14 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
               </div>
               <div className="flex items-center gap-2">
                 <Link href="/dashboard">
-                  <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+                  <Button size="sm" className="bg-green-dark hover:bg-green-dark">
                     View Impact
                     <ArrowRight className="h-4 w-4 ml-1" />
                   </Button>
                 </Link>
                 <button
                   onClick={() => setShowValuationBanner(false)}
-                  className="p-1.5 rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400"
+                  className="p-1.5 rounded-full hover:bg-green-light dark:hover:bg-green-dark/40 text-green-dark dark:text-green"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -1556,38 +1556,38 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4"
+            className="bg-accent-light dark:bg-primary/20 border border-primary/20 dark:border-primary rounded-lg p-4"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-full">
-                  <Lightbulb className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <div className="p-2 bg-accent-light dark:bg-primary/40 rounded-full">
+                  <Lightbulb className="h-5 w-5 text-primary dark:text-primary" />
                 </div>
                 <div>
                   {sortedPeriods.length === 1 ? (
                     <>
-                      <p className="font-medium text-blue-800 dark:text-blue-200">
+                      <p className="font-medium text-primary dark:text-primary">
                         Great start! Buyers want to see 3 years of trends.
                       </p>
-                      <p className="text-sm text-blue-600 dark:text-blue-400">
+                      <p className="text-sm text-primary dark:text-primary">
                         Add another year to strengthen your profile and improve accuracy.
                       </p>
                     </>
                   ) : adjustments.length === 0 ? (
                     <>
-                      <p className="font-medium text-blue-800 dark:text-blue-200">
+                      <p className="font-medium text-primary dark:text-primary">
                         Consider adding owner add-backs
                       </p>
-                      <p className="text-sm text-blue-600 dark:text-blue-400">
+                      <p className="text-sm text-primary dark:text-primary">
                         Add-backs increase your adjusted EBITDA and can significantly raise your valuation.
                       </p>
                     </>
                   ) : (
                     <>
-                      <p className="font-medium text-blue-800 dark:text-blue-200">
+                      <p className="font-medium text-primary dark:text-primary">
                         Your financial profile is looking strong
                       </p>
-                      <p className="text-sm text-blue-600 dark:text-blue-400">
+                      <p className="text-sm text-primary dark:text-primary">
                         See how your value compares and find more ways to improve.
                       </p>
                     </>
@@ -1596,13 +1596,13 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
               </div>
               <div className="flex items-center gap-2">
                 {adjustments.length === 0 ? (
-                  <Button size="sm" variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-100" onClick={() => { setActiveTab('add-backs'); setShowNextSteps(false) }}>
+                  <Button size="sm" variant="outline" className="border-primary/30 text-primary hover:bg-accent-light" onClick={() => { setActiveTab('add-backs'); setShowNextSteps(false) }}>
                     Add-Backs
                     <ArrowRight className="h-4 w-4 ml-1" />
                   </Button>
                 ) : (
                   <Link href="/dashboard">
-                    <Button size="sm" variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-100">
+                    <Button size="sm" variant="outline" className="border-primary/30 text-primary hover:bg-accent-light">
                       Value Builder
                       <ArrowRight className="h-4 w-4 ml-1" />
                     </Button>
@@ -1610,7 +1610,7 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
                 )}
                 <button
                   onClick={() => setShowNextSteps(false)}
-                  className="p-1.5 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 text-sm"
+                  className="p-1.5 rounded-full hover:bg-accent-light dark:hover:bg-primary/40 text-primary dark:text-primary text-sm"
                 >
                   Later
                 </button>
@@ -1661,12 +1661,12 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
                 </thead>
                 <tbody>
                   {/* Add-Backs Section Header */}
-                  <tr className="border-b bg-emerald-50">
+                  <tr className="border-b bg-green-light">
                     <td colSpan={sortedPeriods.length + 1} className="py-2 px-4">
                       <div className="flex items-center gap-2">
-                        <PlusCircle className="h-4 w-4 text-emerald-600" />
-                        <span className="font-semibold text-emerald-700 text-xs uppercase tracking-wider">Add-Backs</span>
-                        <span className="text-xs text-emerald-600">({uniqueAdjustmentDescriptions.filter(a => a.type === 'ADD_BACK').length} items)</span>
+                        <PlusCircle className="h-4 w-4 text-green-dark" />
+                        <span className="font-semibold text-green-dark text-xs uppercase tracking-wider">Add-Backs</span>
+                        <span className="text-xs text-green-dark">({uniqueAdjustmentDescriptions.filter(a => a.type === 'ADD_BACK').length} items)</span>
                       </div>
                     </td>
                   </tr>
@@ -1679,7 +1679,7 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
                           <span>{item.description}</span>
                           <button
                             onClick={() => handleDeleteAdjustment(item.description)}
-                            className="p-1 rounded hover:bg-red-100 text-muted-foreground hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="p-1 rounded hover:bg-red-light text-muted-foreground hover:text-red-dark opacity-0 group-hover:opacity-100 transition-opacity"
                           >
                             <Trash2 className="h-3 w-3" />
                           </button>
@@ -1720,22 +1720,22 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
                   )}
 
                   {/* Add-Backs Total */}
-                  <tr className="border-b bg-emerald-50">
-                    <td className="py-2 px-4 pl-8 font-semibold text-emerald-700 sticky left-0 bg-emerald-50 z-10">Total Add-Backs</td>
+                  <tr className="border-b bg-green-light">
+                    <td className="py-2 px-4 pl-8 font-semibold text-green-dark sticky left-0 bg-green-light z-10">Total Add-Backs</td>
                     {sortedPeriods.map((period) => (
-                      <td key={period.id} className="py-2 px-4 text-right font-semibold text-emerald-700">
+                      <td key={period.id} className="py-2 px-4 text-right font-semibold text-green-dark">
                         {formatCurrency(data[period.id]?.totalAddBacks || 0)}
                       </td>
                     ))}
                   </tr>
 
                   {/* Deductions Section Header */}
-                  <tr className="border-b bg-red-50">
+                  <tr className="border-b bg-red-light">
                     <td colSpan={sortedPeriods.length + 1} className="py-2 px-4">
                       <div className="flex items-center gap-2">
-                        <MinusCircle className="h-4 w-4 text-red-600" />
-                        <span className="font-semibold text-red-700 text-xs uppercase tracking-wider">Deductions</span>
-                        <span className="text-xs text-red-600">({uniqueAdjustmentDescriptions.filter(a => a.type === 'DEDUCTION').length} items)</span>
+                        <MinusCircle className="h-4 w-4 text-red-dark" />
+                        <span className="font-semibold text-red-dark text-xs uppercase tracking-wider">Deductions</span>
+                        <span className="text-xs text-red-dark">({uniqueAdjustmentDescriptions.filter(a => a.type === 'DEDUCTION').length} items)</span>
                       </div>
                     </td>
                   </tr>
@@ -1752,7 +1752,7 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
                             <span>{item.description}</span>
                             <button
                               onClick={() => handleDeleteAdjustment(item.description)}
-                              className="p-1 rounded hover:bg-red-100 text-muted-foreground hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="p-1 rounded hover:bg-red-light text-muted-foreground hover:text-red-dark opacity-0 group-hover:opacity-100 transition-opacity"
                             >
                               <Trash2 className="h-3 w-3" />
                             </button>
@@ -1794,22 +1794,22 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
                   )}
 
                   {/* Deductions Total */}
-                  <tr className="border-b bg-red-50">
-                    <td className="py-2 px-4 pl-8 font-semibold text-red-700 sticky left-0 bg-red-50 z-10">Total Deductions</td>
+                  <tr className="border-b bg-red-light">
+                    <td className="py-2 px-4 pl-8 font-semibold text-red-dark sticky left-0 bg-red-light z-10">Total Deductions</td>
                     {sortedPeriods.map((period) => (
-                      <td key={period.id} className="py-2 px-4 text-right font-semibold text-red-700">
+                      <td key={period.id} className="py-2 px-4 text-right font-semibold text-red-dark">
                         ({formatCurrency(data[period.id]?.totalDeductions || 0)})
                       </td>
                     ))}
                   </tr>
 
                   {/* Net Adjustment */}
-                  <tr className="border-b bg-blue-50">
-                    <td className="py-3 px-4 font-bold text-blue-700 sticky left-0 bg-blue-50 z-10">Net Adjustment</td>
+                  <tr className="border-b bg-accent-light">
+                    <td className="py-3 px-4 font-bold text-primary sticky left-0 bg-accent-light z-10">Net Adjustment</td>
                     {sortedPeriods.map((period) => {
                       const net = data[period.id]?.netAdjustment || 0
                       return (
-                        <td key={period.id} className="py-3 px-4 text-right font-bold text-blue-700">
+                        <td key={period.id} className="py-3 px-4 text-right font-bold text-primary">
                           {net >= 0 ? '+' : ''}{formatCurrency(net)}
                         </td>
                       )
@@ -1901,13 +1901,13 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
                         onClick={() => handleAddAdjustment(item.description, item.defaultType)}
                         className={cn(
                           'text-left p-3 rounded-lg border hover:border-primary/50 hover:bg-muted/50 transition-colors',
-                          item.defaultType === 'DEDUCTION' && 'border-red-200 hover:border-red-400'
+                          item.defaultType === 'DEDUCTION' && 'border-red/20 hover:border-red'
                         )}
                       >
                         <div className="flex items-center gap-2">
                           <span className="font-medium text-sm">{item.description}</span>
                           {item.defaultType === 'DEDUCTION' && (
-                            <span className="text-xs px-1.5 py-0.5 bg-red-100 text-red-700 rounded">Deduction</span>
+                            <span className="text-xs px-1.5 py-0.5 bg-red-light text-red-dark rounded">Deduction</span>
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground mt-0.5">{item.hint}</p>
@@ -1945,7 +1945,7 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
                           {(activeTab === 'pnl' || activeTab === 'balance-sheet') && (
                             <button
                               onClick={() => setPeriodToDelete(period)}
-                              className="p-1 rounded hover:bg-red-100 text-muted-foreground hover:text-red-600 transition-colors"
+                              className="p-1 rounded hover:bg-red-light text-muted-foreground hover:text-red-dark transition-colors"
                               title={`Delete ${period.label}`}
                             >
                               <Trash2 className="h-4 w-4" />

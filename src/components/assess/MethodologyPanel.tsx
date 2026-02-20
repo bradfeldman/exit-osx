@@ -111,20 +111,20 @@ export function MethodologyPanel({
                   Lower scores indicate risk areas that buyers would discount.
                 </p>
                 <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                  <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-2.5">
-                    <span className="font-semibold text-green-700 dark:text-green-400">85+</span>
+                  <div className="bg-green-light dark:bg-green-dark/20 rounded-lg p-2.5">
+                    <span className="font-semibold text-green-dark dark:text-green">85+</span>
                     <span className="text-muted-foreground ml-1">Premium multiple</span>
                   </div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2.5">
-                    <span className="font-semibold text-blue-700 dark:text-blue-400">70–84</span>
+                  <div className="bg-primary/5 dark:bg-primary/20 rounded-lg p-2.5">
+                    <span className="font-semibold text-primary dark:text-primary">70–84</span>
                     <span className="text-muted-foreground ml-1">At or near industry median</span>
                   </div>
-                  <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-2.5">
-                    <span className="font-semibold text-amber-700 dark:text-amber-400">55–69</span>
+                  <div className="bg-orange-light dark:bg-orange-dark/20 rounded-lg p-2.5">
+                    <span className="font-semibold text-orange-dark dark:text-orange">55–69</span>
                     <span className="text-muted-foreground ml-1">Below median, addressable gaps</span>
                   </div>
-                  <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-2.5">
-                    <span className="font-semibold text-red-700 dark:text-red-400">&lt;55</span>
+                  <div className="bg-red-light dark:bg-red-dark/20 rounded-lg p-2.5">
+                    <span className="font-semibold text-red-dark dark:text-red">&#60;55</span>
                     <span className="text-muted-foreground ml-1">Significant risk discount</span>
                   </div>
                 </div>

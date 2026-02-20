@@ -96,20 +96,20 @@ export function BenchmarkComparison({
       <CardContent className="space-y-4">
         {/* Gauge Bar */}
         <div className="space-y-2">
-          <div className="relative h-3 rounded-full overflow-hidden bg-zinc-100">
+          <div className="relative h-3 rounded-full overflow-hidden bg-muted">
             {/* Bottom quartile zone */}
             <div
-              className="absolute inset-y-0 left-0 bg-amber-200/70"
+              className="absolute inset-y-0 left-0 bg-orange/20"
               style={{ width: '25%' }}
             />
             {/* Middle zone */}
             <div
-              className="absolute inset-y-0 bg-zinc-200/70"
+              className="absolute inset-y-0 bg-border/70"
               style={{ left: '25%', width: '50%' }}
             />
             {/* Top quartile zone */}
             <div
-              className="absolute inset-y-0 bg-emerald-200/70"
+              className="absolute inset-y-0 bg-green/20"
               style={{ left: '75%', width: '25%' }}
             />
             {/* Current position marker - positioned proportionally between min and max */}
@@ -117,7 +117,7 @@ export function BenchmarkComparison({
               className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-5 w-5 rounded-full border-2 border-white shadow-md z-10"
               style={{
                 left: `${Math.min(100, Math.max(0, percentile))}%`,
-                backgroundColor: quartile === 'top' ? '#059669' : quartile === 'bottom' ? '#d97706' : '#71717a',
+                backgroundColor: quartile === 'top' ? 'var(--green-dark)' : quartile === 'bottom' ? 'var(--orange-dark)' : 'var(--muted-foreground)',
               }}
             />
           </div>

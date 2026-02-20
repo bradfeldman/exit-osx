@@ -87,7 +87,7 @@ export function WeeklyCheckInPrompt({ checkInId, onClose, onComplete }: WeeklyCh
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
         <div className="bg-card rounded-xl p-8 text-center max-w-sm mx-4">
-          <CheckCircle className="h-12 w-12 text-emerald-500 mx-auto mb-3" />
+          <CheckCircle className="h-12 w-12 text-green mx-auto mb-3" />
           <h3 className="text-lg font-semibold">Check-in complete</h3>
           <p className="text-sm text-muted-foreground mt-1">Your input keeps your exit data fresh.</p>
         </div>

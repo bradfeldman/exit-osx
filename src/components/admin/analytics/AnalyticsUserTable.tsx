@@ -53,9 +53,9 @@ interface AnalyticsUserTableProps {
 }
 
 const statusBadgeClass: Record<string, string> = {
-  active: 'bg-green-100 text-green-800',
-  stalled: 'bg-yellow-100 text-yellow-800',
-  dormant: 'bg-red-100 text-red-800',
+  active: 'bg-green-light text-green-dark',
+  stalled: 'bg-orange-light text-orange-dark',
+  dormant: 'bg-red-light text-red-dark',
 }
 
 function timeAgo(dateStr: string): string {

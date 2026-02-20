@@ -226,8 +226,8 @@ export function BSFormGrid({ companyId }: BSFormGridProps) {
           return (
             <span key={periodId} className={cn(
               'flex items-center gap-1',
-              status === 'saving' && 'text-amber-600',
-              status === 'saved' && 'text-emerald-600',
+              status === 'saving' && 'text-orange-dark',
+              status === 'saved' && 'text-green-dark',
             )}>
               {status === 'saving' && <Loader2 className="h-3 w-3 animate-spin" />}
               {status === 'saved' && '✓'}
@@ -243,10 +243,10 @@ export function BSFormGrid({ companyId }: BSFormGridProps) {
 
           {/* ── Assets ── */}
           <div className="space-y-3 mb-6">
-            <SectionHeader icon={Landmark} label="Assets" bgColor="bg-emerald-100" textColor="text-emerald-600" />
+            <SectionHeader icon={Landmark} label="Assets" bgColor="bg-green-light" textColor="text-green-dark" />
 
             {/* Current Assets */}
-            <p className="text-xs text-gray-500 pl-8 font-medium uppercase tracking-wide">Current Assets</p>
+            <p className="text-xs text-muted-foreground pl-8 font-medium uppercase tracking-wide">Current Assets</p>
             <FormRow label="Cash" periods={periods}>
               {(p) => <GridInput value={periodData[p.id]?.cash ?? 0} onChange={handleFieldChange} periodId={p.id} field="cash" />}
             </FormRow>
@@ -267,7 +267,7 @@ export function BSFormGrid({ companyId }: BSFormGridProps) {
             </FormRow>
 
             {/* Long-Term Assets */}
-            <p className="text-xs text-gray-500 pl-8 font-medium uppercase tracking-wide mt-4">Long-Term Assets</p>
+            <p className="text-xs text-muted-foreground pl-8 font-medium uppercase tracking-wide mt-4">Long-Term Assets</p>
             <FormRow label="PP&E (Gross)" periods={periods}>
               {(p) => <GridInput value={periodData[p.id]?.ppeGross ?? 0} onChange={handleFieldChange} periodId={p.id} field="ppeGross" />}
             </FormRow>
@@ -292,10 +292,10 @@ export function BSFormGrid({ companyId }: BSFormGridProps) {
 
           {/* ── Liabilities ── */}
           <div className="space-y-3 mb-6">
-            <SectionHeader icon={Receipt} label="Liabilities" bgColor="bg-orange-100" textColor="text-orange-600" />
+            <SectionHeader icon={Receipt} label="Liabilities" bgColor="bg-orange-light" textColor="text-orange" />
 
             {/* Current Liabilities */}
-            <p className="text-xs text-gray-500 pl-8 font-medium uppercase tracking-wide">Current Liabilities</p>
+            <p className="text-xs text-muted-foreground pl-8 font-medium uppercase tracking-wide">Current Liabilities</p>
             <FormRow label="Accounts Payable" periods={periods}>
               {(p) => <GridInput value={periodData[p.id]?.accountsPayable ?? 0} onChange={handleFieldChange} periodId={p.id} field="accountsPayable" />}
             </FormRow>
@@ -313,7 +313,7 @@ export function BSFormGrid({ companyId }: BSFormGridProps) {
             </FormRow>
 
             {/* Long-Term Liabilities */}
-            <p className="text-xs text-gray-500 pl-8 font-medium uppercase tracking-wide mt-4">Long-Term Liabilities</p>
+            <p className="text-xs text-muted-foreground pl-8 font-medium uppercase tracking-wide mt-4">Long-Term Liabilities</p>
             <FormRow label="Long-Term Debt" periods={periods}>
               {(p) => <GridInput value={periodData[p.id]?.longTermDebt ?? 0} onChange={handleFieldChange} periodId={p.id} field="longTermDebt" />}
             </FormRow>
@@ -335,7 +335,7 @@ export function BSFormGrid({ companyId }: BSFormGridProps) {
 
           {/* ── Equity ── */}
           <div className="space-y-3 mb-6">
-            <SectionHeader icon={Calculator} label="Equity" bgColor="bg-blue-100" textColor="text-blue-600" />
+            <SectionHeader icon={Calculator} label="Equity" bgColor="bg-accent-light" textColor="text-primary" />
 
             <FormRow label="Retained Earnings" periods={periods}>
               {(p) => <GridInput value={periodData[p.id]?.retainedEarnings ?? 0} onChange={handleFieldChange} periodId={p.id} field="retainedEarnings" />}
@@ -357,7 +357,7 @@ export function BSFormGrid({ companyId }: BSFormGridProps) {
                   <CalcCell
                     value={check}
                     format="currency"
-                    colorClass={Math.abs(check) < 0.01 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}
+                    colorClass={Math.abs(check) < 0.01 ? 'bg-green-light text-green-dark' : 'bg-red-light text-red-dark'}
                   />
                 )
               }}

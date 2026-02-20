@@ -150,7 +150,7 @@ export function SessionManager() {
       </div>
 
       {error && (
-        <div className="p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+        <div className="p-4 text-sm text-red-dark bg-red-light border border-red/20 rounded-lg">
           {error}
         </div>
       )}

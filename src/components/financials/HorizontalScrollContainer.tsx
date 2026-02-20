@@ -101,7 +101,7 @@ export function HorizontalScrollContainer({
         variant="outline"
         size="icon"
         className={cn(
-          'absolute left-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white shadow-lg border-gray-200',
+          'absolute left-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white shadow-lg border-border',
           'opacity-0 group-hover:opacity-100 transition-opacity duration-200',
           'disabled:opacity-0',
           !canScrollLeft && 'hidden'
@@ -138,7 +138,7 @@ export function HorizontalScrollContainer({
         variant="outline"
         size="icon"
         className={cn(
-          'absolute right-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white shadow-lg border-gray-200',
+          'absolute right-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white shadow-lg border-border',
           'opacity-0 group-hover:opacity-100 transition-opacity duration-200',
           'disabled:opacity-0',
           !canScrollRight && 'hidden'
@@ -151,7 +151,7 @@ export function HorizontalScrollContainer({
       </Button>
 
       {/* Mobile Navigation Hint */}
-      <div className="md:hidden text-center text-xs text-gray-400 mt-2">
+      <div className="md:hidden text-center text-xs text-muted-foreground mt-2">
         Swipe to see more years
       </div>
     </div>

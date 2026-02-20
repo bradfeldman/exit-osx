@@ -54,10 +54,10 @@ export function SharpenDiagnosisBanner({ companyId, autoGenerate, onComplete }: 
 
   if (state === 'generating') {
     return (
-      <div className="rounded-xl border border-violet-200 bg-gradient-to-br from-violet-50/50 to-purple-50/50 p-5">
+      <div className="rounded-xl border border-purple/20 bg-gradient-to-br from-purple-light/50 to-purple-light/50 p-5">
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-full bg-violet-100 flex items-center justify-center shrink-0">
-            <Loader2 className="h-4 w-4 text-violet-600 animate-spin" />
+          <div className="h-8 w-8 rounded-full bg-purple-light flex items-center justify-center shrink-0">
+            <Loader2 className="h-4 w-4 text-purple animate-spin" />
           </div>
           <div>
             <h3 className="text-sm font-semibold text-foreground">
@@ -74,10 +74,10 @@ export function SharpenDiagnosisBanner({ companyId, autoGenerate, onComplete }: 
 
   if (state === 'success') {
     return (
-      <div className="rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50/50 to-teal-50/50 p-5">
+      <div className="rounded-xl border border-green/20 bg-gradient-to-br from-green-light/50 to-green-light/50 p-5">
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+          <div className="h-8 w-8 rounded-full bg-green-light flex items-center justify-center shrink-0">
+            <CheckCircle2 className="h-4 w-4 text-green-dark" />
           </div>
           <div>
             <h3 className="text-sm font-semibold text-foreground">
@@ -94,11 +94,11 @@ export function SharpenDiagnosisBanner({ companyId, autoGenerate, onComplete }: 
 
   if (state === 'error') {
     return (
-      <div className="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50/50 to-orange-50/50 p-5">
+      <div className="rounded-xl border border-orange/20 bg-gradient-to-br from-orange-light/50 to-orange-light/50 p-5">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-              <AlertCircle className="h-4 w-4 text-amber-600" />
+            <div className="h-8 w-8 rounded-full bg-orange-light flex items-center justify-center shrink-0">
+              <AlertCircle className="h-4 w-4 text-orange-dark" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-foreground">
@@ -113,7 +113,7 @@ export function SharpenDiagnosisBanner({ companyId, autoGenerate, onComplete }: 
             variant="outline"
             size="sm"
             onClick={runGeneration}
-            className="shrink-0 border-amber-300 text-amber-700 hover:bg-amber-50"
+            className="shrink-0 border-orange/30 text-orange-dark hover:bg-orange-light"
           >
             Retry
           </Button>
@@ -123,7 +123,7 @@ export function SharpenDiagnosisBanner({ companyId, autoGenerate, onComplete }: 
   }
 
   return (
-    <div className="rounded-xl border border-violet-200 bg-gradient-to-br from-violet-50/50 to-purple-50/50 p-5 flex items-center justify-between gap-4">
+    <div className="rounded-xl border border-purple/20 bg-gradient-to-br from-purple-light/50 to-purple-light/50 p-5 flex items-center justify-between gap-4">
       <div>
         <h3 className="text-sm font-semibold text-foreground">
           All questions answered
@@ -136,7 +136,7 @@ export function SharpenDiagnosisBanner({ companyId, autoGenerate, onComplete }: 
         variant="outline"
         size="sm"
         onClick={runGeneration}
-        className="shrink-0 border-violet-300 text-violet-700 hover:bg-violet-50"
+        className="shrink-0 border-purple/30 text-purple hover:bg-purple-light"
       >
         <Sparkles className="h-4 w-4 mr-1.5" />
         Re-Assess

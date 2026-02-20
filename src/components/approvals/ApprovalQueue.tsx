@@ -91,10 +91,10 @@ interface ApprovalQueueProps {
 
 // Status colors mapping with proper format
 const STATUS_COLORS: Record<ApprovalStatus, { bg: string; text: string }> = {
-  PENDING: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-300' },
-  APPROVED: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-300' },
-  HOLD: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-700 dark:text-orange-300' },
-  DENIED: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-300' },
+  PENDING: { bg: 'bg-orange-light dark:bg-orange-dark/30', text: 'text-orange-dark dark:text-orange' },
+  APPROVED: { bg: 'bg-green-light dark:bg-green-dark/30', text: 'text-green-dark dark:text-green' },
+  HOLD: { bg: 'bg-orange-light dark:bg-orange-dark/30', text: 'text-orange-dark dark:text-orange' },
+  DENIED: { bg: 'bg-red-light dark:bg-red-dark/30', text: 'text-red-dark dark:text-red' },
 }
 
 const containerVariants = {
@@ -264,19 +264,19 @@ export function ApprovalQueue({ dealId, dealName, onApprovalChange }: ApprovalQu
           {/* Quick stats */}
           <div className="flex items-center gap-3 text-sm">
             <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+              <div className="w-2.5 h-2.5 rounded-full bg-orange" />
               <span>{stats.pending} pending</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
+              <div className="w-2.5 h-2.5 rounded-full bg-green" />
               <span>{stats.approved} approved</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-orange-400" />
+              <div className="w-2.5 h-2.5 rounded-full bg-orange" />
               <span>{stats.hold} on hold</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
+              <div className="w-2.5 h-2.5 rounded-full bg-red" />
               <span>{stats.denied} denied</span>
             </div>
           </div>
@@ -334,7 +334,7 @@ export function ApprovalQueue({ dealId, dealName, onApprovalChange }: ApprovalQu
               variant="outline"
               onClick={() => handleApprove(selectedArray)}
               disabled={isProcessing}
-              className="text-green-600 border-green-300 hover:bg-green-50"
+              className="text-green-dark border-green/20 hover:bg-green-light"
             >
               <CheckCircle className="h-4 w-4 mr-1" />
               Approve
@@ -344,7 +344,7 @@ export function ApprovalQueue({ dealId, dealName, onApprovalChange }: ApprovalQu
               variant="outline"
               onClick={() => handleHold(selectedArray)}
               disabled={isProcessing}
-              className="text-orange-600 border-orange-300 hover:bg-orange-50"
+              className="text-orange-dark border-orange/20 hover:bg-orange-light"
             >
               <Pause className="h-4 w-4 mr-1" />
               Hold
@@ -354,7 +354,7 @@ export function ApprovalQueue({ dealId, dealName, onApprovalChange }: ApprovalQu
               variant="outline"
               onClick={() => handleDeny(selectedArray)}
               disabled={isProcessing}
-              className="text-red-600 border-red-300 hover:bg-red-50"
+              className="text-red-dark border-red/20 hover:bg-red-light"
             >
               <XCircle className="h-4 w-4 mr-1" />
               Deny
@@ -513,19 +513,19 @@ export function ApprovalQueue({ dealId, dealName, onApprovalChange }: ApprovalQu
                               <DropdownMenuSeparator />
                               {buyer.approvalStatus !== 'APPROVED' && (
                                 <DropdownMenuItem onClick={() => handleApprove([buyer.id])}>
-                                  <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                                  <CheckCircle className="h-4 w-4 mr-2 text-green-dark" />
                                   Approve
                                 </DropdownMenuItem>
                               )}
                               {buyer.approvalStatus !== 'HOLD' && (
                                 <DropdownMenuItem onClick={() => handleHold([buyer.id])}>
-                                  <Pause className="h-4 w-4 mr-2 text-orange-600" />
+                                  <Pause className="h-4 w-4 mr-2 text-orange-dark" />
                                   Put on Hold
                                 </DropdownMenuItem>
                               )}
                               {buyer.approvalStatus !== 'DENIED' && (
                                 <DropdownMenuItem onClick={() => handleDeny([buyer.id])}>
-                                  <XCircle className="h-4 w-4 mr-2 text-red-600" />
+                                  <XCircle className="h-4 w-4 mr-2 text-red-dark" />
                                   Deny
                                 </DropdownMenuItem>
                               )}
@@ -553,7 +553,7 @@ export function ApprovalQueue({ dealId, dealName, onApprovalChange }: ApprovalQu
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-red-500" />
+              <AlertTriangle className="h-5 w-5 text-red" />
               Deny {denialTargetIds.length > 1 ? 'Buyers' : 'Buyer'}
             </DialogTitle>
             <DialogDescription>

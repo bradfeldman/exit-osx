@@ -210,11 +210,11 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ slug:
 
           {/* Impact Estimate */}
           <div className={styles.card} style={{ background: 'var(--green-light)', borderColor: 'rgba(52,199,89,0.2)' }}>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: '#1B7A34', marginBottom: 8 }}>Value Impact Estimate</div>
-            <div style={{ fontSize: 26, fontWeight: 800, color: '#1B7A34', letterSpacing: '-0.5px' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--green-dark)', marginBottom: 8 }}>Value Impact Estimate</div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--green-dark)', letterSpacing: '-0.5px' }}>
               {formatImpact(definition.impactBaseLow, definition.impactBaseHigh)}
             </div>
-            <div style={{ fontSize: 12, color: '#2D8A47', marginTop: 4 }}>
+            <div style={{ fontSize: 12, color: 'var(--green-dark)', marginTop: 4 }}>
               Based on sector acquisition multiples and current assessment scores
             </div>
           </div>

@@ -144,8 +144,8 @@ export function FeedbackWidget() {
             {/* Success state */}
             {submitted ? (
               <div className="px-5 py-8 text-center">
-                <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                <div className="w-12 h-12 bg-green-light dark:bg-green-dark/30 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <CheckCircle2 className="w-6 h-6 text-green-dark dark:text-green" />
                 </div>
                 <p className="text-foreground font-medium">Feedback received</p>
                 <p className="text-sm text-muted-foreground mt-1">

@@ -278,7 +278,7 @@ export function LogActivityModal({
 
           {/* Error */}
           {error && (
-            <p className="text-sm text-red-600 bg-red-50 dark:bg-red-950/30 p-2 rounded">
+            <p className="text-sm text-red-dark bg-red-light dark:bg-red-dark/30 p-2 rounded">
               {error}
             </p>
           )}

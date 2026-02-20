@@ -351,7 +351,7 @@ export function CoachPage() {
             >
               {showHistory ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
             </button>
-            <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center">
+            <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary to-purple-dark flex items-center justify-center">
               <Sparkles className="h-3.5 w-3.5 text-white" />
             </div>
             <div>
@@ -386,8 +386,8 @@ export function CoachPage() {
 
         {/* Error */}
         {error && (
-          <div className="px-4 py-2 bg-red-50 dark:bg-red-950/20 border-t border-red-100 dark:border-red-900/30">
-            <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
+          <div className="px-4 py-2 bg-red-light dark:bg-red-dark/20 border-t border-red-light dark:border-red-dark/30">
+            <p className="text-xs text-red-dark dark:text-red">{error}</p>
           </div>
         )}
 

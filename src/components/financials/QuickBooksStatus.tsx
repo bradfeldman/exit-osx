@@ -21,12 +21,12 @@ export function QuickBooksStatus({ isConnected, lastSyncedAt }: QuickBooksStatus
     return (
       <Link
         href="/dashboard/financials"
-        className="inline-flex items-center gap-2 text-sm text-green-700 hover:text-green-800 transition-colors"
+        className="inline-flex items-center gap-2 text-sm text-green-dark hover:text-green-dark transition-colors"
       >
         <CheckCircle2 className="h-4 w-4" />
         <span className="font-medium">QuickBooks Connected</span>
         {formattedDate && (
-          <span className="text-green-600">· Last sync: {formattedDate}</span>
+          <span className="text-green-dark">· Last sync: {formattedDate}</span>
         )}
       </Link>
     )
@@ -35,7 +35,7 @@ export function QuickBooksStatus({ isConnected, lastSyncedAt }: QuickBooksStatus
   return (
     <Link
       href="/dashboard/financials"
-      className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 transition-colors"
+      className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary transition-colors"
     >
       <Link2 className="h-4 w-4" />
       <span className="font-medium">Connect to QuickBooks</span>

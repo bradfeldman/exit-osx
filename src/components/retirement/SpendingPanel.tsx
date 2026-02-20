@@ -34,15 +34,15 @@ export function SpendingPanel({
     return (
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-medium text-gray-900">Annual Spending</CardTitle>
+          <CardTitle className="text-base font-medium text-foreground">Annual Spending</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Annual Spending Only */}
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <Label className="text-sm text-gray-700">How much do you spend per year?</Label>
+              <Label className="text-sm text-foreground">How much do you spend per year?</Label>
               <div className="flex items-center gap-1">
-                <span className="text-gray-500 text-sm">$</span>
+                <span className="text-muted-foreground text-sm">$</span>
                 <Input
                   type="text"
                   inputMode="numeric"
@@ -57,19 +57,19 @@ export function SpendingPanel({
           </div>
 
           {/* Simple Summary */}
-          <div className="p-3 bg-gray-50 rounded-lg space-y-1.5">
+          <div className="p-3 bg-secondary rounded-lg space-y-1.5">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">At retirement (inflation-adjusted)</span>
+              <span className="text-muted-foreground">At retirement (inflation-adjusted)</span>
               <span className="font-medium">{formatCurrency(spendingAtRetirement)}/yr</span>
             </div>
             {annualOtherIncome > 0 && (
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Less: Social Security</span>
-                <span className="font-medium text-green-600">-{formatCurrency(annualOtherIncome)}/yr</span>
+                <span className="text-muted-foreground">Less: Social Security</span>
+                <span className="font-medium text-green-dark">-{formatCurrency(annualOtherIncome)}/yr</span>
               </div>
             )}
-            <div className="flex justify-between text-sm pt-1.5 border-t border-gray-200">
-              <span className="text-gray-700 font-medium">Portfolio withdrawal needed</span>
+            <div className="flex justify-between text-sm pt-1.5 border-t border-border">
+              <span className="text-foreground font-medium">Portfolio withdrawal needed</span>
               <span className="font-bold text-primary">
                 {formatCurrency(Math.max(0, spendingAtRetirement - annualOtherIncome))}/yr
               </span>
@@ -83,15 +83,15 @@ export function SpendingPanel({
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base font-medium text-gray-900">Spending & Income</CardTitle>
+        <CardTitle className="text-base font-medium text-foreground">Spending & Income</CardTitle>
       </CardHeader>
       <CardContent className="space-y-5">
         {/* Annual Spending */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <Label className="text-sm text-gray-700">Annual Spending (today&apos;s $)</Label>
+            <Label className="text-sm text-foreground">Annual Spending (today&apos;s $)</Label>
             <div className="flex items-center gap-1">
-              <span className="text-gray-500 text-sm">$</span>
+              <span className="text-muted-foreground text-sm">$</span>
               <Input
                 type="text"
                 inputMode="numeric"
@@ -110,7 +110,7 @@ export function SpendingPanel({
             max={1000000}
             step={10000}
           />
-          <div className="flex justify-between text-xs text-gray-400">
+          <div className="flex justify-between text-xs text-muted-foreground">
             <span>$100K</span>
             <span>$500K</span>
             <span>$1M</span>
@@ -120,7 +120,7 @@ export function SpendingPanel({
         {/* Inflation Rate */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <Label className="text-sm text-gray-700">Inflation Rate</Label>
+            <Label className="text-sm text-foreground">Inflation Rate</Label>
             <div className="flex items-center gap-1">
               <TextNumericInput
                 value={assumptions.inflationRate}
@@ -129,7 +129,7 @@ export function SpendingPanel({
                 decimals={1}
                 className="w-16 h-8 text-sm text-right"
               />
-              <span className="text-gray-500 text-sm">%</span>
+              <span className="text-muted-foreground text-sm">%</span>
             </div>
           </div>
           <Slider
@@ -139,7 +139,7 @@ export function SpendingPanel({
             max={0.06}
             step={0.005}
           />
-          <div className="flex justify-between text-xs text-gray-400">
+          <div className="flex justify-between text-xs text-muted-foreground">
             <span>1%</span>
             <span>Avg: 3%</span>
             <span>6%</span>
@@ -149,9 +149,9 @@ export function SpendingPanel({
         {/* Social Security */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <Label className="text-sm text-gray-700">Social Security (monthly)</Label>
+            <Label className="text-sm text-foreground">Social Security (monthly)</Label>
             <div className="flex items-center gap-1">
-              <span className="text-gray-500 text-sm">$</span>
+              <span className="text-muted-foreground text-sm">$</span>
               <Input
                 type="text"
                 inputMode="numeric"
@@ -170,7 +170,7 @@ export function SpendingPanel({
             max={5000}
             step={100}
           />
-          <div className="flex justify-between text-xs text-gray-400">
+          <div className="flex justify-between text-xs text-muted-foreground">
             <span>$0</span>
             <span>Avg: $1,900</span>
             <span>$5,000</span>
@@ -180,9 +180,9 @@ export function SpendingPanel({
         {/* Other Monthly Income */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <Label className="text-sm text-gray-700">Other Income (monthly)</Label>
+            <Label className="text-sm text-foreground">Other Income (monthly)</Label>
             <div className="flex items-center gap-1">
-              <span className="text-gray-500 text-sm">$</span>
+              <span className="text-muted-foreground text-sm">$</span>
               <Input
                 type="text"
                 inputMode="numeric"
@@ -194,21 +194,21 @@ export function SpendingPanel({
               />
             </div>
           </div>
-          <p className="text-xs text-gray-500">Pension, rental income, part-time work, etc.</p>
+          <p className="text-xs text-muted-foreground">Pension, rental income, part-time work, etc.</p>
         </div>
 
         {/* Summary */}
-        <div className="p-3 bg-gray-50 rounded-lg space-y-2">
+        <div className="p-3 bg-secondary rounded-lg space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Spending at retirement (inflation adj.)</span>
+            <span className="text-muted-foreground">Spending at retirement (inflation adj.)</span>
             <span className="font-medium">{formatCurrency(spendingAtRetirement)}/yr</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Other income in retirement</span>
-            <span className="font-medium text-green-600">{formatCurrency(annualOtherIncome)}/yr</span>
+            <span className="text-muted-foreground">Other income in retirement</span>
+            <span className="font-medium text-green-dark">{formatCurrency(annualOtherIncome)}/yr</span>
           </div>
-          <div className="flex justify-between text-sm pt-2 border-t border-gray-200">
-            <span className="text-gray-700 font-medium">Portfolio withdrawal needed</span>
+          <div className="flex justify-between text-sm pt-2 border-t border-border">
+            <span className="text-foreground font-medium">Portfolio withdrawal needed</span>
             <span className="font-bold text-primary">
               {formatCurrency(Math.max(0, spendingAtRetirement - annualOtherIncome))}/yr
             </span>

@@ -51,7 +51,7 @@ export function ImpersonationBanner({ targetEmail, remainingMinutes }: Impersona
         size="sm"
         onClick={handleEndImpersonation}
         disabled={isEnding}
-        className="h-7 gap-1 bg-yellow-600/20 text-yellow-950 hover:bg-yellow-600/40"
+        className="h-7 gap-1 bg-orange/20 text-foreground hover:bg-orange/40"
       >
         <X className="h-3 w-3" />
         Exit

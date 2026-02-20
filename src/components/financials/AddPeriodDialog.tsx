@@ -256,7 +256,7 @@ export function AddPeriodDialog({
             </div>
 
             {error && (
-              <p className="text-sm text-red-600">{error}</p>
+              <p className="text-sm text-red-dark">{error}</p>
             )}
 
             <DialogFooter>

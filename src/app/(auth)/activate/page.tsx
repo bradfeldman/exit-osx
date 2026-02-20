@@ -24,7 +24,7 @@ function PasswordRequirement({ met, label }: { met: boolean; label: string }) {
   return (
     <div className={`${styles.activateRequirement} ${met ? styles.activateRequirementMet : styles.activateRequirementUnmet}`}>
       {met ? (
-        <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
+        <CheckCircle2 className="h-4 w-4 text-green-dark shrink-0" />
       ) : (
         <XCircle className="h-4 w-4 shrink-0" style={{ color: 'var(--muted-foreground)', opacity: 0.4 }} />
       )}
@@ -201,7 +201,7 @@ export default function ActivatePage() {
             // Invalid/expired session state
             <div className={styles.activateError}>
               <div className={styles.activateErrorIconWrap}>
-                <AlertTriangle className="w-8 h-8 text-amber-600" />
+                <AlertTriangle className="w-8 h-8 text-orange-dark" />
               </div>
               <div>
                 <h2 className={styles.activateErrorTitle}>Link Expired</h2>

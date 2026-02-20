@@ -166,7 +166,7 @@ export function UpgradeModal({
               <p className="text-sm text-muted-foreground">
                 {currentPlanData?.name || 'Foundation'}
                 {isTrialing && trialDaysRemaining !== null && (
-                  <span className="ml-2 text-xs text-amber-600">
+                  <span className="ml-2 text-xs text-orange-dark">
                     ({trialDaysRemaining} days left in trial)
                   </span>
                 )}
@@ -224,7 +224,7 @@ export function UpgradeModal({
 
           {/* Trial continuation notice for users upgrading during trial */}
           {isTrialing && trialDaysRemaining !== null && (
-            <div className="flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
+            <div className="flex items-center gap-2 rounded-lg bg-orange-light border border-orange/20 p-3 text-sm text-orange-dark">
               <Clock className="h-4 w-4 flex-shrink-0" />
               <span>
                 Your trial continues with {trialDaysRemaining} day{trialDaysRemaining !== 1 ? 's' : ''} remaining.

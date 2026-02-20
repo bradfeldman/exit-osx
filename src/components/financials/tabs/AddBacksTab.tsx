@@ -347,22 +347,22 @@ export function AddBacksTab({ companyId, periodId, onDirty }: AddBacksTabProps) 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-accent-light text-primary">
               <Plus className="h-4 w-4" />
             </div>
-            <h3 className="font-semibold text-gray-900">Add New Adjustment</h3>
+            <h3 className="font-semibold text-foreground">Add New Adjustment</h3>
           </div>
           {allPeriodIds.length > 1 && (
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-muted-foreground">
               Description copied to all years (amounts entered separately)
             </span>
           )}
         </div>
 
-        <div className="ml-11 p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="ml-11 p-4 bg-secondary rounded-lg border border-border">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="md:col-span-2">
-              <label className="text-sm font-medium text-gray-700 block mb-1.5">
+              <label className="text-sm font-medium text-foreground block mb-1.5">
                 Description
               </label>
               <Input
@@ -373,11 +373,11 @@ export function AddBacksTab({ companyId, periodId, onDirty }: AddBacksTabProps) 
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1.5">
+              <label className="text-sm font-medium text-foreground block mb-1.5">
                 Amount
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
                 <Input
                   type="text"
                   inputMode="numeric"
@@ -390,7 +390,7 @@ export function AddBacksTab({ companyId, periodId, onDirty }: AddBacksTabProps) 
             </div>
             <div className="flex gap-2">
               <div className="flex-1">
-                <label className="text-sm font-medium text-gray-700 block mb-1.5">
+                <label className="text-sm font-medium text-foreground block mb-1.5">
                   Type
                 </label>
                 <Select value={newType} onValueChange={(v) => setNewType(v as 'ADD_BACK' | 'DEDUCTION')}>
@@ -407,7 +407,7 @@ export function AddBacksTab({ companyId, periodId, onDirty }: AddBacksTabProps) 
           </div>
           <div className="flex items-center justify-between mt-4">
             <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-gray-700">Frequency:</label>
+              <label className="text-sm font-medium text-foreground">Frequency:</label>
               <Select value={newFrequency} onValueChange={(v) => setNewFrequency(v as 'MONTHLY' | 'ANNUAL')}>
                 <SelectTrigger className="w-32 bg-white">
                   <SelectValue />
@@ -418,7 +418,7 @@ export function AddBacksTab({ companyId, periodId, onDirty }: AddBacksTabProps) 
                 </SelectContent>
               </Select>
               {newFrequency === 'MONTHLY' && newAmount > 0 && (
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-muted-foreground">
                   = {formatCurrency(newAmount * 12)}/year
                 </span>
               )}
@@ -434,7 +434,7 @@ export function AddBacksTab({ companyId, periodId, onDirty }: AddBacksTabProps) 
         <div className="ml-11 mt-3">
           <button
             onClick={() => setShowQuickAdd(!showQuickAdd)}
-            className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             {showQuickAdd ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
             <CheckSquare className="h-4 w-4" />
@@ -442,8 +442,8 @@ export function AddBacksTab({ companyId, periodId, onDirty }: AddBacksTabProps) 
           </button>
 
           {showQuickAdd && (
-            <div className="mt-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <p className="text-xs text-gray-500 mb-3">
+            <div className="mt-3 p-4 bg-secondary rounded-lg border border-border">
+              <p className="text-xs text-muted-foreground mb-3">
                 Check items that apply and enter amounts. They&apos;ll be added as add-backs (or deductions where noted).
               </p>
               <div className="space-y-2 max-h-[300px] overflow-y-auto">
@@ -457,29 +457,29 @@ export function AddBacksTab({ companyId, periodId, onDirty }: AddBacksTabProps) 
                     <div
                       key={item.id}
                       className={`flex items-center gap-3 p-2 rounded-md transition-colors ${
-                        isSelected ? 'bg-white border border-gray-300' : 'hover:bg-gray-100'
+                        isSelected ? 'bg-white border border-border' : 'hover:bg-secondary'
                       }`}
                     >
                       <input
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => handleQuickAddToggle(item.id)}
-                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className={`text-sm ${isSelected ? 'font-medium text-gray-900' : 'text-gray-700'}`}>
+                          <span className={`text-sm ${isSelected ? 'font-medium text-foreground' : 'text-foreground'}`}>
                             {item.description}
                           </span>
                           {isDeduction && (
-                            <span className="text-xs px-1.5 py-0.5 bg-red-100 text-red-700 rounded">Deduction</span>
+                            <span className="text-xs px-1.5 py-0.5 bg-red-light text-red-dark rounded">Deduction</span>
                           )}
                         </div>
-                        <p className="text-xs text-gray-500 truncate">{item.hint}</p>
+                        <p className="text-xs text-muted-foreground truncate">{item.hint}</p>
                       </div>
                       {isSelected && (
                         <div className="relative w-28">
-                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
                           <Input
                             type="text"
                             inputMode="numeric"
@@ -498,8 +498,8 @@ export function AddBacksTab({ companyId, periodId, onDirty }: AddBacksTabProps) 
 
               {/* Deduction confirmation dialog */}
               {pendingDeductionConfirm && (
-                <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-md">
-                  <p className="text-sm text-amber-800">
+                <div className="mt-3 p-3 bg-orange-light border border-orange/20 rounded-md">
+                  <p className="text-sm text-orange-dark">
                     <strong>Note:</strong> This item is typically a deduction (reduces adjusted EBITDA).
                     A positive amount will be subtracted. Is this correct?
                   </p>
@@ -512,7 +512,7 @@ export function AddBacksTab({ companyId, periodId, onDirty }: AddBacksTabProps) 
               )}
 
               {selectedQuickAddCount > 0 && (
-                <div className="flex justify-end mt-3 pt-3 border-t border-gray-200">
+                <div className="flex justify-end mt-3 pt-3 border-t border-border">
                   <Button onClick={handleAddQuickItems} size="sm">
                     <Plus className="h-4 w-4 mr-1" />
                     Add {selectedQuickAddCount} Item{selectedQuickAddCount > 1 ? 's' : ''}
@@ -527,16 +527,16 @@ export function AddBacksTab({ companyId, periodId, onDirty }: AddBacksTabProps) 
       {/* Add-Backs Section */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-600">
+          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-green-light text-green-dark">
             <PlusCircle className="h-4 w-4" />
           </div>
-          <h3 className="font-semibold text-gray-900">Add-Backs</h3>
-          <span className="text-sm text-gray-500">({addBacks.length} items)</span>
+          <h3 className="font-semibold text-foreground">Add-Backs</h3>
+          <span className="text-sm text-muted-foreground">({addBacks.length} items)</span>
         </div>
 
         <div className="ml-11 space-y-2">
           {addBacks.length === 0 ? (
-            <p className="text-sm text-gray-500 italic py-4">No add-backs yet. Add one above.</p>
+            <p className="text-sm text-muted-foreground italic py-4">No add-backs yet. Add one above.</p>
           ) : (
             addBacks.map((adj) => (
               <AdjustmentRow
@@ -550,10 +550,10 @@ export function AddBacksTab({ companyId, periodId, onDirty }: AddBacksTabProps) 
               />
             ))
           )}
-          <div className="flex justify-between items-center px-4 py-3 bg-emerald-50 rounded-lg">
-            <span className="font-medium text-emerald-700">Total Add-Backs</span>
+          <div className="flex justify-between items-center px-4 py-3 bg-green-light rounded-lg">
+            <span className="font-medium text-green-dark">Total Add-Backs</span>
             <div className="flex items-center gap-3">
-              <span className="font-bold text-lg text-emerald-700 text-right min-w-[100px]">{formatCurrency(totalAddBacks)}</span>
+              <span className="font-bold text-lg text-green-dark text-right min-w-[100px]">{formatCurrency(totalAddBacks)}</span>
               <div className="w-[28px]" /> {/* Spacer to align with trash icon */}
             </div>
           </div>
@@ -563,16 +563,16 @@ export function AddBacksTab({ companyId, periodId, onDirty }: AddBacksTabProps) 
       {/* Deductions Section */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-600">
+          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-red-light text-red-dark">
             <MinusCircle className="h-4 w-4" />
           </div>
-          <h3 className="font-semibold text-gray-900">Deductions</h3>
-          <span className="text-sm text-gray-500">({deductions.length} items)</span>
+          <h3 className="font-semibold text-foreground">Deductions</h3>
+          <span className="text-sm text-muted-foreground">({deductions.length} items)</span>
         </div>
 
         <div className="ml-11 space-y-2">
           {deductions.length === 0 ? (
-            <p className="text-sm text-gray-500 italic py-4">No deductions yet. Add one above.</p>
+            <p className="text-sm text-muted-foreground italic py-4">No deductions yet. Add one above.</p>
           ) : (
             deductions.map((adj) => (
               <AdjustmentRow
@@ -586,10 +586,10 @@ export function AddBacksTab({ companyId, periodId, onDirty }: AddBacksTabProps) 
               />
             ))
           )}
-          <div className="flex justify-between items-center px-4 py-3 bg-red-50 rounded-lg">
-            <span className="font-medium text-red-700">Total Deductions</span>
+          <div className="flex justify-between items-center px-4 py-3 bg-red-light rounded-lg">
+            <span className="font-medium text-red-dark">Total Deductions</span>
             <div className="flex items-center gap-3">
-              <span className="font-bold text-lg text-red-700 text-right min-w-[100px]">({formatCurrency(totalDeductions)})</span>
+              <span className="font-bold text-lg text-red-dark text-right min-w-[100px]">({formatCurrency(totalDeductions)})</span>
               <div className="w-[28px]" /> {/* Spacer to align with trash icon */}
             </div>
           </div>
@@ -599,17 +599,17 @@ export function AddBacksTab({ companyId, periodId, onDirty }: AddBacksTabProps) 
       {/* Summary */}
       <div className="ml-11">
         <div className={`flex justify-between items-center px-4 py-4 rounded-lg border-2 ${
-          netAdjustment >= 0 ? 'bg-blue-50 border-blue-200' : 'bg-orange-50 border-orange-200'
+          netAdjustment >= 0 ? 'bg-accent-light border-primary/20' : 'bg-orange-light border-orange/20'
         }`}>
           <div>
-            <span className={`font-semibold ${netAdjustment >= 0 ? 'text-blue-700' : 'text-orange-700'}`}>
+            <span className={`font-semibold ${netAdjustment >= 0 ? 'text-primary' : 'text-orange-dark'}`}>
               Net Adjustment
             </span>
-            <p className="text-sm text-gray-600 mt-0.5">
+            <p className="text-sm text-muted-foreground mt-0.5">
               Added to EBITDA for Adjusted EBITDA
             </p>
           </div>
-          <span className={`font-bold text-2xl ${netAdjustment >= 0 ? 'text-blue-700' : 'text-orange-700'}`}>
+          <span className={`font-bold text-2xl ${netAdjustment >= 0 ? 'text-primary' : 'text-orange-dark'}`}>
             {netAdjustment >= 0 ? '+' : ''}{formatCurrency(netAdjustment)}
           </span>
         </div>
@@ -656,7 +656,7 @@ function AdjustmentRow({
 
   if (isEditing) {
     return (
-      <div className="p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
+      <div className="p-3 bg-white border border-border rounded-lg shadow-sm">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <Input
             value={description}
@@ -666,7 +666,7 @@ function AdjustmentRow({
           />
           <div className="flex gap-2">
             <div className="relative flex-1">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
               <Input
                 type="text"
                 inputMode="numeric"
@@ -696,25 +696,25 @@ function AdjustmentRow({
 
   return (
     <div
-      className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors cursor-pointer group"
+      className="flex items-center justify-between p-3 bg-white border border-border rounded-lg hover:border-border transition-colors cursor-pointer group"
       onClick={() => setIsEditing(true)}
     >
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-gray-900 truncate">{adjustment.description}</p>
+        <p className="font-medium text-foreground truncate">{adjustment.description}</p>
         {adjustment.frequency === 'MONTHLY' && (
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted-foreground">
             {formatCurrency(adjustment.amount)}/month
           </p>
         )}
       </div>
       <div className="flex items-center gap-3">
-        <span className="font-semibold text-gray-900 text-right min-w-[100px]">{formatCurrency(annualizedAmount)}</span>
+        <span className="font-semibold text-foreground text-right min-w-[100px]">{formatCurrency(annualizedAmount)}</span>
         <button
           onClick={(e) => {
             e.stopPropagation()
             onDelete(adjustment.id)
           }}
-          className="p-1.5 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="p-1.5 text-muted-foreground hover:text-red opacity-0 group-hover:opacity-100 transition-opacity"
         >
           <Trash2 className="h-4 w-4" />
         </button>

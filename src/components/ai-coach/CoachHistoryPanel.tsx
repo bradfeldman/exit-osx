@@ -112,7 +112,7 @@ export function CoachHistoryPanel({
                         autoFocus
                         onClick={(e) => e.stopPropagation()}
                       />
-                      <button onClick={(e) => { e.stopPropagation(); confirmRename() }} className="p-0.5 text-green-600 hover:text-green-700">
+                      <button onClick={(e) => { e.stopPropagation(); confirmRename() }} className="p-0.5 text-green-dark hover:text-green-dark">
                         <Check className="h-3.5 w-3.5" />
                       </button>
                       <button onClick={(e) => { e.stopPropagation(); setEditingId(null) }} className="p-0.5 text-muted-foreground hover:text-foreground">
@@ -139,7 +139,7 @@ export function CoachHistoryPanel({
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); onDeleteConversation(c.id) }}
-                          className="p-1 text-muted-foreground hover:text-red-600 transition-colors"
+                          className="p-1 text-muted-foreground hover:text-red-dark transition-colors"
                           title="Delete"
                         >
                           <Trash2 className="h-3 w-3" />

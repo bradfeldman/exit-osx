@@ -14,10 +14,10 @@ export function AllCompletedState({ completedCount, valueRecovered }: AllComplet
   const router = useRouter()
 
   return (
-    <div className="rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50/50 to-teal-50/50 p-6 text-center">
+    <div className="rounded-xl border border-green/20 bg-gradient-to-br from-green-light/50 to-teal-light/50 p-6 text-center">
       <div className="flex justify-center mb-3">
-        <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center">
-          <Trophy className="h-6 w-6 text-emerald-600" />
+        <div className="h-12 w-12 rounded-full bg-green-light flex items-center justify-center">
+          <Trophy className="h-6 w-6 text-green-dark" />
         </div>
       </div>
       <h3 className="text-lg font-semibold text-foreground">

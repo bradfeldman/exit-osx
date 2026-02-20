@@ -204,7 +204,7 @@ export function AddDocumentDialog({
           ) : (
             <div className="border border-border rounded-lg p-3">
               <div className="flex items-center gap-3">
-                <FileCheck className="h-6 w-6 text-emerald-600 shrink-0" />
+                <FileCheck className="h-6 w-6 text-green-dark shrink-0" />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-foreground truncate">{selectedFile.name}</p>
                   <p className="text-xs text-muted-foreground">{formatFileSize(selectedFile.size)}</p>
@@ -237,7 +237,7 @@ export function AddDocumentDialog({
 
         {/* Success */}
         {status === 'success' && (
-          <p className="text-sm text-emerald-600 mb-3 font-medium">Saved successfully!</p>
+          <p className="text-sm text-green-dark mb-3 font-medium">Saved successfully!</p>
         )}
 
         {/* Actions */}

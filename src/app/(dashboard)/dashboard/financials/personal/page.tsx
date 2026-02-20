@@ -868,7 +868,7 @@ export default function PersonalFinancialStatementPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => removePersonalAsset(asset.id)}
-                        className="h-9 w-9 p-0 text-muted-foreground hover:text-red-500"
+                        className="h-9 w-9 p-0 text-muted-foreground hover:text-red"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -979,7 +979,7 @@ export default function PersonalFinancialStatementPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => removePersonalLiability(liability.id)}
-                        className="h-9 w-9 p-0 text-muted-foreground hover:text-red-500"
+                        className="h-9 w-9 p-0 text-muted-foreground hover:text-red"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

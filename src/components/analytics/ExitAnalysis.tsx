@@ -32,23 +32,23 @@ interface ExitAnalysisProps {
 const EXIT_STYLES: Record<string, { icon: React.ReactNode; color: string }> = {
   PASSED: {
     icon: <XCircle className="h-4 w-4" />,
-    color: 'text-gray-600 bg-gray-100',
+    color: 'text-muted-foreground bg-muted',
   },
   WITHDRAWN: {
     icon: <LogOut className="h-4 w-4" />,
-    color: 'text-orange-600 bg-orange-100',
+    color: 'text-orange-dark bg-orange-light',
   },
   TERMINATED: {
     icon: <Ban className="h-4 w-4" />,
-    color: 'text-red-600 bg-red-100',
+    color: 'text-red-dark bg-red-light',
   },
   DECLINED: {
     icon: <AlertTriangle className="h-4 w-4" />,
-    color: 'text-amber-600 bg-amber-100',
+    color: 'text-orange-dark bg-orange-light',
   },
   IOI_DECLINED: {
     icon: <DollarSign className="h-4 w-4" />,
-    color: 'text-purple-600 bg-purple-100',
+    color: 'text-purple-dark bg-purple-light',
   },
 }
 

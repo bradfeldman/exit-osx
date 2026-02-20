@@ -21,22 +21,22 @@ interface CadencePromptBannerProps {
 
 const URGENCY_STYLES: Record<string, { border: string; bg: string; icon: string; text: string }> = {
   high: {
-    border: 'border-amber-300',
-    bg: 'bg-gradient-to-br from-amber-50/80 to-orange-50/50',
-    icon: 'bg-amber-100 text-amber-600',
-    text: 'text-amber-800',
+    border: 'border-orange/30',
+    bg: 'bg-gradient-to-br from-orange-light/80 to-orange-light/50',
+    icon: 'bg-orange-light text-orange-dark',
+    text: 'text-orange-dark',
   },
   medium: {
-    border: 'border-blue-200',
-    bg: 'bg-gradient-to-br from-blue-50/50 to-indigo-50/30',
-    icon: 'bg-blue-100 text-blue-600',
-    text: 'text-blue-800',
+    border: 'border-primary/20',
+    bg: 'bg-gradient-to-br from-primary/5 to-primary/3',
+    icon: 'bg-primary/10 text-primary',
+    text: 'text-primary',
   },
   low: {
-    border: 'border-gray-200',
-    bg: 'bg-gradient-to-br from-gray-50/50 to-slate-50/30',
-    icon: 'bg-gray-100 text-gray-600',
-    text: 'text-gray-700',
+    border: 'border-border',
+    bg: 'bg-gradient-to-br from-muted/50 to-muted/30',
+    icon: 'bg-muted text-muted-foreground',
+    text: 'text-foreground',
   },
 }
 

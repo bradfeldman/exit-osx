@@ -107,10 +107,10 @@ interface PersonPreviewCardProps {
 function PersonPreviewCard({ person, onChange, editable }: PersonPreviewCardProps) {
   const confidenceColor =
     person.confidence >= 0.8
-      ? 'bg-green-100 text-green-700'
+      ? 'bg-green-light text-green-dark'
       : person.confidence >= 0.5
-        ? 'bg-amber-100 text-amber-700'
-        : 'bg-red-100 text-red-700'
+        ? 'bg-orange-light text-orange-dark'
+        : 'bg-red-light text-red-dark'
 
   const handleChange = (field: keyof ParsedPerson, value: string) => {
     if (onChange) {
@@ -120,10 +120,10 @@ function PersonPreviewCard({ person, onChange, editable }: PersonPreviewCardProp
 
   return (
     <Card className="overflow-hidden">
-      <CardHeader className="py-3 px-4 bg-blue-50/50 dark:bg-blue-950/20 border-b">
+      <CardHeader className="py-3 px-4 bg-accent-light/50 dark:bg-primary/20 border-b">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
-            <User className="h-4 w-4 text-blue-600" />
+            <User className="h-4 w-4 text-primary" />
             {person.fullName || 'Unknown Person'}
           </CardTitle>
           <Badge className={cn('text-[10px]', confidenceColor)}>
@@ -238,7 +238,7 @@ function PersonPreviewCard({ person, onChange, editable }: PersonPreviewCardProp
                 href={person.linkedInUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-blue-600 hover:underline truncate block"
+                className="text-sm text-primary hover:underline truncate block"
               >
                 {person.linkedInUrl}
               </a>
@@ -259,10 +259,10 @@ interface CompanyPreviewCardProps {
 function CompanyPreviewCard({ company, onChange, editable }: CompanyPreviewCardProps) {
   const confidenceColor =
     company.confidence >= 0.8
-      ? 'bg-green-100 text-green-700'
+      ? 'bg-green-light text-green-dark'
       : company.confidence >= 0.5
-        ? 'bg-amber-100 text-amber-700'
-        : 'bg-red-100 text-red-700'
+        ? 'bg-orange-light text-orange-dark'
+        : 'bg-red-light text-red-dark'
 
   const sourceLabel = {
     domain: 'From domain',
@@ -279,10 +279,10 @@ function CompanyPreviewCard({ company, onChange, editable }: CompanyPreviewCardP
 
   return (
     <Card className="overflow-hidden">
-      <CardHeader className="py-3 px-4 bg-purple-50/50 dark:bg-purple-950/20 border-b">
+      <CardHeader className="py-3 px-4 bg-purple-light/50 dark:bg-purple-dark/20 border-b">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
-            <Building2 className="h-4 w-4 text-purple-600" />
+            <Building2 className="h-4 w-4 text-purple-dark" />
             {company.name}
           </CardTitle>
           <div className="flex items-center gap-2">
@@ -344,7 +344,7 @@ function CompanyPreviewCard({ company, onChange, editable }: CompanyPreviewCardP
                   href={company.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-blue-600 hover:underline"
+                  className="text-sm text-primary hover:underline"
                 >
                   {company.website}
                 </a>
@@ -364,7 +364,7 @@ function CompanyPreviewCard({ company, onChange, editable }: CompanyPreviewCardP
                 href={company.linkedInUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-blue-600 hover:underline truncate block"
+                className="text-sm text-primary hover:underline truncate block"
               >
                 {company.linkedInUrl}
               </a>

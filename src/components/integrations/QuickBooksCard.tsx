@@ -281,7 +281,7 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
     return (
       <Card>
         <CardContent className="py-6">
-          <div className="flex items-center justify-center gap-2 text-gray-500">
+          <div className="flex items-center justify-center gap-2 text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
             <span>Loading QuickBooks status...</span>
           </div>
@@ -296,7 +296,7 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
         <CardContent className="py-6">
           <div className="flex items-center gap-4">
             <div className="flex-shrink-0">
-              <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
                 <svg viewBox="0 0 40 40" className="w-8 h-8">
                   <circle cx="20" cy="20" r="18" fill="#2CA01C" />
                   <path
@@ -310,8 +310,8 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
               </div>
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-gray-900">QuickBooks Online</h3>
-              <p className="text-sm text-gray-500">
+              <h3 className="font-semibold text-foreground">QuickBooks Online</h3>
+              <p className="text-sm text-muted-foreground">
                 QuickBooks integration is not configured. Contact your administrator.
               </p>
             </div>
@@ -328,7 +328,7 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
           {/* Header */}
           <div className="flex items-center gap-4">
             <div className="flex-shrink-0">
-              <div className="w-12 h-12 rounded-lg bg-green-50 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-lg bg-green-light flex items-center justify-center">
                 <svg viewBox="0 0 40 40" className="w-8 h-8">
                   <circle cx="20" cy="20" r="18" fill="#2CA01C" />
                   <path
@@ -342,16 +342,16 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
               </div>
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-gray-900">QuickBooks Online</h3>
+              <h3 className="font-semibold text-foreground">QuickBooks Online</h3>
               {connected && integration ? (
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                  <span className="text-sm text-green-600">
+                  <CheckCircle className="h-4 w-4 text-green" />
+                  <span className="text-sm text-green-dark">
                     Connected{integration.providerCompanyName ? ` to ${integration.providerCompanyName}` : ''}
                   </span>
                 </div>
               ) : (
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Import P&L and Balance Sheet data automatically
                 </p>
               )}
@@ -373,35 +373,35 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
             <>
               {/* Status Line */}
               <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2 text-gray-600">
+                <div className="flex items-center gap-2 text-muted-foreground">
                   {isSyncing ? (
-                    <span className="flex items-center gap-2 text-blue-600">
+                    <span className="flex items-center gap-2 text-primary">
                       <Loader2 className="h-4 w-4 animate-spin" />
                       Syncing financial data...
                     </span>
                   ) : integration.lastSyncStatus === 'FAILED' || integration.lastSyncError ? (
-                    <span className="flex items-center gap-2 text-red-600">
+                    <span className="flex items-center gap-2 text-red-dark">
                       <XCircle className="h-4 w-4" />
                       Sync failed
                       {integration.lastSyncAt && (
-                        <span className="text-gray-400 font-normal"> &middot; Last synced {formatRelativeTime(integration.lastSyncAt)}</span>
+                        <span className="text-muted-foreground font-normal"> &middot; Last synced {formatRelativeTime(integration.lastSyncAt)}</span>
                       )}
                     </span>
                   ) : integration.lastSyncAt ? (
                     isDataStale(integration.lastSyncAt) ? (
-                      <span className="flex items-center gap-2 text-amber-600">
+                      <span className="flex items-center gap-2 text-orange-dark">
                         <AlertCircle className="h-4 w-4" />
                         Last synced {formatRelativeTime(integration.lastSyncAt)} &middot; Data may be outdated
                       </span>
                     ) : (
-                      <span className="flex items-center gap-2 text-green-600">
+                      <span className="flex items-center gap-2 text-green-dark">
                         <CheckCircle className="h-4 w-4" />
                         Synced {formatRelativeTime(integration.lastSyncAt)}
                       </span>
                     )
                   ) : (
                     <span className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-gray-400" />
+                      <Clock className="h-4 w-4 text-muted-foreground" />
                       Ready to sync
                     </span>
                   )}
@@ -413,7 +413,7 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
                       size="sm"
                       onClick={handleCancelSync}
                       disabled={isCancelling}
-                      className="text-gray-500 hover:text-red-600"
+                      className="text-muted-foreground hover:text-red-dark"
                     >
                       {isCancelling ? (
                         <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
@@ -427,7 +427,7 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
                       variant="ghost"
                       size="sm"
                       onClick={handleSync}
-                      className="text-gray-600 hover:text-gray-900"
+                      className="text-muted-foreground hover:text-foreground"
                     >
                       <RefreshCw className="h-4 w-4 mr-1.5" />
                       {integration.lastSyncStatus === 'FAILED' ? 'Retry Sync' : 'Sync Now'}
@@ -437,7 +437,7 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
                     variant="ghost"
                     size="sm"
                     onClick={() => setIsExpanded(!isExpanded)}
-                    className="text-gray-500 hover:text-gray-700"
+                    className="text-muted-foreground hover:text-foreground"
                   >
                     {isExpanded ? (
                       <ChevronUp className="h-4 w-4" />
@@ -450,15 +450,15 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
 
               {/* Expanded Details */}
               {isExpanded && (
-                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                <div className="bg-secondary rounded-lg p-4 space-y-3">
                   {integration.lastSyncError && (
-                    <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded">
+                    <p className="text-sm text-red-dark bg-red-light px-3 py-2 rounded">
                       {integration.lastSyncError}
                     </p>
                   )}
 
                   {isSyncing && (
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-muted-foreground">
                       Fetching P&L and Balance Sheet reports for the last 6 years. You can leave this page — sync continues in the background.
                     </div>
                   )}
@@ -479,7 +479,7 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
                         size="sm"
                         onClick={handleDisconnect}
                         disabled={isDisconnecting}
-                        className="text-gray-500 hover:text-red-600"
+                        className="text-muted-foreground hover:text-red-dark"
                       >
                         {isDisconnecting ? (
                           <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -497,14 +497,14 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
 
           {/* Messages */}
           {error && (
-            <div className="flex items-start gap-2 text-sm text-red-600 bg-red-50 px-4 py-3 rounded-lg">
+            <div className="flex items-start gap-2 text-sm text-red-dark bg-red-light px-4 py-3 rounded-lg">
               <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           {successMessage && (
-            <div className="flex items-start gap-2 text-sm text-green-600 bg-green-50 px-4 py-3 rounded-lg">
+            <div className="flex items-start gap-2 text-sm text-green-dark bg-green-light px-4 py-3 rounded-lg">
               <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
               <span>{successMessage}</span>
             </div>

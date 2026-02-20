@@ -48,7 +48,7 @@ export function ReadinessHeader({
 
   const ringColor = percentage >= 70 ? '#10B981' : 'var(--burnt-orange)'
   const statusLabel = percentage === 100 ? 'complete' : 'buyer-ready'
-  const statusColor = percentage === 100 ? 'text-emerald-600' : 'text-muted-foreground'
+  const statusColor = percentage === 100 ? 'text-green-dark' : 'text-muted-foreground'
 
   // Format last upload date
   const formatLastUpload = (date: string | null) => {
@@ -131,7 +131,7 @@ export function ReadinessHeader({
           {/* Category progress bars */}
           <div className="space-y-2.5">
             {categories.map((category, index) => {
-              const barColor = category.percentage >= 70 ? 'bg-emerald-600' : 'bg-[var(--burnt-orange)]'
+              const barColor = category.percentage >= 70 ? 'bg-green-dark' : 'bg-[var(--burnt-orange)]'
               return (
                 <div key={category.id} className="flex items-center gap-2">
                   {/* Category label */}
@@ -171,15 +171,15 @@ export function ReadinessHeader({
               </span>
             ) : staleCount === 0 ? (
               <>
-                <CheckCircle className="w-4 h-4 text-emerald-600" />
-                <span className="text-sm font-medium text-emerald-600">
+                <CheckCircle className="w-4 h-4 text-green-dark" />
+                <span className="text-sm font-medium text-green-dark">
                   All documents current
                 </span>
               </>
             ) : (
               <>
-                <Clock className="w-4 h-4 text-amber-600" />
-                <span className="text-sm font-medium text-amber-600">
+                <Clock className="w-4 h-4 text-orange-dark" />
+                <span className="text-sm font-medium text-orange-dark">
                   {staleCount} need{staleCount === 1 ? 's' : ''} refresh
                 </span>
               </>

@@ -3,9 +3,9 @@
 import { cn } from '@/lib/utils'
 
 const TIER_STYLES: Record<string, string> = {
-  A_TIER: 'text-emerald-600 dark:text-emerald-400',
-  B_TIER: 'text-blue-600 dark:text-blue-400',
-  C_TIER: 'text-amber-600 dark:text-amber-400',
+  A_TIER: 'text-green-dark dark:text-green',
+  B_TIER: 'text-primary dark:text-primary',
+  C_TIER: 'text-orange-dark dark:text-orange',
   D_TIER: 'text-muted-foreground',
 }
 

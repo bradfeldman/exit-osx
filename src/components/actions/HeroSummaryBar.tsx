@@ -68,7 +68,7 @@ export function HeroSummaryBar({
               <span key={i}>
                 {i > 0 && ' · '}
                 {seg.includes('deferred') ? (
-                  <span className="text-amber-600 cursor-pointer">{seg}</span>
+                  <span className="text-orange-dark cursor-pointer">{seg}</span>
                 ) : (
                   seg
                 )}
@@ -91,7 +91,7 @@ export function HeroSummaryBar({
                 </span>
               </p>
               {paceMessage && (
-                <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                <p className="text-xs text-green-dark dark:text-green font-medium">
                   {paceMessage}
                 </p>
               )}

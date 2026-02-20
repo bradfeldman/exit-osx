@@ -408,7 +408,7 @@ export function CategoryAssessmentFlow({
                 {currentQuestion.questionText}
               </h3>
               {currentQuestion.companyId && (
-                <Sparkles className="w-3.5 h-3.5 text-violet-500/70 dark:text-violet-400/70 mt-1 shrink-0" />
+                <Sparkles className="w-3.5 h-3.5 text-purple/70 dark:text-purple/70 mt-1 shrink-0" />
               )}
             </div>
             {currentQuestion.helpText && (
@@ -470,7 +470,7 @@ export function CategoryAssessmentFlow({
               {/* Skip options: "I don't know" and "Doesn't apply" (BF-005) */}
               <div className="flex items-center justify-center gap-4 pt-1">
                 {isCurrentDontKnow ? (
-                  <span className="flex items-center gap-1.5 text-xs text-amber-600">
+                  <span className="flex items-center gap-1.5 text-xs text-orange-dark">
                     <HelpCircle className="w-3 h-3" />
                     Marked as &quot;I don&apos;t know&quot;
                   </span>
@@ -490,7 +490,7 @@ export function CategoryAssessmentFlow({
                 )}
 
                 {isCurrentNotApplicable ? (
-                  <span className="flex items-center gap-1.5 text-xs text-slate-500">
+                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <MinusCircle className="w-3 h-3" />
                     Not applicable
                   </span>
@@ -518,7 +518,7 @@ export function CategoryAssessmentFlow({
                 </button>
               )}
               {isCurrentUncertain && (
-                <div className="flex items-center justify-center gap-1.5 py-2 text-xs text-amber-600">
+                <div className="flex items-center justify-center gap-1.5 py-2 text-xs text-orange-dark">
                   <HelpCircle className="w-3 h-3" />
                   Flagged as uncertain
                 </div>

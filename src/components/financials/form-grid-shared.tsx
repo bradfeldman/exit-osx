@@ -52,13 +52,13 @@ export function GridInput({
 }) {
   return (
     <div className="relative">
-      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
       <Input
         type="text"
         inputMode="numeric"
         value={formatInputValue(value)}
         onChange={(e) => onChange(periodId, field, parseInputValue(e.target.value))}
-        className="pl-7 h-9 text-sm font-medium bg-gray-50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-right"
+        className="pl-7 h-9 text-sm font-medium bg-secondary border-border focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-right"
         placeholder="0"
       />
     </div>
@@ -84,8 +84,8 @@ export function CalcCell({
       colorClass
         ? colorClass
         : highlight
-          ? 'bg-blue-50 text-blue-700'
-          : 'bg-gray-50 text-gray-700'
+          ? 'bg-accent-light text-primary'
+          : 'bg-secondary text-foreground'
     )}>
       {formatted}
     </div>
@@ -109,7 +109,7 @@ export function SectionHeader({
       <div className={cn('flex items-center justify-center w-6 h-6 rounded-full', bgColor, textColor)}>
         <Icon className="h-3 w-3" />
       </div>
-      <span className="text-sm font-semibold text-gray-900">{label}</span>
+      <span className="text-sm font-semibold text-foreground">{label}</span>
     </div>
   )
 }
@@ -130,7 +130,7 @@ export function FormRow({
       style={{ gridTemplateColumns: `200px repeat(${periods.length}, 1fr)` }}
     >
       <div className="flex items-center pl-8">
-        <span className="text-sm text-gray-600">{label}</span>
+        <span className="text-sm text-muted-foreground">{label}</span>
       </div>
       {periods.map((period) => (
         <div key={period.id}>{children(period)}</div>

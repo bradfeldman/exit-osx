@@ -115,11 +115,11 @@ export function AddBuyerForm({ onAdd, isAdding }: AddBuyerFormProps) {
           placeholder="Company name..."
           value={companyName}
           onChange={e => { setCompanyName(e.target.value); setErrors(prev => ({ ...prev, companyName: '' })) }}
-          className={`w-full text-sm bg-transparent border-b pb-1 focus:outline-none text-foreground placeholder:text-muted-foreground ${errors.companyName ? 'border-rose-500' : 'border-border/50 focus:border-[var(--burnt-orange)]'}`}
+          className={`w-full text-sm bg-transparent border-b pb-1 focus:outline-none text-foreground placeholder:text-muted-foreground ${errors.companyName ? 'border-red' : 'border-border/50 focus:border-[var(--burnt-orange)]'}`}
           autoFocus
           required
         />
-        {errors.companyName && <p className="text-xs text-rose-500 mt-0.5">{errors.companyName}</p>}
+        {errors.companyName && <p className="text-xs text-red mt-0.5">{errors.companyName}</p>}
       </div>
 
       <div>
@@ -191,10 +191,10 @@ export function AddBuyerForm({ onAdd, isAdding }: AddBuyerFormProps) {
             placeholder="Contact name"
             value={contactName}
             onChange={e => { setContactName(e.target.value); setErrors(prev => ({ ...prev, contactName: '' })) }}
-            className={`w-full text-sm bg-transparent border-b pb-1 focus:outline-none text-foreground placeholder:text-muted-foreground ${errors.contactName ? 'border-rose-500' : 'border-border/50 focus:border-[var(--burnt-orange)]'}`}
+            className={`w-full text-sm bg-transparent border-b pb-1 focus:outline-none text-foreground placeholder:text-muted-foreground ${errors.contactName ? 'border-red' : 'border-border/50 focus:border-[var(--burnt-orange)]'}`}
             required
           />
-          {errors.contactName && <p className="text-xs text-rose-500 mt-0.5">{errors.contactName}</p>}
+          {errors.contactName && <p className="text-xs text-red mt-0.5">{errors.contactName}</p>}
         </div>
         <div className="flex-1">
           <input
@@ -202,10 +202,10 @@ export function AddBuyerForm({ onAdd, isAdding }: AddBuyerFormProps) {
             placeholder="Email"
             value={contactEmail}
             onChange={e => { setContactEmail(e.target.value); setErrors(prev => ({ ...prev, contactEmail: '' })) }}
-            className={`w-full text-sm bg-transparent border-b pb-1 focus:outline-none text-foreground placeholder:text-muted-foreground ${errors.contactEmail ? 'border-rose-500' : 'border-border/50 focus:border-[var(--burnt-orange)]'}`}
+            className={`w-full text-sm bg-transparent border-b pb-1 focus:outline-none text-foreground placeholder:text-muted-foreground ${errors.contactEmail ? 'border-red' : 'border-border/50 focus:border-[var(--burnt-orange)]'}`}
             required
           />
-          {errors.contactEmail && <p className="text-xs text-rose-500 mt-0.5">{errors.contactEmail}</p>}
+          {errors.contactEmail && <p className="text-xs text-red mt-0.5">{errors.contactEmail}</p>}
         </div>
       </div>
 

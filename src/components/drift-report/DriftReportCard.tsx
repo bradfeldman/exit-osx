@@ -38,11 +38,11 @@ export function DriftReportCard({ report, compact = false }: DriftReportCardProp
           <CardContent className="py-3 px-4">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
-                <div className={`flex h-8 w-8 items-center justify-center rounded-full ${isPositive ? 'bg-green-100' : 'bg-red-100'}`}>
+                <div className={`flex h-8 w-8 items-center justify-center rounded-full ${isPositive ? 'bg-green-light' : 'bg-red-light'}`}>
                   {isPositive ? (
-                    <TrendingUp className="h-4 w-4 text-green-600" />
+                    <TrendingUp className="h-4 w-4 text-green-dark" />
                   ) : (
-                    <TrendingDown className="h-4 w-4 text-red-600" />
+                    <TrendingDown className="h-4 w-4 text-red-dark" />
                   )}
                 </div>
                 <div className="min-w-0">
@@ -80,7 +80,7 @@ export function DriftReportCard({ report, compact = false }: DriftReportCardProp
               <p className="text-xs text-muted-foreground">Buyer Readiness</p>
               <div className="flex items-center gap-1.5 mt-1">
                 <span className="text-lg font-bold">{Math.round(report.briScoreEnd * 100)}</span>
-                <span className={`flex items-center text-xs font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                <span className={`flex items-center text-xs font-medium ${isPositive ? 'text-green-dark' : 'text-red-dark'}`}>
                   {isPositive ? <TrendingUp className="h-3 w-3 mr-0.5" /> : <TrendingDown className="h-3 w-3 mr-0.5" />}
                   {isPositive ? '+' : ''}{briChangePoints}
                 </span>
@@ -90,7 +90,7 @@ export function DriftReportCard({ report, compact = false }: DriftReportCardProp
               <p className="text-xs text-muted-foreground">Valuation</p>
               <div className="flex items-center gap-1.5 mt-1">
                 <span className="text-lg font-bold">{formatCurrency(report.valuationEnd)}</span>
-                <span className={`flex items-center text-xs font-medium ${valuationChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <span className={`flex items-center text-xs font-medium ${valuationChange >= 0 ? 'text-green-dark' : 'text-red-dark'}`}>
                   {valuationChange >= 0 ? <TrendingUp className="h-3 w-3 mr-0.5" /> : <TrendingDown className="h-3 w-3 mr-0.5" />}
                   {formatCurrency(Math.abs(valuationChange))}
                 </span>

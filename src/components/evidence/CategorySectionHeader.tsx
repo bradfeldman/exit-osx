@@ -30,9 +30,9 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
 }
 
 const BUYER_IMPACT_STYLES = {
-  critical: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
-  important: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-  moderate: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400',
+  critical: 'bg-red-light text-red-dark dark:bg-red-dark/30 dark:text-red',
+  important: 'bg-orange-light text-orange-dark dark:bg-orange-dark/30 dark:text-orange',
+  moderate: 'bg-accent-light text-primary dark:bg-primary/30 dark:text-primary',
 }
 
 const BUYER_IMPACT_LABELS = {
@@ -76,7 +76,7 @@ export function CategorySectionHeader({
 
   // Color logic: burnt-orange < 70%, emerald >= 70%
   const progressColor = percentage >= 70
-    ? 'stroke-emerald-500'
+    ? 'stroke-green'
     : 'stroke-primary'
 
   return (

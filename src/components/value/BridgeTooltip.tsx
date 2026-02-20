@@ -26,7 +26,7 @@ export function BridgeTooltip({ active, payload }: BridgeTooltipProps) {
       <div className="font-semibold text-foreground text-sm">
         {data.label}{isCoreStructure ? ` — Core Score: ${data.score}%` : `: ${data.score}/100`}
       </div>
-      <div className={`font-bold text-sm mt-1 ${data.dollarImpact === 0 ? 'text-emerald-600' : 'text-primary'}`}>
+      <div className={`font-bold text-sm mt-1 ${data.dollarImpact === 0 ? 'text-green-dark' : 'text-primary'}`}>
         {data.dollarImpact === 0 ? 'No discount — strong here' : `Costing you ~${formatCurrency(data.dollarImpact)}`}
       </div>
       {data.buyerExplanation && (

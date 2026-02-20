@@ -660,7 +660,7 @@ export function WorkspaceSettings() {
                           style={{ flexShrink: 0 }}
                         >
                           {inviteCopied ? (
-                            <Check className="h-4 w-4 text-green-600" />
+                            <Check className="h-4 w-4 text-green-dark" />
                           ) : (
                             <Copy className="h-4 w-4" />
                           )}

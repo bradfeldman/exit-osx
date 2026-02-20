@@ -61,7 +61,7 @@ export function FirstVisitDashboard({
               setShowWelcome(false)
               onDismissWelcome()
             }}
-            className="absolute top-4 right-4 p-1 rounded-md hover:bg-gray-100 transition-colors"
+            className="absolute top-4 right-4 p-1 rounded-md hover:bg-muted transition-colors"
             aria-label="Dismiss welcome message"
           >
             <X className="w-4 h-4" style={{ color: 'var(--text-tertiary, #8E8E93)' }} />

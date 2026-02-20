@@ -176,7 +176,7 @@ describe('Component Accessibility Tests', () => {
             aria-invalid="true"
             aria-describedby="error-message"
           />
-          <p id="error-message" role="alert" className="text-red-500">
+          <p id="error-message" role="alert" className="text-red">
             Please enter a valid email address
           </p>
         </div>

@@ -211,8 +211,8 @@ export function ActiveTaskCard({ task, onSubStepToggle, onSubStepUpdate, onSubSt
 
       {/* Stale nudge */}
       {showStaleNudge && (
-        <div className="mt-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30">
-          <p className="text-sm text-amber-700 dark:text-amber-400">
+        <div className="mt-3 p-3 rounded-lg bg-orange-light dark:bg-orange-dark/20 border border-orange/20 dark:border-orange-dark/30">
+          <p className="text-sm text-orange-dark dark:text-orange">
             Started {task.daysInProgress} days ago &mdash; still working on this?
           </p>
         </div>

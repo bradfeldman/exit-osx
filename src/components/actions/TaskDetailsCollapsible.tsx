@@ -74,7 +74,7 @@ export function TaskDetailsCollapsible({
               <ul className="space-y-1">
                 {successCriteria.outcomes.map((outcome, i) => (
                   <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                    <span className="text-emerald-500 mt-1">&#x2713;</span>
+                    <span className="text-green mt-1">&#x2713;</span>
                     {outcome}
                   </li>
                 ))}

@@ -134,7 +134,7 @@ export default function TaskInvitePage() {
         <div className={styles.taskErrorCard}>
           <div className={styles.taskErrorInner}>
             <div className={styles.iconCircleSmall}>
-              <svg style={{ width: 24, height: 24, color: '#dc2626' }} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <svg style={{ width: 24, height: 24, color: 'var(--red-dark)' }} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
               </svg>
             </div>

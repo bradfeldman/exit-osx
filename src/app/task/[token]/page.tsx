@@ -102,7 +102,7 @@ export default function SharedTaskPage({ params }: { params: Promise<{ token: st
     return (
       <div className={styles.centeredScreen}>
         <div className={styles.centeredInner}>
-          <AlertTriangle style={{ width: 48, height: 48, color: '#F59E0B', margin: '0 auto 16px' }} />
+          <AlertTriangle style={{ width: 48, height: 48, color: 'var(--orange)', margin: '0 auto 16px' }} />
           <h1 className={styles.stateTitle}>Link Invalid</h1>
           <p className={styles.stateMessage}>This task link is invalid or has expired.</p>
         </div>
@@ -115,7 +115,7 @@ export default function SharedTaskPage({ params }: { params: Promise<{ token: st
       <div className={styles.centeredScreen}>
         <div className={styles.centeredInner}>
           <div className={styles.successIcon}>
-            <CheckCircle2 style={{ width: 32, height: 32, color: '#16A34A' }} />
+            <CheckCircle2 style={{ width: 32, height: 32, color: 'var(--green-dark)' }} />
           </div>
           <h1 className={styles.stateTitle}>Task Complete</h1>
           <p className={styles.stateMessage}>

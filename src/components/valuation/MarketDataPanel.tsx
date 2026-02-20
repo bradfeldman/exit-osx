@@ -150,45 +150,45 @@ export function MarketDataPanel({
       {/* Market Data Panel */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium text-gray-900 flex items-center justify-between">
+          <CardTitle className="text-sm font-medium text-foreground flex items-center justify-between">
             <span>Market Data</span>
-            <span className="text-xs font-normal text-gray-500">FRED / Kroll / Pepperdine</span>
+            <span className="text-xs font-normal text-muted-foreground">FRED / Kroll / Pepperdine</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="space-y-3">
             {/* Risk-Free Rate */}
-            <div className="flex justify-between items-center py-1 border-b border-gray-100">
-              <span className="text-sm text-gray-600">Risk-Free Rate (10Y Treasury)</span>
-              <span className="text-sm font-medium text-gray-900">
+            <div className="flex justify-between items-center py-1 border-b border-border">
+              <span className="text-sm text-muted-foreground">Risk-Free Rate (10Y Treasury)</span>
+              <span className="text-sm font-medium text-foreground">
                 {formatPercent(MARKET_DATA.riskFreeRate)}
               </span>
             </div>
 
             {/* Market Risk Premium */}
-            <div className="flex justify-between items-center py-1 border-b border-gray-100">
-              <span className="text-sm text-gray-600">Equity Risk Premium</span>
-              <span className="text-sm font-medium text-gray-900">
+            <div className="flex justify-between items-center py-1 border-b border-border">
+              <span className="text-sm text-muted-foreground">Equity Risk Premium</span>
+              <span className="text-sm font-medium text-foreground">
                 {formatPercent(MARKET_DATA.marketRiskPremium)}
               </span>
             </div>
 
             {/* Size Risk Premium */}
             <div className="py-1">
-              <span className="text-sm text-gray-600 block mb-2">Size Risk Premium (by EBITDA)</span>
+              <span className="text-sm text-muted-foreground block mb-2">Size Risk Premium (by EBITDA)</span>
               <div className="space-y-1 pl-2">
                 {MARKET_DATA.sizeRiskPremiumByEbitda.map((tier) => (
                   <div key={tier.tier} className="flex justify-between text-xs">
-                    <span className="text-gray-500">{tier.tier}</span>
-                    <span className="font-medium text-gray-700">{formatPercent(tier.premium)}</span>
+                    <span className="text-muted-foreground">{tier.tier}</span>
+                    <span className="font-medium text-foreground">{formatPercent(tier.premium)}</span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          <div className="mt-3 pt-2 border-t border-gray-100">
-            <span className="text-xs text-gray-400">Source: wacc-defaults.ts — validated Feb 2026</span>
+          <div className="mt-3 pt-2 border-t border-border">
+            <span className="text-xs text-muted-foreground">Source: wacc-defaults.ts — validated Feb 2026</span>
           </div>
         </CardContent>
       </Card>
@@ -196,24 +196,24 @@ export function MarketDataPanel({
       {/* Industry Data Panel */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium text-gray-900 flex items-center justify-between">
+          <CardTitle className="text-sm font-medium text-foreground flex items-center justify-between">
             <span>Industry Benchmarks</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="space-y-3">
             {/* Industry Beta */}
-            <div className="flex justify-between items-center py-1 border-b border-gray-100">
-              <span className="text-sm text-gray-600">Industry Beta</span>
-              <span className="text-sm font-medium text-gray-900">
+            <div className="flex justify-between items-center py-1 border-b border-border">
+              <span className="text-sm text-muted-foreground">Industry Beta</span>
+              <span className="text-sm font-medium text-foreground">
                 {industryBetaLow.toFixed(2)} - {industryBetaHigh.toFixed(2)}
               </span>
             </div>
 
             {/* Industry Growth */}
-            <div className="flex justify-between items-center py-1 border-b border-gray-100">
-              <span className="text-sm text-gray-600">Typical Growth Rates</span>
-              <span className="text-sm font-medium text-gray-900">
+            <div className="flex justify-between items-center py-1 border-b border-border">
+              <span className="text-sm text-muted-foreground">Typical Growth Rates</span>
+              <span className="text-sm font-medium text-foreground">
                 {formatPercent(industryGrowthLow)} - {formatPercent(industryGrowthHigh)}
               </span>
             </div>
@@ -229,7 +229,7 @@ export function MarketDataPanel({
                       hasOverride && "bg-primary/5"
                     )}
                   >
-                    <span className="text-sm text-gray-600 flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground flex items-center gap-2">
                       EBITDA Multiples
                       <Settings2 className={cn(
                         "h-3.5 w-3.5 transition-all duration-150",
@@ -240,7 +240,7 @@ export function MarketDataPanel({
                     </span>
                     <span className={cn(
                       "text-sm font-medium flex items-center gap-2",
-                      hasOverride ? "text-primary" : "text-gray-900"
+                      hasOverride ? "text-primary" : "text-foreground"
                     )}>
                       {hasOverride && (
                         <span className="text-[10px] font-medium text-primary/70 uppercase tracking-wide">
@@ -283,7 +283,7 @@ export function MarketDataPanel({
 
                     {/* Validation feedback */}
                     {!isRangeValid && (
-                      <p className="text-xs text-red-500">
+                      <p className="text-xs text-red">
                         High must be greater than low
                       </p>
                     )}
@@ -330,16 +330,16 @@ export function MarketDataPanel({
               </Popover>
             ) : (
               <div className="flex justify-between items-center py-1">
-                <span className="text-sm text-gray-600">EBITDA Multiples</span>
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm text-muted-foreground">EBITDA Multiples</span>
+                <span className="text-sm font-medium text-foreground">
                   {displayLow.toFixed(1)}x - {displayHigh.toFixed(1)}x
                 </span>
               </div>
             )}
           </div>
 
-          <div className="mt-3 pt-2 border-t border-gray-100">
-            <span className="text-xs text-gray-400">
+          <div className="mt-3 pt-2 border-t border-border">
+            <span className="text-xs text-muted-foreground">
               Source: {hasOverride ? 'Custom' : industrySource}
             </span>
           </div>
@@ -350,33 +350,33 @@ export function MarketDataPanel({
       {workingCapital && (workingCapital.t12 != null || workingCapital.lastFY != null || workingCapital.threeYearAvg != null) && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-900">
+            <CardTitle className="text-sm font-medium text-foreground">
               Working Capital
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             <div className="space-y-2">
               {workingCapital.t12 != null && (
-                <div className="flex justify-between items-center py-1 border-b border-gray-100">
-                  <span className="text-sm text-gray-600">Trailing 12 Months</span>
-                  <span className="text-sm font-medium text-gray-900">{formatCurrency(workingCapital.t12)}</span>
+                <div className="flex justify-between items-center py-1 border-b border-border">
+                  <span className="text-sm text-muted-foreground">Trailing 12 Months</span>
+                  <span className="text-sm font-medium text-foreground">{formatCurrency(workingCapital.t12)}</span>
                 </div>
               )}
               {workingCapital.lastFY != null && (
-                <div className="flex justify-between items-center py-1 border-b border-gray-100">
-                  <span className="text-sm text-gray-600">Last Fiscal Year</span>
-                  <span className="text-sm font-medium text-gray-900">{formatCurrency(workingCapital.lastFY)}</span>
+                <div className="flex justify-between items-center py-1 border-b border-border">
+                  <span className="text-sm text-muted-foreground">Last Fiscal Year</span>
+                  <span className="text-sm font-medium text-foreground">{formatCurrency(workingCapital.lastFY)}</span>
                 </div>
               )}
               {workingCapital.threeYearAvg != null && (
                 <div className="flex justify-between items-center py-1">
-                  <span className="text-sm text-gray-600">3-Year Average</span>
-                  <span className="text-sm font-medium text-gray-900">{formatCurrency(workingCapital.threeYearAvg)}</span>
+                  <span className="text-sm text-muted-foreground">3-Year Average</span>
+                  <span className="text-sm font-medium text-foreground">{formatCurrency(workingCapital.threeYearAvg)}</span>
                 </div>
               )}
             </div>
-            <div className="mt-3 pt-2 border-t border-gray-100">
-              <span className="text-xs text-gray-400">AR + Inventory − AP from financial statements</span>
+            <div className="mt-3 pt-2 border-t border-border">
+              <span className="text-xs text-muted-foreground">AR + Inventory − AP from financial statements</span>
             </div>
           </CardContent>
         </Card>

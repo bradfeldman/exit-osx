@@ -177,8 +177,8 @@ export function TaskExecutionClient({ taskId }: TaskExecutionClientProps) {
               <span className="font-medium text-foreground">{formatRiskLabel(task.briCategory)}</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <TrendingUp className="w-4 h-4 text-emerald-500" />
-              <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+              <TrendingUp className="w-4 h-4 text-green" />
+              <span className="font-semibold text-green-dark dark:text-green">
                 Estimated value impact: +{formatCurrency(Number(task.rawImpact))}
               </span>
             </span>
@@ -251,9 +251,9 @@ export function TaskExecutionClient({ taskId }: TaskExecutionClientProps) {
 
         {/* Action buttons */}
         {isCompleted ? (
-          <div className="flex items-center justify-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-            <span className="font-medium text-emerald-700 dark:text-emerald-300">
+          <div className="flex items-center justify-center gap-3 p-4 bg-green-light dark:bg-green-dark/20 rounded-lg">
+            <CheckCircle2 className="w-5 h-5 text-green-dark dark:text-green" />
+            <span className="font-medium text-green-dark dark:text-green">
               Task completed
             </span>
           </div>

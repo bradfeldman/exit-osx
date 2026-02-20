@@ -28,7 +28,7 @@ export function ActivationGate({ activation, onActivate, isActivating }: Activat
         {/* Evidence requirement */}
         <div className="flex items-center gap-3">
           {activation.evidenceReady ? (
-            <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+            <Check className="w-4 h-4 text-green flex-shrink-0" />
           ) : (
             <Circle className="w-4 h-4 text-muted-foreground flex-shrink-0" />
           )}

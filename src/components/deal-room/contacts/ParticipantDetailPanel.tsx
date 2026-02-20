@@ -228,7 +228,7 @@ export function ParticipantDetailPanel({
                   </span>
                 )}
                 {isPrimary && (
-                  <span className="text-[9px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                  <span className="text-[9px] font-semibold uppercase tracking-wider text-orange-dark dark:text-orange">
                     Primary
                   </span>
                 )}
@@ -573,7 +573,7 @@ export function ParticipantDetailPanel({
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Status</span>
-                <span className={isActive ? 'text-green-600' : 'text-muted-foreground'}>
+                <span className={isActive ? 'text-green-dark' : 'text-muted-foreground'}>
                   {isActive ? 'Active' : 'Inactive'}
                 </span>
               </div>
@@ -593,16 +593,16 @@ export function ParticipantDetailPanel({
           {/* Add to Pipeline CTA — shown for PROSPECT contacts not yet in pipeline */}
           {category === 'PROSPECT' && !dealBuyer && (
             <section>
-              <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/10 p-3">
-                <p className="text-xs font-medium text-amber-800 dark:text-amber-200 mb-1.5">
+              <div className="rounded-lg border border-orange/20 dark:border-orange-dark bg-orange-light/50 dark:bg-orange-dark/10 p-3">
+                <p className="text-xs font-medium text-orange-dark dark:text-orange-light mb-1.5">
                   Not in pipeline yet
                 </p>
-                <p className="text-xs text-amber-700 dark:text-amber-300 mb-3">
+                <p className="text-xs text-orange-dark dark:text-orange mb-3">
                   This prospect is in your contacts but hasn&apos;t been added to the deal pipeline. Add them to start tracking their progress through deal stages.
                 </p>
                 <Button
                   size="sm"
-                  className="w-full gap-1.5 bg-amber-600 hover:bg-amber-700 text-white"
+                  className="w-full gap-1.5 bg-orange-dark hover:bg-orange-dark text-white"
                   onClick={handleAddToPipeline}
                   disabled={isAddingToPipeline || isUpdating}
                 >
@@ -620,17 +620,17 @@ export function ParticipantDetailPanel({
           {/* Pipeline link — shown when already in pipeline */}
           {dealBuyer && (
             <section>
-              <div className="rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-900/10 p-3">
-                <p className="text-xs font-medium text-emerald-800 dark:text-emerald-200 mb-1">
+              <div className="rounded-lg border border-green/20 dark:border-green-dark bg-green-light/50 dark:bg-green-dark/10 p-3">
+                <p className="text-xs font-medium text-green-dark dark:text-green-light mb-1">
                   In pipeline
                 </p>
-                <p className="text-xs text-emerald-700 dark:text-emerald-300">
+                <p className="text-xs text-green-dark dark:text-green">
                   Linked to <strong>{dealBuyer.canonicalCompany.name}</strong> in the pipeline.{' '}
                   {onNavigateToPipeline && (
                     <button
                       type="button"
                       onClick={() => { onNavigateToPipeline(); onClose() }}
-                      className="text-emerald-600 hover:underline font-medium"
+                      className="text-green-dark hover:underline font-medium"
                     >
                       View pipeline
                     </button>
@@ -654,7 +654,7 @@ export function ParticipantDetailPanel({
             <Button
               variant="ghost"
               size="sm"
-              className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
+              className="w-full justify-start text-red-dark hover:text-red-dark hover:bg-red-light dark:hover:bg-red-dark/30"
               onClick={handleRemove}
               disabled={isUpdating}
             >

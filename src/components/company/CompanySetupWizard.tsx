@@ -460,13 +460,13 @@ export function CompanySetupWizard() {
             transition={{ duration: 2, repeat: Infinity }}
           />
           <motion.div
-            className="absolute inset-[-10px] bg-amber-500/20 rounded-full blur-2xl"
+            className="absolute inset-[-10px] bg-orange/20 rounded-full blur-2xl"
             animate={{ scale: [1.1, 1, 1.1], opacity: [0.4, 0.7, 0.4] }}
             transition={{ duration: 2.5, repeat: Infinity, delay: 0.3 }}
           />
 
           {/* Main icon circle */}
-          <div className="relative w-36 h-36 bg-gradient-to-br from-primary via-primary/90 to-amber-500 rounded-full flex items-center justify-center shadow-2xl shadow-primary/30">
+          <div className="relative w-36 h-36 bg-gradient-to-br from-primary via-primary/90 to-orange rounded-full flex items-center justify-center shadow-2xl shadow-primary/30">
             <motion.svg
               className="w-18 h-18 text-white"
               style={{ width: 72, height: 72 }}
@@ -579,7 +579,7 @@ export function CompanySetupWizard() {
         className="relative bg-card rounded-2xl border border-border shadow-xl shadow-black/5 p-6 sm:p-8 overflow-hidden"
       >
         {/* Subtle gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-amber-500/[0.02] pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-orange/[0.02] pointer-events-none" />
         {error && (
           <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl text-sm flex items-start gap-3">
             <svg className="w-5 h-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">

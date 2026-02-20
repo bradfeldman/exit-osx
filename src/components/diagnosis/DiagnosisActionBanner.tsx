@@ -157,10 +157,10 @@ export function DiagnosisActionBanner({
   // --- GENERATING state ---
   if (bannerState === 'GENERATING') {
     return (
-      <div className="rounded-xl border border-violet-200 bg-gradient-to-br from-violet-50/50 to-purple-50/50 p-5">
+      <div className="rounded-xl border border-purple/20 bg-gradient-to-br from-purple-light/50 to-purple-light/50 p-5">
         <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-full bg-violet-100 flex items-center justify-center shrink-0">
-            <Loader2 className="h-4 w-4 text-violet-600 animate-spin" />
+          <div className="h-9 w-9 rounded-full bg-purple-light flex items-center justify-center shrink-0">
+            <Loader2 className="h-4 w-4 text-purple animate-spin" />
           </div>
           <div>
             <h3 className="text-sm font-semibold text-foreground">
@@ -178,10 +178,10 @@ export function DiagnosisActionBanner({
   // --- SUCCESS state ---
   if (bannerState === 'SUCCESS') {
     return (
-      <div className="rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50/50 to-teal-50/50 p-5">
+      <div className="rounded-xl border border-green/20 bg-gradient-to-br from-green-light/50 to-green-light/50 p-5">
         <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+          <div className="h-9 w-9 rounded-full bg-green-light flex items-center justify-center shrink-0">
+            <CheckCircle2 className="h-4 w-4 text-green-dark" />
           </div>
           <div>
             <h3 className="text-sm font-semibold text-foreground">
@@ -199,11 +199,11 @@ export function DiagnosisActionBanner({
   // --- ERROR state ---
   if (bannerState === 'ERROR') {
     return (
-      <div className="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50/50 to-orange-50/50 p-5">
+      <div className="rounded-xl border border-orange/20 bg-gradient-to-br from-orange-light/50 to-orange-light/50 p-5">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-              <AlertCircle className="h-4 w-4 text-amber-600" />
+            <div className="h-9 w-9 rounded-full bg-orange-light flex items-center justify-center shrink-0">
+              <AlertCircle className="h-4 w-4 text-orange-dark" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-foreground">
@@ -218,7 +218,7 @@ export function DiagnosisActionBanner({
             variant="outline"
             size="sm"
             onClick={runGeneration}
-            className="shrink-0 border-amber-300 text-amber-700 hover:bg-amber-50"
+            className="shrink-0 border-orange/30 text-orange-dark hover:bg-orange-light"
           >
             Retry
           </Button>
@@ -230,7 +230,7 @@ export function DiagnosisActionBanner({
   // --- BASELINE_NEEDED: No assessments completed ---
   if (bannerState === 'BASELINE_NEEDED') {
     return (
-      <div className="rounded-xl border border-primary/30 bg-gradient-to-br from-orange-50/60 to-amber-50/40 p-5">
+      <div className="rounded-xl border border-primary/30 bg-gradient-to-br from-orange-light/60 to-orange-light/40 p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
             <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
@@ -263,14 +263,14 @@ export function DiagnosisActionBanner({
     const nextFree = FREE_CATEGORIES.find(c => !assessedCategories.includes(c))
     const nextFreeLabel = nextFree ? BRI_CATEGORY_LABELS[nextFree as keyof typeof BRI_CATEGORY_LABELS] : null
     return (
-      <div className="rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50/50 to-indigo-50/30 p-5">
+      <div className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-primary/3 p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="h-9 w-9 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
-              <BarChart3 className="h-4 w-4 text-blue-600" />
+            <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+              <BarChart3 className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-blue-800">
+              <h3 className="text-sm font-semibold text-primary">
                 {freeAssessedCount} of 2 free categories assessed
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
@@ -284,7 +284,7 @@ export function DiagnosisActionBanner({
                       key={cat}
                       className={cn(
                         'h-1.5 flex-1 rounded-full transition-colors',
-                        isAssessed ? 'bg-blue-500' : 'bg-blue-200/60'
+                        isAssessed ? 'bg-primary' : 'bg-primary/20'
                       )}
                       title={BRI_CATEGORY_LABELS[cat as keyof typeof BRI_CATEGORY_LABELS]}
                     />
@@ -298,7 +298,7 @@ export function DiagnosisActionBanner({
               size="sm"
               variant="outline"
               onClick={() => onExpandCategory(nextFree)}
-              className="shrink-0 gap-1 border-blue-300 text-blue-700 hover:bg-blue-50"
+              className="shrink-0 gap-1 border-primary/30 text-primary hover:bg-primary/5"
             >
               Continue: {nextFreeLabel}
               <ChevronRight className="h-3.5 w-3.5" />
@@ -313,7 +313,7 @@ export function DiagnosisActionBanner({
   if (bannerState === 'FREE_COMPLETE_UPGRADE') {
     const lockedCategories = BRI_CATEGORY_ORDER.filter(c => !FREE_CATEGORIES.includes(c))
     return (
-      <div className="rounded-xl border border-primary/30 bg-gradient-to-br from-orange-50/60 to-amber-50/40 p-5">
+      <div className="rounded-xl border border-primary/30 bg-gradient-to-br from-orange-light/60 to-orange-light/40 p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
             <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
@@ -356,14 +356,14 @@ export function DiagnosisActionBanner({
   if (bannerState === 'PARTIAL_PAID') {
     const remaining = 6 - assessedCategoryCount
     return (
-      <div className="rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50/50 to-indigo-50/30 p-5">
+      <div className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-primary/3 p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="h-9 w-9 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
-              <BarChart3 className="h-4 w-4 text-blue-600" />
+            <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+              <BarChart3 className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-blue-800">
+              <h3 className="text-sm font-semibold text-primary">
                 {assessedCategoryCount} of 6 categories assessed
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
@@ -380,7 +380,7 @@ export function DiagnosisActionBanner({
                       key={cat}
                       className={cn(
                         'h-1.5 flex-1 rounded-full transition-colors',
-                        isAssessed ? 'bg-blue-500' : 'bg-blue-200/60'
+                        isAssessed ? 'bg-primary' : 'bg-primary/20'
                       )}
                       title={BRI_CATEGORY_LABELS[cat]}
                     />
@@ -394,7 +394,7 @@ export function DiagnosisActionBanner({
               size="sm"
               variant="outline"
               onClick={() => onExpandCategory(nextCategory.key)}
-              className="shrink-0 gap-1 border-blue-300 text-blue-700 hover:bg-blue-50"
+              className="shrink-0 gap-1 border-primary/30 text-primary hover:bg-primary/5"
             >
               Continue: {nextCategory.label}
               <ChevronRight className="h-3.5 w-3.5" />
@@ -408,9 +408,9 @@ export function DiagnosisActionBanner({
   // --- COOLDOWN: All 6 done, within 7 days ---
   if (bannerState === 'COOLDOWN') {
     return (
-      <div className="rounded-xl border border-border bg-gradient-to-br from-zinc-50/80 to-slate-50/50 p-5">
+      <div className="rounded-xl border border-border bg-gradient-to-br from-muted/80 to-muted/50 p-5">
         <div className="flex items-start gap-3">
-          <div className="h-9 w-9 rounded-full bg-zinc-100 flex items-center justify-center shrink-0 mt-0.5">
+          <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
             <Clock className="h-4 w-4 text-muted-foreground" />
           </div>
           <div>
@@ -431,11 +431,11 @@ export function DiagnosisActionBanner({
 
   // --- REASSESS_AVAILABLE: All 6 done, cooldown elapsed ---
   return (
-    <div className="rounded-xl border border-violet-200 bg-gradient-to-br from-violet-50/50 to-purple-50/50 p-5">
+    <div className="rounded-xl border border-purple/20 bg-gradient-to-br from-purple-light/50 to-purple-light/50 p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3">
-          <div className="h-9 w-9 rounded-full bg-violet-100 flex items-center justify-center shrink-0 mt-0.5">
-            <Sparkles className="h-4 w-4 text-violet-600" />
+          <div className="h-9 w-9 rounded-full bg-purple-light flex items-center justify-center shrink-0 mt-0.5">
+            <Sparkles className="h-4 w-4 text-purple" />
           </div>
           <div>
             <h3 className="text-sm font-semibold text-foreground">

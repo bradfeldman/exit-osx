@@ -30,10 +30,10 @@ export function AutomationBanner({ briCategory, hasFileUploadSubTasks }: Automat
   }
 
   return (
-    <div className="mt-4 rounded-lg border border-blue-200 dark:border-blue-800/30 bg-blue-50/50 dark:bg-blue-950/20 p-4">
+    <div className="mt-4 rounded-lg border border-primary/20 dark:border-primary/30 bg-accent-light/50 dark:bg-primary/20 p-4">
       <div className="flex items-start gap-3">
-        <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-          <Zap className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+        <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-accent-light dark:bg-primary/30 flex items-center justify-center">
+          <Zap className="w-4 h-4 text-primary dark:text-primary" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-foreground">
@@ -45,11 +45,11 @@ export function AutomationBanner({ briCategory, hasFileUploadSubTasks }: Automat
           <div className="flex items-center gap-3 mt-2">
             <button
               type="button"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-primary text-white hover:bg-primary transition-colors"
             >
               <Zap className="w-3 h-3" />
               Connect QuickBooks
-              <span className="text-blue-200 ml-1">(Coming soon)</span>
+              <span className="text-primary/20 ml-1">(Coming soon)</span>
             </button>
             <button
               type="button"

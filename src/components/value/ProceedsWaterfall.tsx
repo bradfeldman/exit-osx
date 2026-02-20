@@ -169,12 +169,12 @@ export function ProceedsWaterfall({
                 onClick={() => setIsQSBS(!isQSBS)}
                 className={`flex items-center gap-2 h-8 px-3 rounded-md border text-xs w-full transition-colors ${
                   isQSBS
-                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-950 dark:border-emerald-800 dark:text-emerald-400'
+                    ? 'bg-green-light border-green/20 text-green-dark dark:bg-green-dark/30 dark:border-green-dark dark:text-green'
                     : 'bg-background border-border text-muted-foreground hover:bg-muted/50'
                 }`}
               >
                 <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${
-                  isQSBS ? 'bg-emerald-500 border-emerald-500' : 'border-muted-foreground/30'
+                  isQSBS ? 'bg-green border-green' : 'border-muted-foreground/30'
                 }`}>
                   {isQSBS && (
                     <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
@@ -247,7 +247,7 @@ export function ProceedsWaterfall({
                 <WaterfallRow
                   label="QSBS Exclusion"
                   value={fmt(waterfall.qsbsExclusion)}
-                  className="text-emerald-600 dark:text-emerald-400"
+                  className="text-green-dark dark:text-green"
                 />
               )}
             </div>
@@ -259,7 +259,7 @@ export function ProceedsWaterfall({
           {/* Net Proceeds */}
           <div className="flex justify-between items-center py-2 px-2">
             <span className="font-semibold text-foreground">Estimated Net Proceeds</span>
-            <span className="font-bold text-lg text-emerald-600 dark:text-emerald-400">
+            <span className="font-bold text-lg text-green-dark dark:text-green">
               {fmt(waterfall.netProceeds)}
             </span>
           </div>
@@ -267,7 +267,7 @@ export function ProceedsWaterfall({
 
         {/* C-Corp note */}
         {entityType === 'C_CORP' && !isQSBS && (
-          <p className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 px-3 py-2 rounded-md">
+          <p className="text-xs text-orange-dark dark:text-orange bg-orange-light dark:bg-orange-dark/30 px-3 py-2 rounded-md">
             C-Corp asset sale assumes double taxation (corporate + personal). Stock sales may have different tax treatment.
           </p>
         )}

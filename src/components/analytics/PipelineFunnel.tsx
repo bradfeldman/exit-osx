@@ -21,12 +21,12 @@ interface PipelineFunnelProps {
 
 // Funnel colors from light to dark
 const FUNNEL_COLORS = [
-  'bg-blue-200 dark:bg-blue-900/50',
-  'bg-blue-300 dark:bg-blue-800/50',
-  'bg-blue-400 dark:bg-blue-700/50',
-  'bg-blue-500 dark:bg-blue-600/50',
-  'bg-blue-600 dark:bg-blue-500/50',
-  'bg-green-500 dark:bg-green-600/50',
+  'bg-primary/20 dark:bg-primary/20',
+  'bg-primary/30 dark:bg-primary/30',
+  'bg-primary/50 dark:bg-primary/40',
+  'bg-primary/70 dark:bg-primary/50',
+  'bg-primary dark:bg-primary/60',
+  'bg-green dark:bg-green/60',
 ]
 
 export function PipelineFunnel({ dealId, className }: PipelineFunnelProps) {
@@ -122,16 +122,16 @@ export function PipelineFunnel({ dealId, className }: PipelineFunnelProps) {
                   )}
                   style={{ width: `${Math.max(widthPercent, 30)}%` }}
                 >
-                  <span className="text-sm font-medium truncate text-gray-800 dark:text-gray-200">
+                  <span className="text-sm font-medium truncate text-foreground">
                     {stage.stage}
                   </span>
-                  <span className="text-sm font-bold text-gray-900 dark:text-white">
+                  <span className="text-sm font-bold text-foreground">
                     {stage.count}
                   </span>
                 </div>
                 {/* Dropoff indicator */}
                 {index > 0 && stage.dropoffRate > 0 && (
-                  <div className="absolute -top-1 right-0 text-[10px] text-red-500">
+                  <div className="absolute -top-1 right-0 text-[10px] text-red">
                     -{stage.dropoffRate}%
                   </div>
                 )}

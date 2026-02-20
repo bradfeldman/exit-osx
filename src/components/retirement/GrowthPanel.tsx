@@ -26,12 +26,12 @@ export function GrowthPanel({ assumptions, onAssumptionChange, simplified = fals
     return (
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-medium text-gray-900">Investment Strategy</CardTitle>
+          <CardTitle className="text-base font-medium text-foreground">Investment Strategy</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Preset Buttons Only */}
           <div className="space-y-2">
-            <Label className="text-sm text-gray-700">Choose your risk profile</Label>
+            <Label className="text-sm text-foreground">Choose your risk profile</Label>
             <div className="grid grid-cols-3 gap-2">
               {GROWTH_PRESETS.map((preset) => (
                 <button
@@ -39,12 +39,12 @@ export function GrowthPanel({ assumptions, onAssumptionChange, simplified = fals
                   onClick={() => onAssumptionChange('growthRate', preset.value)}
                   className={`p-3 text-sm border rounded-lg transition-colors text-center ${
                     assumptions.growthRate === preset.value && !isCustomRate
-                      ? 'border-primary bg-primary/5 text-gray-900'
-                      : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                      ? 'border-primary bg-primary/5 text-foreground'
+                      : 'border-border hover:border-border text-foreground'
                   }`}
                 >
                   <div className="font-medium">{preset.label}</div>
-                  <div className="text-xs text-gray-500 mt-0.5">{formatPercent(preset.value)}/yr</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">{formatPercent(preset.value)}/yr</div>
                 </button>
               ))}
             </div>
@@ -57,12 +57,12 @@ export function GrowthPanel({ assumptions, onAssumptionChange, simplified = fals
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base font-medium text-gray-900">Investment Growth</CardTitle>
+        <CardTitle className="text-base font-medium text-foreground">Investment Growth</CardTitle>
       </CardHeader>
       <CardContent className="space-y-5">
         {/* Preset Buttons */}
         <div className="space-y-2">
-          <Label className="text-sm text-gray-700">Portfolio Strategy</Label>
+          <Label className="text-sm text-foreground">Portfolio Strategy</Label>
           <div className="grid grid-cols-3 gap-2">
             {GROWTH_PRESETS.map((preset) => (
               <button
@@ -70,12 +70,12 @@ export function GrowthPanel({ assumptions, onAssumptionChange, simplified = fals
                 onClick={() => onAssumptionChange('growthRate', preset.value)}
                 className={`p-3 text-sm border rounded-lg transition-colors text-left ${
                   assumptions.growthRate === preset.value && !isCustomRate
-                    ? 'border-primary bg-primary/5 text-gray-900'
-                    : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                    ? 'border-primary bg-primary/5 text-foreground'
+                    : 'border-border hover:border-border text-foreground'
                 }`}
               >
                 <div className="font-medium">{preset.label}</div>
-                <div className="text-xs text-gray-500 mt-0.5">{preset.description}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">{preset.description}</div>
               </button>
             ))}
           </div>
@@ -84,7 +84,7 @@ export function GrowthPanel({ assumptions, onAssumptionChange, simplified = fals
         {/* Custom Rate Slider */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <Label className="text-sm text-gray-700">Annual Return Rate</Label>
+            <Label className="text-sm text-foreground">Annual Return Rate</Label>
             <div className="flex items-center gap-1">
               <TextNumericInput
                 value={assumptions.growthRate}
@@ -93,7 +93,7 @@ export function GrowthPanel({ assumptions, onAssumptionChange, simplified = fals
                 decimals={1}
                 className="w-16 h-8 text-sm text-right"
               />
-              <span className="text-gray-500 text-sm">%</span>
+              <span className="text-muted-foreground text-sm">%</span>
             </div>
           </div>
           <Slider
@@ -103,7 +103,7 @@ export function GrowthPanel({ assumptions, onAssumptionChange, simplified = fals
             max={0.12}
             step={0.005}
           />
-          <div className="flex justify-between text-xs text-gray-400">
+          <div className="flex justify-between text-xs text-muted-foreground">
             <span>2%</span>
             <span>7% (balanced)</span>
             <span>12%</span>
@@ -111,25 +111,25 @@ export function GrowthPanel({ assumptions, onAssumptionChange, simplified = fals
         </div>
 
         {/* Return Assumptions Info */}
-        <div className="p-3 bg-blue-50 rounded-lg">
-          <p className="text-xs text-blue-700">
+        <div className="p-3 bg-accent-light rounded-lg">
+          <p className="text-xs text-primary">
             <span className="font-medium">Note:</span> This is the expected average annual return.
             Actual returns will vary year to year based on market conditions and asset allocation.
           </p>
         </div>
 
         {/* Real Return Calculation */}
-        <div className="p-3 bg-gray-50 rounded-lg">
+        <div className="p-3 bg-secondary rounded-lg">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Nominal Return</span>
+            <span className="text-muted-foreground">Nominal Return</span>
             <span className="font-medium">{formatPercent(assumptions.growthRate)}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Less: Inflation</span>
-            <span className="font-medium text-red-600">-{formatPercent(assumptions.inflationRate)}</span>
+            <span className="text-muted-foreground">Less: Inflation</span>
+            <span className="font-medium text-red-dark">-{formatPercent(assumptions.inflationRate)}</span>
           </div>
-          <div className="flex justify-between text-sm pt-2 border-t border-gray-200 mt-2">
-            <span className="text-gray-700 font-medium">Real Return</span>
+          <div className="flex justify-between text-sm pt-2 border-t border-border mt-2">
+            <span className="text-foreground font-medium">Real Return</span>
             <span className="font-bold text-primary">
               {formatPercent(assumptions.growthRate - assumptions.inflationRate)}
             </span>
@@ -137,7 +137,7 @@ export function GrowthPanel({ assumptions, onAssumptionChange, simplified = fals
         </div>
 
         {/* Historical Context */}
-        <div className="space-y-1 text-xs text-gray-500">
+        <div className="space-y-1 text-xs text-muted-foreground">
           <p>
             <span className="font-medium">Historical context:</span>
           </p>

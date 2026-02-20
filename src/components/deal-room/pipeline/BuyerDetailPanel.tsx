@@ -17,9 +17,9 @@ const STAGE_OPTIONS = [
 
 const APPROVAL_OPTIONS = [
   { value: 'PENDING', label: 'Pending', color: 'text-muted-foreground' },
-  { value: 'APPROVED', label: 'Approved', color: 'text-emerald-600' },
-  { value: 'HOLD', label: 'Hold', color: 'text-amber-600' },
-  { value: 'DENIED', label: 'Denied', color: 'text-red-600' },
+  { value: 'APPROVED', label: 'Approved', color: 'text-green-dark' },
+  { value: 'HOLD', label: 'Hold', color: 'text-orange-dark' },
+  { value: 'DENIED', label: 'Denied', color: 'text-red-dark' },
 ]
 
 const BUYER_TYPE_OPTIONS = [
@@ -272,7 +272,7 @@ export function BuyerDetailPanel({ buyer, companyId, onClose, onStageChange, onB
                   >
                     <div className="flex items-center gap-2 min-w-0">
                       {p.isPrimary && (
-                        <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 shrink-0" />
+                        <Star className="w-3.5 h-3.5 text-orange fill-orange shrink-0" />
                       )}
                       <div className="min-w-0">
                         <span className={`text-sm block truncate ${p.isPrimary ? 'font-semibold' : ''}`}>

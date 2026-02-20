@@ -170,7 +170,7 @@ export function ProspectAccessPanel({ companyId, documents }: ProspectAccessPane
                         className="h-7 w-7 p-0"
                       >
                         {granted ? (
-                          <Eye className="h-4 w-4 text-green-600" />
+                          <Eye className="h-4 w-4 text-green-dark" />
                         ) : (
                           <EyeOff className="h-4 w-4 text-muted-foreground/40" />
                         )}

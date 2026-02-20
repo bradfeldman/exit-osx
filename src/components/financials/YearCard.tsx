@@ -74,12 +74,12 @@ function MetricRow({ label, value, highlight }: MetricRowProps) {
   return (
     <div className={cn(
       'flex justify-between items-center py-1.5',
-      highlight && 'bg-blue-50 -mx-2 px-2 rounded'
+      highlight && 'bg-accent-light -mx-2 px-2 rounded'
     )}>
-      <span className="text-sm text-gray-600">{label}</span>
+      <span className="text-sm text-muted-foreground">{label}</span>
       <span className={cn(
         'text-sm font-medium',
-        highlight ? 'text-blue-700' : 'text-gray-900'
+        highlight ? 'text-primary' : 'text-foreground'
       )}>
         {formatCurrency(value)}
       </span>
@@ -136,14 +136,14 @@ export function YearCard({
     <Card
       className={cn(
         'relative min-w-[220px] max-w-[280px] flex-shrink-0 snap-start cursor-pointer transition-all duration-200',
-        'hover:shadow-md hover:border-blue-300 group',
+        'hover:shadow-md hover:border-primary/30 group',
         className
       )}
       onClick={onEdit}
     >
       {/* Edit Icon - appears on hover */}
       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <div className="p-1.5 rounded-full bg-blue-100 text-blue-600">
+        <div className="p-1.5 rounded-full bg-accent-light text-primary">
           <Pencil className="h-3.5 w-3.5" />
         </div>
       </div>
@@ -154,11 +154,11 @@ export function YearCard({
           <div
             className={cn(
               'w-2 h-2 rounded-full',
-              hasData ? 'bg-green-500' : 'bg-gray-300'
+              hasData ? 'bg-green' : 'bg-muted-foreground'
             )}
             title={hasData ? 'Data entered' : 'No data yet'}
           />
-          <CardTitle className="text-base font-semibold text-gray-900">
+          <CardTitle className="text-base font-semibold text-foreground">
             {period.label}
           </CardTitle>
         </div>
@@ -170,7 +170,7 @@ export function YearCard({
         </div>
 
         {!hasData && (
-          <p className="text-xs text-gray-400 mt-3 text-center">
+          <p className="text-xs text-muted-foreground mt-3 text-center">
             Click to add data
           </p>
         )}

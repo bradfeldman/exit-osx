@@ -235,7 +235,7 @@ describe('LowestConfidencePrompt', () => {
         <LowestConfidencePrompt categories={categories} onExpandCategory={vi.fn()} />
       )
 
-      const card = container.querySelector('.border-amber-200')
+      const card = container.querySelector('[class*="border-orange"]')
       expect(card).toBeInTheDocument()
     })
 

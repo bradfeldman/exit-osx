@@ -3,12 +3,12 @@
 import { cn } from '@/lib/utils'
 
 const TYPE_STYLES: Record<string, string> = {
-  STRATEGIC: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  FINANCIAL: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-  INDIVIDUAL: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-  MANAGEMENT: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
-  ESOP: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-  OTHER: 'bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400',
+  STRATEGIC: 'bg-accent-light text-primary dark:bg-primary/30 dark:text-primary',
+  FINANCIAL: 'bg-purple-light text-purple-dark dark:bg-purple-dark/30 dark:text-purple',
+  INDIVIDUAL: 'bg-orange-light text-orange-dark dark:bg-orange-dark/30 dark:text-orange',
+  MANAGEMENT: 'bg-teal-light text-teal dark:bg-teal/30 dark:text-teal',
+  ESOP: 'bg-green-light text-green-dark dark:bg-green-dark/30 dark:text-green',
+  OTHER: 'bg-muted text-foreground dark:bg-muted dark:text-muted-foreground',
 }
 
 const TYPE_LABELS: Record<string, string> = {

@@ -15,20 +15,20 @@ interface Activity {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  stage_change: 'bg-blue-500',
-  document_view: 'bg-emerald-500',
-  document_download: 'bg-purple-500',
-  question_asked: 'bg-amber-500',
-  question_answered: 'bg-amber-500',
-  meeting: 'bg-indigo-500',
+  stage_change: 'bg-primary',
+  document_view: 'bg-green',
+  document_download: 'bg-purple',
+  question_asked: 'bg-orange',
+  question_answered: 'bg-orange',
+  meeting: 'bg-primary',
   offer: 'bg-[var(--burnt-orange)]',
-  access_change: 'bg-slate-500',
-  note: 'bg-slate-400',
+  access_change: 'bg-muted-foreground',
+  note: 'bg-muted-foreground',
 }
 
 const SIGNAL_STYLES: Record<string, string> = {
-  positive: 'bg-emerald-50/50 dark:bg-emerald-900/10 border-l-2 border-emerald-500',
-  warning: 'bg-amber-50/50 dark:bg-amber-900/10 border-l-2 border-amber-500',
+  positive: 'bg-green-light/50 dark:bg-green-dark/10 border-l-2 border-green',
+  warning: 'bg-orange-light/50 dark:bg-orange-dark/10 border-l-2 border-orange',
 }
 
 interface ActivityItemProps {
@@ -50,7 +50,7 @@ export function ActivityItem({ activity }: ActivityItemProps) {
     )}>
       <span className={cn(
         'w-2 h-2 rounded-full mt-2 flex-shrink-0',
-        TYPE_COLORS[activity.type] ?? 'bg-slate-400'
+        TYPE_COLORS[activity.type] ?? 'bg-muted-foreground'
       )} />
 
       <div className="flex-1 min-w-0">

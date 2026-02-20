@@ -90,7 +90,7 @@ export function ValuationTicker() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.2, duration: 0.4 }}
           className={`flex items-center gap-1 text-xs font-medium tabular-nums ${
-            isUp ? 'text-emerald-600' : isDown ? 'text-red-500' : 'text-muted-foreground'
+            isUp ? 'text-green-dark' : isDown ? 'text-red' : 'text-muted-foreground'
           }`}
         >
           {isUp && <TrendingUp className="h-3 w-3" />}

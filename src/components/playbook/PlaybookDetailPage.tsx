@@ -84,7 +84,7 @@ export function PlaybookDetailPage({ definition }: PlaybookDetailPageProps) {
         <div className="max-w-[800px] mx-auto h-14 flex items-center gap-3">
           <Link
             href="/dashboard/playbook"
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted transition-colors"
           >
             <ArrowLeft className="w-4 h-4" style={{ color: 'var(--text-secondary, #6E6E73)' }} />
           </Link>
@@ -109,7 +109,7 @@ export function PlaybookDetailPage({ definition }: PlaybookDetailPageProps) {
               {category}
             </span>
             {isLocked && (
-              <span className="text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-gray-100" style={{ color: 'var(--text-secondary, #6E6E73)' }}>
+              <span className="text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-muted" style={{ color: 'var(--text-secondary, #6E6E73)' }}>
                 <Lock className="w-3 h-3 inline mr-1" />
                 Growth
               </span>
@@ -172,7 +172,7 @@ export function PlaybookDetailPage({ definition }: PlaybookDetailPageProps) {
                 {Math.round(percentComplete)}%
               </span>
             </div>
-            <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+            <div className="h-2 rounded-full bg-muted overflow-hidden">
               <div
                 className="h-full rounded-full transition-all duration-500"
                 style={{

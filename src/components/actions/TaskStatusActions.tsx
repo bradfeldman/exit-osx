@@ -343,15 +343,15 @@ export function TaskStatusActions({
 
       {/* Pending invite banner */}
       {hasPendingInvite && (
-        <div className="mt-3 flex items-center gap-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/30">
-          <Mail className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
-          <p className="text-sm text-blue-700 dark:text-blue-300 flex-1">
+        <div className="mt-3 flex items-center gap-2 p-3 rounded-lg bg-accent-light dark:bg-primary/20 border border-primary/20 dark:border-primary/30">
+          <Mail className="h-4 w-4 text-primary dark:text-primary shrink-0" />
+          <p className="text-sm text-primary dark:text-primary flex-1">
             Invite sent to <strong>{pendingInvite.email}</strong>
-            {delegateStatus === 'sent' && <span className="ml-2 text-green-600">(re-sent!)</span>}
+            {delegateStatus === 'sent' && <span className="ml-2 text-green-dark">(re-sent!)</span>}
           </p>
           <button
             type="button"
-            className="text-xs text-blue-600 dark:text-blue-400 hover:underline disabled:opacity-50"
+            className="text-xs text-primary dark:text-primary hover:underline disabled:opacity-50"
             onClick={handleCancelInvite}
             disabled={cancellingInvite}
           >

@@ -53,7 +53,7 @@ export function WACCCalculator({ inputs, onInputChange, calculatedWACC, ebitdaTi
     return (
       <div className="space-y-2">
         <div className="flex justify-between items-center">
-          <Label htmlFor={key} className="text-sm text-gray-700">
+          <Label htmlFor={key} className="text-sm text-foreground">
             {label}
           </Label>
           <div className="flex items-center gap-2">
@@ -67,7 +67,7 @@ export function WACCCalculator({ inputs, onInputChange, calculatedWACC, ebitdaTi
               decimals={isBeta ? 2 : 1}
               className="w-20 h-7 text-sm text-right"
             />
-            {isPercent && !isBeta && <span className="text-xs text-gray-500">%</span>}
+            {isPercent && !isBeta && <span className="text-xs text-muted-foreground">%</span>}
           </div>
         </div>
       </div>
@@ -77,15 +77,15 @@ export function WACCCalculator({ inputs, onInputChange, calculatedWACC, ebitdaTi
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base font-medium text-gray-900">WACC Calculator</CardTitle>
+        <CardTitle className="text-base font-medium text-foreground">WACC Calculator</CardTitle>
       </CardHeader>
       <CardContent className="space-y-5">
         {/* Cost of Equity Section */}
         <div>
           <div className="flex justify-between items-center mb-4">
-            <h4 className="text-sm font-medium text-gray-800">Cost of Equity (CAPM + Build-Up)</h4>
+            <h4 className="text-sm font-medium text-foreground">Cost of Equity (CAPM + Build-Up)</h4>
             {ebitdaTier && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-accent-light text-primary font-medium">
                 {ebitdaTier} tier
               </span>
             )}
@@ -99,12 +99,12 @@ export function WACCCalculator({ inputs, onInputChange, calculatedWACC, ebitdaTi
           </div>
 
           {/* Cost of Equity Formula Display */}
-          <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-            <div className="text-xs text-gray-500 mb-1">Cost of Equity Formula</div>
-            <div className="text-sm font-mono text-gray-700">
+          <div className="mt-4 p-3 bg-secondary rounded-lg">
+            <div className="text-xs text-muted-foreground mb-1">Cost of Equity Formula</div>
+            <div className="text-sm font-mono text-foreground">
               Re = Rf + &beta;(ERP) + Size + CSR
             </div>
-            <div className="text-sm font-mono text-gray-700 mt-1">
+            <div className="text-sm font-mono text-foreground mt-1">
               Re = {formatPercent(inputs.riskFreeRate)} + {inputs.beta.toFixed(2)} &times;{' '}
               {formatPercent(inputs.marketRiskPremium)} + {formatPercent(inputs.sizeRiskPremium)} + {formatPercent(inputs.companySpecificRisk)}
             </div>
@@ -112,7 +112,7 @@ export function WACCCalculator({ inputs, onInputChange, calculatedWACC, ebitdaTi
               Cost of Equity = {formatPercent(costOfEquity)}
             </div>
             {inputs.companySpecificRisk > 0 && (
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-muted-foreground mt-1">
                 CSR is driven by your Business Readiness Index score
               </div>
             )}
@@ -120,12 +120,12 @@ export function WACCCalculator({ inputs, onInputChange, calculatedWACC, ebitdaTi
         </div>
 
         {/* Cost of Debt Section */}
-        <div className="pt-4 border-t border-gray-200">
-          <h4 className="text-sm font-medium text-gray-800 mb-4">Cost of Debt</h4>
+        <div className="pt-4 border-t border-border">
+          <h4 className="text-sm font-medium text-foreground mb-4">Cost of Debt</h4>
           <div className="space-y-4">
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <Label htmlFor="costOfDebt" className="text-sm text-gray-700">
+                <Label htmlFor="costOfDebt" className="text-sm text-foreground">
                   Cost of Debt (Override)
                 </Label>
                 <div className="flex items-center gap-2">
@@ -138,14 +138,14 @@ export function WACCCalculator({ inputs, onInputChange, calculatedWACC, ebitdaTi
                     placeholder="Auto"
                     className="w-20 h-7 text-sm text-right"
                   />
-                  <span className="text-xs text-gray-500">%</span>
+                  <span className="text-xs text-muted-foreground">%</span>
                 </div>
               </div>
             </div>
 
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <Label htmlFor="taxRate" className="text-sm text-gray-700">
+                <Label htmlFor="taxRate" className="text-sm text-foreground">
                   Tax Rate (Override)
                 </Label>
                 <div className="flex items-center gap-2">
@@ -158,7 +158,7 @@ export function WACCCalculator({ inputs, onInputChange, calculatedWACC, ebitdaTi
                     placeholder="25%"
                     className="w-20 h-7 text-sm text-right"
                   />
-                  <span className="text-xs text-gray-500">%</span>
+                  <span className="text-xs text-muted-foreground">%</span>
                 </div>
               </div>
             </div>
@@ -166,9 +166,9 @@ export function WACCCalculator({ inputs, onInputChange, calculatedWACC, ebitdaTi
         </div>
 
         {/* WACC Result */}
-        <div className="pt-4 border-t border-gray-200">
+        <div className="pt-4 border-t border-border">
           <div className="flex justify-between items-center p-3 bg-primary/5 rounded-lg">
-            <span className="text-sm font-medium text-gray-800">Calculated WACC</span>
+            <span className="text-sm font-medium text-foreground">Calculated WACC</span>
             <span className="text-lg font-bold text-primary">{formatPercent(calculatedWACC)}</span>
           </div>
         </div>

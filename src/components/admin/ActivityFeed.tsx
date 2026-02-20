@@ -49,15 +49,15 @@ interface ActivityFeedProps {
 }
 
 const actionColors: Record<string, string> = {
-  'user.view': 'bg-blue-100 text-blue-800',
-  'user.update': 'bg-yellow-100 text-yellow-800',
-  'user.disable': 'bg-red-100 text-red-800',
-  'impersonate.start': 'bg-purple-100 text-purple-800',
-  'impersonate.end': 'bg-purple-100 text-purple-800',
-  'organization.view': 'bg-green-100 text-green-800',
-  'organization.update': 'bg-yellow-100 text-yellow-800',
-  'ticket.create': 'bg-blue-100 text-blue-800',
-  'ticket.update': 'bg-yellow-100 text-yellow-800',
+  'user.view': 'bg-accent-light text-primary',
+  'user.update': 'bg-orange-light text-orange-dark',
+  'user.disable': 'bg-red-light text-red-dark',
+  'impersonate.start': 'bg-purple-light text-purple-dark',
+  'impersonate.end': 'bg-purple-light text-purple-dark',
+  'organization.view': 'bg-green-light text-green-dark',
+  'organization.update': 'bg-orange-light text-orange-dark',
+  'ticket.create': 'bg-accent-light text-primary',
+  'ticket.update': 'bg-orange-light text-orange-dark',
 }
 
 const targetTypes = ['User', 'Organization', 'SupportTicket', 'ImpersonationSession', 'System']
@@ -258,7 +258,7 @@ export function ActivityFeed({ initialLogs, initialPagination }: ActivityFeedPro
                   <TableCell>
                     <Badge
                       variant="secondary"
-                      className={actionColors[log.action] || 'bg-gray-100 text-gray-800'}
+                      className={actionColors[log.action] || 'bg-muted text-foreground'}
                     >
                       {log.action}
                     </Badge>

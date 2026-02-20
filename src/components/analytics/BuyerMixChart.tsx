@@ -23,18 +23,18 @@ interface BuyerMixChartProps {
 // Type colors
 const TYPE_COLORS: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
   Strategic: {
-    bg: 'bg-blue-500',
-    text: 'text-blue-600',
+    bg: 'bg-primary',
+    text: 'text-primary',
     icon: <Building2 className="h-4 w-4" />,
   },
   Financial: {
-    bg: 'bg-purple-500',
-    text: 'text-purple-600',
+    bg: 'bg-purple',
+    text: 'text-purple-dark',
     icon: <Briefcase className="h-4 w-4" />,
   },
   'Hybrid / Other': {
-    bg: 'bg-gray-500',
-    text: 'text-gray-600',
+    bg: 'bg-muted-foreground',
+    text: 'text-muted-foreground',
     icon: <HelpCircle className="h-4 w-4" />,
   },
 }

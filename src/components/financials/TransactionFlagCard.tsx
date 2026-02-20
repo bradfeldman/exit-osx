@@ -7,13 +7,13 @@ import { Check, X, MapPin, Receipt, UserCircle, Scale, AlertTriangle, Repeat } f
 import { formatCurrency } from '@/lib/utils/currency'
 
 const FLAG_TYPE_CONFIG: Record<string, { label: string; bg: string; text: string; icon: React.ElementType }> = {
-  OWNER_PERSONAL: { label: 'Personal', bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-300', icon: UserCircle },
-  ONE_TIME: { label: 'One-Time', bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-300', icon: Receipt },
-  RELATED_PARTY: { label: 'Related Party', bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-700 dark:text-orange-300', icon: Repeat },
-  TRANSACTION_COST: { label: 'M&A Cost', bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-300', icon: Scale },
-  NORMALIZATION: { label: 'Normalize', bg: 'bg-slate-100 dark:bg-slate-900/30', text: 'text-slate-700 dark:text-slate-300', icon: AlertTriangle },
+  OWNER_PERSONAL: { label: 'Personal', bg: 'bg-purple-light dark:bg-purple-dark/30', text: 'text-purple-dark dark:text-purple-light', icon: UserCircle },
+  ONE_TIME: { label: 'One-Time', bg: 'bg-orange-light dark:bg-orange-dark/30', text: 'text-orange-dark dark:text-orange-light', icon: Receipt },
+  RELATED_PARTY: { label: 'Related Party', bg: 'bg-orange-light dark:bg-orange-dark/30', text: 'text-orange-dark dark:text-orange-light', icon: Repeat },
+  TRANSACTION_COST: { label: 'M&A Cost', bg: 'bg-accent-light dark:bg-primary/30', text: 'text-primary dark:text-accent-light', icon: Scale },
+  NORMALIZATION: { label: 'Normalize', bg: 'bg-muted dark:bg-foreground/30', text: 'text-foreground dark:text-muted', icon: AlertTriangle },
   LOCATION_ANOMALY: { label: 'Location', bg: 'bg-pink-100 dark:bg-pink-900/30', text: 'text-pink-700 dark:text-pink-300', icon: MapPin },
-  REVIEW_NEEDED: { label: 'Review', bg: 'bg-gray-100 dark:bg-gray-900/30', text: 'text-gray-700 dark:text-gray-300', icon: AlertTriangle },
+  REVIEW_NEEDED: { label: 'Review', bg: 'bg-secondary dark:bg-foreground/30', text: 'text-foreground dark:text-muted', icon: AlertTriangle },
 }
 
 export interface TransactionFlagData {
@@ -55,9 +55,9 @@ export function TransactionFlagCard({
   const Icon = config.icon
 
   const confidenceColor =
-    flag.confidence >= 0.8 ? 'bg-green-500'
-    : flag.confidence >= 0.5 ? 'bg-yellow-500'
-    : 'bg-gray-400'
+    flag.confidence >= 0.8 ? 'bg-green'
+    : flag.confidence >= 0.5 ? 'bg-orange'
+    : 'bg-muted-foreground'
 
   const handleAccept = () => {
     const parsed = parseFloat(amount)
@@ -108,7 +108,7 @@ export function TransactionFlagCard({
 
       {/* EV impact line */}
       {evImpact && (
-        <p className="text-xs font-medium text-green-600 dark:text-green-400">
+        <p className="text-xs font-medium text-green-dark dark:text-green">
           EV impact: +{formatCurrency(evImpact)} at {evMultiple}x multiple
         </p>
       )}

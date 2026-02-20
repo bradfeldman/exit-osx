@@ -153,7 +153,7 @@ export function OutreachStats({ dealId, buyerId, className }: OutreachStatsProps
         <div className="grid grid-cols-2 gap-4">
           {/* Emails */}
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-blue-600">
+            <div className="flex items-center gap-2 text-primary">
               <Mail className="h-5 w-5" />
               <span className="text-2xl font-bold">{totalEmails}</span>
             </div>
@@ -164,7 +164,7 @@ export function OutreachStats({ dealId, buyerId, className }: OutreachStatsProps
 
           {/* Calls */}
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-green-600">
+            <div className="flex items-center gap-2 text-green-dark">
               <Phone className="h-5 w-5" />
               <span className="text-2xl font-bold">{totalCalls}</span>
             </div>
@@ -175,7 +175,7 @@ export function OutreachStats({ dealId, buyerId, className }: OutreachStatsProps
 
           {/* Meetings */}
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-purple-600">
+            <div className="flex items-center gap-2 text-purple-dark">
               <Calendar className="h-5 w-5" />
               <span className="text-2xl font-bold">{stats.meetingsScheduled}</span>
             </div>
@@ -186,7 +186,7 @@ export function OutreachStats({ dealId, buyerId, className }: OutreachStatsProps
 
           {/* Completed */}
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-emerald-600">
+            <div className="flex items-center gap-2 text-green-dark">
               <CheckCircle className="h-5 w-5" />
               <span className="text-2xl font-bold">{stats.meetingsCompleted}</span>
             </div>

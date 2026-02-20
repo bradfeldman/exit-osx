@@ -83,11 +83,11 @@ export function TimeInStageChart({ dealId, className }: TimeInStageChartProps) {
   const TrendIcon = ({ trend }: { trend: 'up' | 'down' | 'stable' }) => {
     switch (trend) {
       case 'up':
-        return <TrendingUp className="h-3 w-3 text-red-500" />
+        return <TrendingUp className="h-3 w-3 text-red" />
       case 'down':
-        return <TrendingDown className="h-3 w-3 text-green-500" />
+        return <TrendingDown className="h-3 w-3 text-green" />
       default:
-        return <Minus className="h-3 w-3 text-gray-400" />
+        return <Minus className="h-3 w-3 text-muted-foreground" />
     }
   }
 
@@ -126,9 +126,9 @@ export function TimeInStageChart({ dealId, className }: TimeInStageChartProps) {
                     transition={{ delay: index * 0.05 + 0.2, duration: 0.5 }}
                     className={cn(
                       'h-full rounded',
-                      stage.avgDays <= 7 ? 'bg-green-400' :
-                      stage.avgDays <= 14 ? 'bg-blue-400' :
-                      stage.avgDays <= 30 ? 'bg-amber-400' : 'bg-red-400'
+                      stage.avgDays <= 7 ? 'bg-green' :
+                      stage.avgDays <= 14 ? 'bg-primary' :
+                      stage.avgDays <= 30 ? 'bg-orange' : 'bg-red'
                     )}
                   />
                   {/* Min/Max range indicator */}
@@ -150,19 +150,19 @@ export function TimeInStageChart({ dealId, className }: TimeInStageChartProps) {
         {/* Legend */}
         <div className="mt-4 pt-4 border-t flex flex-wrap items-center gap-3 text-xs">
           <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded bg-green-400" />
+            <div className="w-3 h-3 rounded bg-green" />
             <span>≤7 days</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded bg-blue-400" />
+            <div className="w-3 h-3 rounded bg-primary" />
             <span>8-14 days</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded bg-amber-400" />
+            <div className="w-3 h-3 rounded bg-orange" />
             <span>15-30 days</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded bg-red-400" />
+            <div className="w-3 h-3 rounded bg-red" />
             <span>&gt;30 days</span>
           </div>
         </div>

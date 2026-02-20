@@ -69,14 +69,14 @@ const ACTION_ICONS: Record<string, React.ReactNode> = {
 
 // Action colors
 const ACTION_COLORS: Record<string, string> = {
-  VIEWED: 'text-blue-600 bg-blue-100 dark:bg-blue-900/30',
-  DOWNLOADED: 'text-green-600 bg-green-100 dark:bg-green-900/30',
-  UPLOADED: 'text-purple-600 bg-purple-100 dark:bg-purple-900/30',
-  FOLDER_ACCESSED: 'text-amber-600 bg-amber-100 dark:bg-amber-900/30',
-  LOGGED_IN: 'text-gray-600 bg-gray-100 dark:bg-gray-900/30',
-  LOGGED_OUT: 'text-gray-600 bg-gray-100 dark:bg-gray-900/30',
-  SEARCH: 'text-indigo-600 bg-indigo-100 dark:bg-indigo-900/30',
-  PRINT: 'text-red-600 bg-red-100 dark:bg-red-900/30',
+  VIEWED: 'text-primary bg-accent-light dark:bg-primary/30',
+  DOWNLOADED: 'text-green-dark bg-green-light dark:bg-green-dark/30',
+  UPLOADED: 'text-purple-dark bg-purple-light dark:bg-purple-dark/30',
+  FOLDER_ACCESSED: 'text-orange-dark bg-orange-light dark:bg-orange-dark/30',
+  LOGGED_IN: 'text-muted-foreground bg-muted dark:bg-muted',
+  LOGGED_OUT: 'text-muted-foreground bg-muted dark:bg-muted',
+  SEARCH: 'text-primary bg-accent-light dark:bg-primary/30',
+  PRINT: 'text-red-dark bg-red-light dark:bg-red-dark/30',
 }
 
 const itemVariants = {
@@ -196,7 +196,7 @@ export function VDRActivityTimeline({
               >
                 {activities.map((activity, index) => {
                   const icon = ACTION_ICONS[activity.action] || <File className="h-4 w-4" />
-                  const colorClass = ACTION_COLORS[activity.action] || 'text-gray-600 bg-gray-100'
+                  const colorClass = ACTION_COLORS[activity.action] || 'text-muted-foreground bg-muted'
                   const label = ACTION_LABELS[activity.action] || activity.action
                   const meta = activity.metadata as VDRActivity['metadata']
 

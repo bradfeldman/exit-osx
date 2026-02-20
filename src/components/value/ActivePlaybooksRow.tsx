@@ -12,12 +12,12 @@ interface ActivePlaybooksRowProps {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  FINANCIAL: 'bg-emerald-100 text-emerald-700',
-  TRANSFERABILITY: 'bg-blue-100 text-blue-700',
-  OPERATIONAL: 'bg-purple-100 text-purple-700',
-  MARKET: 'bg-amber-100 text-amber-700',
-  LEGAL_TAX: 'bg-red-100 text-red-700',
-  PERSONAL: 'bg-gray-100 text-gray-700',
+  FINANCIAL: 'bg-green-light text-green-dark',
+  TRANSFERABILITY: 'bg-primary/10 text-primary',
+  OPERATIONAL: 'bg-purple-light text-purple',
+  MARKET: 'bg-orange-light text-orange-dark',
+  LEGAL_TAX: 'bg-red-light text-red-dark',
+  PERSONAL: 'bg-muted text-foreground',
 }
 
 export function ActivePlaybooksRow({ playbooks }: ActivePlaybooksRowProps) {

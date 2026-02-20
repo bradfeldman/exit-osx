@@ -19,11 +19,11 @@ function getSignalDotColor(severity: string): string {
   switch (severity) {
     case 'CRITICAL':
     case 'HIGH':
-      return 'bg-red-500'
+      return 'bg-red'
     case 'MEDIUM':
-      return 'bg-orange-500'
+      return 'bg-orange'
     case 'LOW':
-      return 'bg-emerald-500'
+      return 'bg-green'
     default:
       return 'bg-muted-foreground'
   }

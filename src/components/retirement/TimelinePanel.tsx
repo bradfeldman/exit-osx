@@ -29,16 +29,16 @@ export function TimelinePanel({ assumptions, onAssumptionChange, simplified }: T
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base font-medium text-gray-900">Retirement Timeline</CardTitle>
+        <CardTitle className="text-base font-medium text-foreground">Retirement Timeline</CardTitle>
       </CardHeader>
       <CardContent className="space-y-5">
         {/* Current Age */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <Label className="text-sm text-gray-700">Current Age</Label>
-            <span className="text-sm font-medium text-gray-900">{assumptions.currentAge}</span>
+            <Label className="text-sm text-foreground">Current Age</Label>
+            <span className="text-sm font-medium text-foreground">{assumptions.currentAge}</span>
           </div>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted-foreground">
             Synced from your{' '}
             <Link href="/dashboard/financials/personal" className="text-primary hover:underline">
               Personal Financial Statement
@@ -49,12 +49,12 @@ export function TimelinePanel({ assumptions, onAssumptionChange, simplified }: T
         {/* Retirement Age */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <Label className="text-sm text-gray-700">Retirement Age</Label>
+            <Label className="text-sm text-foreground">Retirement Age</Label>
             <div className="flex items-center gap-1">
               <button
                 type="button"
                 onClick={() => onAssumptionChange('retirementAge', Math.max(assumptions.currentAge, assumptions.retirementAge - 1))}
-                className="w-8 h-8 rounded-md border border-gray-300 hover:bg-gray-50 active:bg-gray-100 transition-colors flex items-center justify-center text-gray-600 font-medium"
+                className="w-8 h-8 rounded-md border border-border hover:bg-secondary active:bg-muted transition-colors flex items-center justify-center text-muted-foreground font-medium"
               >
                 −
               </button>
@@ -86,7 +86,7 @@ export function TimelinePanel({ assumptions, onAssumptionChange, simplified }: T
               <button
                 type="button"
                 onClick={() => onAssumptionChange('retirementAge', Math.min(100, assumptions.retirementAge + 1))}
-                className="w-8 h-8 rounded-md border border-gray-300 hover:bg-gray-50 active:bg-gray-100 transition-colors flex items-center justify-center text-gray-600 font-medium"
+                className="w-8 h-8 rounded-md border border-border hover:bg-secondary active:bg-muted transition-colors flex items-center justify-center text-muted-foreground font-medium"
               >
                 +
               </button>
@@ -99,7 +99,7 @@ export function TimelinePanel({ assumptions, onAssumptionChange, simplified }: T
             max={80}
             step={1}
           />
-          <div className="flex justify-between text-xs text-gray-400">
+          <div className="flex justify-between text-xs text-muted-foreground">
             <span>{Math.max(50, assumptions.currentAge)}</span>
             <span>SS Full: 67</span>
             <span>80</span>
@@ -108,18 +108,18 @@ export function TimelinePanel({ assumptions, onAssumptionChange, simplified }: T
 
         {/* Life Expectancy */}
         {simplified ? (
-          <p className="text-xs text-gray-500 -mt-1">
+          <p className="text-xs text-muted-foreground -mt-1">
             Life expectancy: Age {assumptions.lifeExpectancy} (SSA actuarial data + 3 yr buffer)
           </p>
         ) : (
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <Label className="text-sm text-gray-700">Life Expectancy</Label>
+              <Label className="text-sm text-foreground">Life Expectancy</Label>
               <div className="flex items-center gap-1">
                 <button
                   type="button"
                   onClick={() => onAssumptionChange('lifeExpectancy', Math.max(assumptions.retirementAge, assumptions.lifeExpectancy - 1))}
-                  className="w-8 h-8 rounded-md border border-gray-300 hover:bg-gray-50 active:bg-gray-100 transition-colors flex items-center justify-center text-gray-600 font-medium"
+                  className="w-8 h-8 rounded-md border border-border hover:bg-secondary active:bg-muted transition-colors flex items-center justify-center text-muted-foreground font-medium"
                 >
                   −
                 </button>
@@ -151,7 +151,7 @@ export function TimelinePanel({ assumptions, onAssumptionChange, simplified }: T
                 <button
                   type="button"
                   onClick={() => onAssumptionChange('lifeExpectancy', Math.min(110, assumptions.lifeExpectancy + 1))}
-                  className="w-8 h-8 rounded-md border border-gray-300 hover:bg-gray-50 active:bg-gray-100 transition-colors flex items-center justify-center text-gray-600 font-medium"
+                  className="w-8 h-8 rounded-md border border-border hover:bg-secondary active:bg-muted transition-colors flex items-center justify-center text-muted-foreground font-medium"
                 >
                   +
                 </button>
@@ -164,7 +164,7 @@ export function TimelinePanel({ assumptions, onAssumptionChange, simplified }: T
               max={100}
               step={1}
             />
-            <div className="flex justify-between text-xs text-gray-400">
+            <div className="flex justify-between text-xs text-muted-foreground">
               <span>{Math.max(70, assumptions.retirementAge)}</span>
               {assumptions.lifeExpectancy !== getLifeExpectancy(assumptions.currentAge) ? (
                 <button
@@ -183,14 +183,14 @@ export function TimelinePanel({ assumptions, onAssumptionChange, simplified }: T
         )}
 
         {/* Timeline Summary */}
-        <div className="p-3 bg-gray-50 rounded-lg">
+        <div className="p-3 bg-secondary rounded-lg">
           <div className="grid grid-cols-2 gap-4 text-center">
             <div>
-              <p className="text-xs text-gray-500">Years to Retirement</p>
+              <p className="text-xs text-muted-foreground">Years to Retirement</p>
               <p className="text-lg font-bold text-primary">{yearsToRetirement}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">Years in Retirement</p>
+              <p className="text-xs text-muted-foreground">Years in Retirement</p>
               <p className="text-lg font-bold text-primary">{yearsInRetirement}</p>
             </div>
           </div>
@@ -198,33 +198,33 @@ export function TimelinePanel({ assumptions, onAssumptionChange, simplified }: T
 
         {/* Visual Timeline */}
         <div className="pt-2">
-          <div className="relative h-8 bg-gray-100 rounded-full overflow-hidden">
+          <div className="relative h-8 bg-muted rounded-full overflow-hidden">
             {/* Accumulation Phase */}
             <div
-              className="absolute left-0 h-full bg-blue-200"
+              className="absolute left-0 h-full bg-accent-light"
               style={{
                 width: `${(yearsToRetirement / (yearsToRetirement + yearsInRetirement)) * 100}%`,
               }}
             />
             {/* Retirement Phase */}
             <div
-              className="absolute h-full bg-green-200"
+              className="absolute h-full bg-green-light"
               style={{
                 left: `${(yearsToRetirement / (yearsToRetirement + yearsInRetirement)) * 100}%`,
                 width: `${(yearsInRetirement / (yearsToRetirement + yearsInRetirement)) * 100}%`,
               }}
             />
             {/* Current marker */}
-            <div className="absolute left-0 top-0 w-1 h-full bg-blue-600" />
+            <div className="absolute left-0 top-0 w-1 h-full bg-primary" />
             {/* Retirement marker */}
             <div
-              className="absolute top-0 w-1 h-full bg-green-600"
+              className="absolute top-0 w-1 h-full bg-green-dark"
               style={{
                 left: `${(yearsToRetirement / (yearsToRetirement + yearsInRetirement)) * 100}%`,
               }}
             />
           </div>
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <div className="flex justify-between text-xs text-muted-foreground mt-1">
             <span>Now ({assumptions.currentAge})</span>
             <span>Retire ({assumptions.retirementAge})</span>
             <span>Age {assumptions.lifeExpectancy}</span>

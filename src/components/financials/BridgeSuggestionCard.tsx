@@ -7,13 +7,13 @@ import { Check, X } from 'lucide-react'
 import type { SuggestedAdjustment } from '@/lib/ai/ebitda-bridge'
 
 const CATEGORY_COLORS: Record<string, { bg: string; text: string }> = {
-  OWNER_COMPENSATION: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-300' },
-  PERSONAL_EXPENSES: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-300' },
-  ONE_TIME_CHARGES: { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-300' },
-  RELATED_PARTY: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-700 dark:text-orange-300' },
-  NON_OPERATING: { bg: 'bg-slate-100 dark:bg-slate-900/30', text: 'text-slate-700 dark:text-slate-300' },
+  OWNER_COMPENSATION: { bg: 'bg-accent-light dark:bg-primary/30', text: 'text-primary dark:text-primary' },
+  PERSONAL_EXPENSES: { bg: 'bg-purple-light dark:bg-purple/30', text: 'text-purple-dark dark:text-purple' },
+  ONE_TIME_CHARGES: { bg: 'bg-orange-light dark:bg-orange/30', text: 'text-orange-dark dark:text-orange' },
+  RELATED_PARTY: { bg: 'bg-orange-light dark:bg-orange/30', text: 'text-orange-dark dark:text-orange' },
+  NON_OPERATING: { bg: 'bg-muted dark:bg-foreground/30', text: 'text-foreground dark:text-muted' },
   DISCRETIONARY: { bg: 'bg-pink-100 dark:bg-pink-900/30', text: 'text-pink-700 dark:text-pink-300' },
-  OTHER: { bg: 'bg-gray-100 dark:bg-gray-900/30', text: 'text-gray-700 dark:text-gray-300' },
+  OTHER: { bg: 'bg-muted dark:bg-foreground/30', text: 'text-foreground dark:text-muted' },
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -48,10 +48,10 @@ export function BridgeSuggestionCard({
 
   const confidenceColor =
     suggestion.confidence >= 0.8
-      ? 'bg-green-500'
+      ? 'bg-green'
       : suggestion.confidence >= 0.5
-        ? 'bg-yellow-500'
-        : 'bg-gray-400'
+        ? 'bg-orange'
+        : 'bg-muted-foreground'
 
   const handleAccept = () => {
     const parsed = parseFloat(amount)

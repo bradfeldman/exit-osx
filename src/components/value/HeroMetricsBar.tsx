@@ -189,7 +189,7 @@ export function HeroMetricsBar({
 
           {changeDisplay && (
             <motion.div
-              className={`inline-flex items-center gap-1 mt-2 text-sm font-semibold ${changeDisplay.positive ? 'text-emerald-600' : 'text-destructive'}`}
+              className={`inline-flex items-center gap-1 mt-2 text-sm font-semibold ${changeDisplay.positive ? 'text-green-dark' : 'text-destructive'}`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.2 }}
@@ -228,8 +228,8 @@ export function HeroMetricsBar({
                     key={i}
                     className={`flex-1 rounded-t min-h-[8px] transition-all ${
                       i === sparkBars.length - 1
-                        ? 'bg-[#0071E3]'
-                        : 'bg-[#0071E3]/15'
+                        ? 'bg-primary'
+                        : 'bg-primary/15'
                     }`}
                     style={{ height: `${height}%` }}
                   />

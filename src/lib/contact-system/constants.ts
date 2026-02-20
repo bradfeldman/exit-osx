@@ -407,10 +407,10 @@ export const CONTACT_CATEGORY_LABELS: Record<string, string> = {
 }
 
 export const CONTACT_CATEGORY_COLORS: Record<string, { bg: string; text: string; darkBg: string; darkText: string }> = {
-  PROSPECT: { bg: 'bg-blue-100', text: 'text-blue-700', darkBg: 'dark:bg-blue-900/30', darkText: 'dark:text-blue-400' },
-  MANAGEMENT: { bg: 'bg-purple-100', text: 'text-purple-700', darkBg: 'dark:bg-purple-900/30', darkText: 'dark:text-purple-400' },
-  ADVISOR: { bg: 'bg-emerald-100', text: 'text-emerald-700', darkBg: 'dark:bg-emerald-900/30', darkText: 'dark:text-emerald-400' },
-  OTHER: { bg: 'bg-slate-100', text: 'text-slate-700', darkBg: 'dark:bg-slate-900/30', darkText: 'dark:text-slate-400' },
+  PROSPECT: { bg: 'bg-accent-light', text: 'text-primary', darkBg: 'dark:bg-primary/30', darkText: 'dark:text-primary' },
+  MANAGEMENT: { bg: 'bg-purple-light', text: 'text-purple-dark', darkBg: 'dark:bg-purple-dark/30', darkText: 'dark:text-purple' },
+  ADVISOR: { bg: 'bg-green-light', text: 'text-green-dark', darkBg: 'dark:bg-green-dark/30', darkText: 'dark:text-green' },
+  OTHER: { bg: 'bg-secondary', text: 'text-foreground', darkBg: 'dark:bg-foreground/30', darkText: 'dark:text-muted-foreground' },
 }
 
 /**

@@ -62,25 +62,25 @@ export function DisclosureTrigger({ onRefresh }: DisclosureTriggerProps = {}) {
 
   return (
     <>
-      <div className="rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 p-5">
+      <div className="rounded-2xl border border-primary/20 bg-gradient-to-r from-accent-light/50 to-accent-light/30 p-5">
         <div className="flex items-center gap-4">
           <div className="flex-shrink-0">
-            <div className="rounded-xl bg-blue-100 p-2.5">
-              <MessageCircle className="h-5 w-5 text-blue-600" />
+            <div className="rounded-xl bg-accent-light p-2.5">
+              <MessageCircle className="h-5 w-5 text-primary" />
             </div>
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-zinc-800">
+            <h3 className="text-sm font-semibold text-foreground">
               Quick Check
             </h3>
-            <p className="text-sm text-zinc-500 mt-0.5">
+            <p className="text-sm text-muted-foreground mt-0.5">
               Has anything changed that buyers would ask about?
             </p>
           </div>
           <Button
             onClick={() => setShowPrompt(true)}
             size="sm"
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="bg-primary hover:bg-primary/90 text-white"
           >
             Quick Check
           </Button>

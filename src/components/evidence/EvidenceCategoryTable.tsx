@@ -17,9 +17,9 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
 }
 
 const IMPACT_STYLES: Record<string, string> = {
-  critical: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
-  important: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-  moderate: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400',
+  critical: 'bg-red-light text-red-dark dark:bg-red-dark/30 dark:text-red',
+  important: 'bg-orange-light text-orange-dark dark:bg-orange-dark/30 dark:text-orange',
+  moderate: 'bg-accent-light text-primary dark:bg-primary/30 dark:text-primary',
 }
 
 interface UploadedDoc {
@@ -139,7 +139,7 @@ export function EvidenceCategoryTable({ categories, onUploadSuccess }: EvidenceC
                             className="w-full text-left flex items-start justify-between py-2 px-2 -mx-2 rounded-md hover:bg-muted/30 transition-colors cursor-pointer group"
                           >
                             <div className="flex items-start gap-2">
-                              <span className="text-emerald-500 mt-0.5">&#x2713;</span>
+                              <span className="text-green mt-0.5">&#x2713;</span>
                               <div>
                                 <p className="text-sm text-foreground group-hover:text-primary transition-colors">{doc.name}</p>
                                 <p className="text-xs text-muted-foreground mt-0.5">
@@ -148,7 +148,7 @@ export function EvidenceCategoryTable({ categories, onUploadSuccess }: EvidenceC
                                   {!doc.sourceLabel && doc.source === 'direct' && ' · Source: Direct upload'}
                                 </p>
                                 {doc.isStale && doc.staleReason && (
-                                  <p className="text-xs text-amber-600 mt-0.5">
+                                  <p className="text-xs text-orange-dark mt-0.5">
                                     &#x26A0; {doc.staleReason} &mdash; buyers expect current versions
                                   </p>
                                 )}

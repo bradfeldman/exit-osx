@@ -226,9 +226,9 @@ export function PLFormGrid({ companyId }: PLFormGridProps) {
           return (
             <span key={periodId} className={cn(
               'flex items-center gap-1',
-              status === 'saving' && 'text-amber-600',
-              status === 'saved' && 'text-emerald-600',
-              status === 'error' && 'text-red-600',
+              status === 'saving' && 'text-orange-dark',
+              status === 'saved' && 'text-green-dark',
+              status === 'error' && 'text-red-dark',
             )}>
               {status === 'saving' && <Loader2 className="h-3 w-3 animate-spin" />}
               {status === 'saved' && '✓'}
@@ -256,16 +256,16 @@ export function PLFormGrid({ companyId }: PLFormGridProps) {
           {/* Revenue Section */}
           <div className="space-y-3 mb-6">
             <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-600">
+              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-green-light text-green-dark">
                 <DollarSign className="h-3 w-3" />
               </div>
-              <span className="text-sm font-semibold text-gray-900">Revenue</span>
+              <span className="text-sm font-semibold text-foreground">Revenue</span>
             </div>
 
             {/* Gross Revenue */}
             <div className="grid gap-3" style={{ gridTemplateColumns: `200px repeat(${periods.length}, 1fr)` }}>
               <div className="flex items-center pl-8">
-                <span className="text-sm text-gray-600">Gross Revenue</span>
+                <span className="text-sm text-muted-foreground">Gross Revenue</span>
               </div>
               {periods.map(period => (
                 <GridInput
@@ -282,16 +282,16 @@ export function PLFormGrid({ companyId }: PLFormGridProps) {
           {/* Costs & Expenses Section */}
           <div className="space-y-3 mb-6">
             <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 text-orange-600">
+              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-orange-light text-orange">
                 <Receipt className="h-3 w-3" />
               </div>
-              <span className="text-sm font-semibold text-gray-900">Costs & Expenses</span>
+              <span className="text-sm font-semibold text-foreground">Costs & Expenses</span>
             </div>
 
             {/* COGS */}
             <div className="grid gap-3" style={{ gridTemplateColumns: `200px repeat(${periods.length}, 1fr)` }}>
               <div className="flex items-center pl-8">
-                <span className="text-sm text-gray-600">Cost of Goods Sold</span>
+                <span className="text-sm text-muted-foreground">Cost of Goods Sold</span>
               </div>
               {periods.map(period => (
                 <GridInput
@@ -307,7 +307,7 @@ export function PLFormGrid({ companyId }: PLFormGridProps) {
             {/* Total Expenses */}
             <div className="grid gap-3" style={{ gridTemplateColumns: `200px repeat(${periods.length}, 1fr)` }}>
               <div className="flex items-center pl-8">
-                <span className="text-sm text-gray-600">Total Expenses</span>
+                <span className="text-sm text-muted-foreground">Total Expenses</span>
               </div>
               {periods.map(period => (
                 <GridInput
@@ -333,15 +333,15 @@ export function PLFormGrid({ companyId }: PLFormGridProps) {
               </Button>
 
               {showDAIT && (
-                <div className="mt-2 space-y-2 p-3 bg-orange-50/50 rounded-lg border border-orange-100">
-                  <p className="text-xs text-orange-700 mb-3">
+                <div className="mt-2 space-y-2 p-3 bg-orange-light/50 rounded-lg border border-orange-light">
+                  <p className="text-xs text-orange-dark mb-3">
                     These are included in Total Expenses and added back to calculate EBITDA
                   </p>
 
                   {/* Depreciation */}
                   <div className="grid gap-3" style={{ gridTemplateColumns: `168px repeat(${periods.length}, 1fr)` }}>
                     <div className="flex items-center">
-                      <span className="text-xs text-gray-600">Depreciation</span>
+                      <span className="text-xs text-muted-foreground">Depreciation</span>
                     </div>
                     {periods.map(period => (
                       <GridInput
@@ -357,7 +357,7 @@ export function PLFormGrid({ companyId }: PLFormGridProps) {
                   {/* Amortization */}
                   <div className="grid gap-3" style={{ gridTemplateColumns: `168px repeat(${periods.length}, 1fr)` }}>
                     <div className="flex items-center">
-                      <span className="text-xs text-gray-600">Amortization</span>
+                      <span className="text-xs text-muted-foreground">Amortization</span>
                     </div>
                     {periods.map(period => (
                       <GridInput
@@ -373,7 +373,7 @@ export function PLFormGrid({ companyId }: PLFormGridProps) {
                   {/* Interest */}
                   <div className="grid gap-3" style={{ gridTemplateColumns: `168px repeat(${periods.length}, 1fr)` }}>
                     <div className="flex items-center">
-                      <span className="text-xs text-gray-600">Interest</span>
+                      <span className="text-xs text-muted-foreground">Interest</span>
                     </div>
                     {periods.map(period => (
                       <GridInput
@@ -389,7 +389,7 @@ export function PLFormGrid({ companyId }: PLFormGridProps) {
                   {/* Taxes */}
                   <div className="grid gap-3" style={{ gridTemplateColumns: `168px repeat(${periods.length}, 1fr)` }}>
                     <div className="flex items-center">
-                      <span className="text-xs text-gray-600">Taxes</span>
+                      <span className="text-xs text-muted-foreground">Taxes</span>
                     </div>
                     {periods.map(period => (
                       <GridInput
@@ -409,16 +409,16 @@ export function PLFormGrid({ companyId }: PLFormGridProps) {
           {/* Results Section (read-only) */}
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600">
+              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-accent-light text-primary">
                 <Calculator className="h-3 w-3" />
               </div>
-              <span className="text-sm font-semibold text-gray-900">Results</span>
+              <span className="text-sm font-semibold text-foreground">Results</span>
             </div>
 
             {/* Gross Profit */}
             <div className="grid gap-3" style={{ gridTemplateColumns: `200px repeat(${periods.length}, 1fr)` }}>
               <div className="flex items-center pl-8">
-                <span className="text-sm text-gray-600">Gross Profit</span>
+                <span className="text-sm text-muted-foreground">Gross Profit</span>
               </div>
               {periods.map(period => (
                 <CalcCell
@@ -432,7 +432,7 @@ export function PLFormGrid({ companyId }: PLFormGridProps) {
             {/* Gross Margin */}
             <div className="grid gap-3" style={{ gridTemplateColumns: `200px repeat(${periods.length}, 1fr)` }}>
               <div className="flex items-center pl-8">
-                <span className="text-sm text-gray-500">Gross Margin</span>
+                <span className="text-sm text-muted-foreground">Gross Margin</span>
               </div>
               {periods.map(period => (
                 <CalcCell
@@ -446,7 +446,7 @@ export function PLFormGrid({ companyId }: PLFormGridProps) {
             {/* EBITDA */}
             <div className="grid gap-3" style={{ gridTemplateColumns: `200px repeat(${periods.length}, 1fr)` }}>
               <div className="flex items-center pl-8">
-                <span className="text-sm font-semibold text-blue-700">EBITDA</span>
+                <span className="text-sm font-semibold text-primary">EBITDA</span>
               </div>
               {periods.map(period => (
                 <CalcCell
@@ -461,7 +461,7 @@ export function PLFormGrid({ companyId }: PLFormGridProps) {
             {/* EBITDA Margin */}
             <div className="grid gap-3" style={{ gridTemplateColumns: `200px repeat(${periods.length}, 1fr)` }}>
               <div className="flex items-center pl-8">
-                <span className="text-sm text-blue-600">EBITDA Margin</span>
+                <span className="text-sm text-primary">EBITDA Margin</span>
               </div>
               {periods.map(period => (
                 <CalcCell

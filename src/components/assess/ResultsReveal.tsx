@@ -168,7 +168,7 @@ export function ResultsReveal({
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Potential</p>
-                <p className="text-xl sm:text-2xl font-bold text-green-600">
+                <p className="text-xl sm:text-2xl font-bold text-green-dark">
                   {formatCurrency(results.potentialValue)}
                 </p>
                 {results.baseMultiple > 0 && (
@@ -179,7 +179,7 @@ export function ResultsReveal({
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Gap</p>
-                <p className="text-xl sm:text-2xl font-bold text-amber-700">
+                <p className="text-xl sm:text-2xl font-bold text-orange-dark">
                   {formatCurrency(results.valueGap)}
                 </p>
                 <p className="text-xs text-muted-foreground">recoverable</p>
@@ -226,7 +226,7 @@ export function ResultsReveal({
             className="bg-card rounded-xl border border-border p-5"
           >
             <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-amber-500" />
+              <AlertTriangle className="w-5 h-5 text-orange" />
               Your #1 Risk Area
             </h3>
             <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
@@ -235,7 +235,7 @@ export function ResultsReveal({
                 style={{
                   backgroundColor:
                     topRiskScore < 0.5 ? '#FEF2F2' : '#FFFBEB',
-                  color: topRiskScore < 0.5 ? '#EF4444' : '#F59E0B',
+                  color: topRiskScore < 0.5 ? 'var(--red)' : 'var(--orange)',
                 }}
               >
                 {Math.round(topRiskScore * 100)}
@@ -298,15 +298,15 @@ export function ResultsReveal({
                 </h3>
                 <ul className="mt-4 mb-6 space-y-2 text-sm text-muted-foreground text-left max-w-sm mx-auto">
                   <li className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                    <Check className="w-4 h-4 text-green-dark mt-0.5 shrink-0" />
                     <span>Detailed risk breakdown across 6 buyer confidence factors</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                    <Check className="w-4 h-4 text-green-dark mt-0.5 shrink-0" />
                     <span>Prioritized action plan with estimated value impact</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                    <Check className="w-4 h-4 text-green-dark mt-0.5 shrink-0" />
                     <span>Track your progress and improve your score over time</span>
                   </li>
                 </ul>

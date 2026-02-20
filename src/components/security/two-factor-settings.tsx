@@ -164,7 +164,7 @@ export function TwoFactorSettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             {enabled ? (
-              <ShieldCheck className="h-5 w-5 text-green-600" />
+              <ShieldCheck className="h-5 w-5 text-green-dark" />
             ) : (
               <Shield className="h-5 w-5" />
             )}
@@ -176,7 +176,7 @@ export function TwoFactorSettings() {
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
+            <div className="p-3 text-sm text-red-dark bg-red-light border border-red/20 rounded-lg flex items-center gap-2">
               <AlertTriangle className="h-4 w-4" />
               {error}
             </div>
@@ -186,11 +186,11 @@ export function TwoFactorSettings() {
             <>
               {enabled ? (
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <ShieldCheck className="h-6 w-6 text-green-600" />
+                  <div className="flex items-center gap-3 p-4 bg-green-light border border-green/20 rounded-lg">
+                    <ShieldCheck className="h-6 w-6 text-green-dark" />
                     <div>
-                      <p className="font-medium text-green-900">2FA is enabled</p>
-                      <p className="text-sm text-green-700">
+                      <p className="font-medium text-green-dark">2FA is enabled</p>
+                      <p className="text-sm text-green-dark">
                         Your account is protected with two-factor authentication
                       </p>
                     </div>
@@ -260,7 +260,7 @@ export function TwoFactorSettings() {
                       onClick={() => copyToClipboard(secret, -2)}
                     >
                       {copiedIndex === -2 ? (
-                        <Check className="h-4 w-4 text-green-600" />
+                        <Check className="h-4 w-4 text-green-dark" />
                       ) : (
                         <Copy className="h-4 w-4" />
                       )}
@@ -311,12 +311,12 @@ export function TwoFactorSettings() {
 
           {setupStep === 'backup' && (
             <div className="space-y-6">
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="p-4 bg-orange-light border border-orange/20 rounded-lg">
                 <div className="flex items-start gap-3">
-                  <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5" />
+                  <AlertTriangle className="h-5 w-5 text-orange-dark mt-0.5" />
                   <div>
-                    <p className="font-medium text-amber-900">Save your backup codes</p>
-                    <p className="text-sm text-amber-700 mt-1">
+                    <p className="font-medium text-orange-dark">Save your backup codes</p>
+                    <p className="text-sm text-orange-dark mt-1">
                       Store these codes in a safe place. You can use them to access your
                       account if you lose your authenticator device.
                     </p>
@@ -338,7 +338,7 @@ export function TwoFactorSettings() {
                       onClick={() => copyToClipboard(code, index)}
                     >
                       {copiedIndex === index ? (
-                        <Check className="h-3 w-3 text-green-600" />
+                        <Check className="h-3 w-3 text-green-dark" />
                       ) : (
                         <Copy className="h-3 w-3" />
                       )}
@@ -351,7 +351,7 @@ export function TwoFactorSettings() {
                 <Button variant="outline" onClick={copyAllBackupCodes}>
                   {copiedIndex === -1 ? (
                     <>
-                      <Check className="h-4 w-4 mr-2 text-green-600" />
+                      <Check className="h-4 w-4 mr-2 text-green-dark" />
                       Copied!
                     </>
                   ) : (
@@ -369,11 +369,11 @@ export function TwoFactorSettings() {
           )}
 
           {setupStep === 'complete' && (
-            <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <ShieldCheck className="h-6 w-6 text-green-600" />
+            <div className="flex items-center gap-3 p-4 bg-green-light border border-green/20 rounded-lg">
+              <ShieldCheck className="h-6 w-6 text-green-dark" />
               <div>
-                <p className="font-medium text-green-900">2FA enabled successfully!</p>
-                <p className="text-sm text-green-700">
+                <p className="font-medium text-green-dark">2FA enabled successfully!</p>
+                <p className="text-sm text-green-dark">
                   Your account is now protected with two-factor authentication
                 </p>
               </div>
@@ -395,7 +395,7 @@ export function TwoFactorSettings() {
 
           <div className="space-y-4 py-4">
             {error && (
-              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+              <div className="p-3 text-sm text-red-dark bg-red-light border border-red/20 rounded-lg">
                 {error}
               </div>
             )}
@@ -441,7 +441,7 @@ export function TwoFactorSettings() {
 
           <div className="space-y-4 py-4">
             {error && (
-              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+              <div className="p-3 text-sm text-red-dark bg-red-light border border-red/20 rounded-lg">
                 {error}
               </div>
             )}

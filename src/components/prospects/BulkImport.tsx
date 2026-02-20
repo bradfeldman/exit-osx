@@ -338,7 +338,7 @@ Another Co,Jane Doe,jane@another.com,555-5678`}
                 </div>
 
                 {error && (
-                  <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 dark:bg-red-950/30 p-3 rounded-lg">
+                  <div className="flex items-center gap-2 text-sm text-red-dark bg-red-light dark:bg-red-dark/30 p-3 rounded-lg">
                     <AlertCircle className="h-4 w-4" />
                     {error}
                   </div>
@@ -381,7 +381,7 @@ Another Co,Jane Doe,jane@another.com,555-5678`}
                           <TableCell>
                             {entry.companies[0] ? (
                               <span className="flex items-center gap-1">
-                                <Building2 className="h-3.5 w-3.5 text-purple-500" />
+                                <Building2 className="h-3.5 w-3.5 text-purple" />
                                 {entry.companies[0].name}
                               </span>
                             ) : (
@@ -391,7 +391,7 @@ Another Co,Jane Doe,jane@another.com,555-5678`}
                           <TableCell>
                             {entry.people[0] ? (
                               <span className="flex items-center gap-1">
-                                <User className="h-3.5 w-3.5 text-blue-500" />
+                                <User className="h-3.5 w-3.5 text-primary" />
                                 {entry.people[0].fullName}
                               </span>
                             ) : (
@@ -413,8 +413,8 @@ Another Co,Jane Doe,jane@another.com,555-5678`}
                 </div>
 
                 {dealId && (
-                  <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                  <div className="bg-accent-light dark:bg-primary/30 border border-primary/20 dark:border-primary rounded-lg p-3">
+                    <p className="text-sm text-primary dark:text-primary">
                       Companies will be added as buyers to the current deal.
                     </p>
                   </div>
@@ -451,20 +451,20 @@ Another Co,Jane Doe,jane@another.com,555-5678`}
               >
                 {/* Summary */}
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg p-4 text-center">
-                    <CheckCircle className="h-8 w-8 mx-auto mb-2 text-green-600" />
-                    <p className="text-2xl font-bold text-green-700">{successCount}</p>
-                    <p className="text-sm text-green-600">Imported</p>
+                  <div className="bg-green-light dark:bg-green-dark/30 border border-green/20 dark:border-green-dark rounded-lg p-4 text-center">
+                    <CheckCircle className="h-8 w-8 mx-auto mb-2 text-green-dark" />
+                    <p className="text-2xl font-bold text-green-dark">{successCount}</p>
+                    <p className="text-sm text-green-dark">Imported</p>
                   </div>
-                  <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4 text-center">
-                    <AlertCircle className="h-8 w-8 mx-auto mb-2 text-amber-600" />
-                    <p className="text-2xl font-bold text-amber-700">{duplicateCount}</p>
-                    <p className="text-sm text-amber-600">Duplicates</p>
+                  <div className="bg-orange-light dark:bg-orange-dark/30 border border-orange/20 dark:border-orange-dark rounded-lg p-4 text-center">
+                    <AlertCircle className="h-8 w-8 mx-auto mb-2 text-orange-dark" />
+                    <p className="text-2xl font-bold text-orange-dark">{duplicateCount}</p>
+                    <p className="text-sm text-orange-dark">Duplicates</p>
                   </div>
-                  <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg p-4 text-center">
-                    <XCircle className="h-8 w-8 mx-auto mb-2 text-red-600" />
-                    <p className="text-2xl font-bold text-red-700">{errorCount}</p>
-                    <p className="text-sm text-red-600">Errors</p>
+                  <div className="bg-red-light dark:bg-red-dark/30 border border-red/20 dark:border-red-dark rounded-lg p-4 text-center">
+                    <XCircle className="h-8 w-8 mx-auto mb-2 text-red-dark" />
+                    <p className="text-2xl font-bold text-red-dark">{errorCount}</p>
+                    <p className="text-sm text-red-dark">Errors</p>
                   </div>
                 </div>
 
@@ -483,13 +483,13 @@ Another Co,Jane Doe,jane@another.com,555-5678`}
                         <TableRow key={result.index}>
                           <TableCell>
                             {result.status === 'success' && (
-                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              <CheckCircle className="h-4 w-4 text-green-dark" />
                             )}
                             {result.status === 'duplicate' && (
-                              <AlertCircle className="h-4 w-4 text-amber-600" />
+                              <AlertCircle className="h-4 w-4 text-orange-dark" />
                             )}
                             {result.status === 'error' && (
-                              <XCircle className="h-4 w-4 text-red-600" />
+                              <XCircle className="h-4 w-4 text-red-dark" />
                             )}
                           </TableCell>
                           <TableCell className="font-medium">{result.name}</TableCell>

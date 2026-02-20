@@ -42,11 +42,11 @@ export function SensitivityTable({ assets, assumptions }: SensitivityTableProps)
 
   // Calculate color based on success rate
   const getCellColor = (successRate: number) => {
-    if (successRate >= 100) return 'bg-green-100 text-green-900'
-    if (successRate >= 90) return 'bg-green-50 text-green-800'
-    if (successRate >= 70) return 'bg-yellow-50 text-yellow-800'
-    if (successRate >= 50) return 'bg-orange-50 text-orange-800'
-    return 'bg-red-50 text-red-800'
+    if (successRate >= 100) return 'bg-green-light text-green-dark'
+    if (successRate >= 90) return 'bg-green-light/50 text-green-dark'
+    if (successRate >= 70) return 'bg-orange-light/50 text-orange-dark'
+    if (successRate >= 50) return 'bg-orange-light text-orange-dark'
+    return 'bg-red-light text-red-dark'
   }
 
   const isCenter = (growth: number, spending: number) => {
@@ -56,8 +56,8 @@ export function SensitivityTable({ assets, assumptions }: SensitivityTableProps)
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base font-medium text-gray-900">Sensitivity Analysis</CardTitle>
-        <p className="text-xs text-gray-500 mt-1">
+        <CardTitle className="text-base font-medium text-foreground">Sensitivity Analysis</CardTitle>
+        <p className="text-xs text-muted-foreground mt-1">
           How long money lasts by Growth Rate vs Annual Spending
         </p>
       </CardHeader>
@@ -66,14 +66,14 @@ export function SensitivityTable({ assets, assumptions }: SensitivityTableProps)
           <table className="w-full text-xs">
             <thead>
               <tr>
-                <th className="p-1.5 text-left text-gray-500 font-medium">Growth \ Spending</th>
+                <th className="p-1.5 text-left text-muted-foreground font-medium">Growth \ Spending</th>
                 {spendingLevels.map((spending) => (
                   <th
                     key={spending}
                     className={`p-1.5 text-center font-medium ${
                       spending === assumptions.annualSpendingNeeds
                         ? 'bg-primary/10 text-primary'
-                        : 'text-gray-500'
+                        : 'text-muted-foreground'
                     }`}
                   >
                     {formatCurrency(spending)}
@@ -88,7 +88,7 @@ export function SensitivityTable({ assets, assumptions }: SensitivityTableProps)
                     className={`p-1.5 text-left font-medium ${
                       growth === assumptions.growthRate
                         ? 'bg-primary/10 text-primary'
-                        : 'text-gray-500'
+                        : 'text-muted-foreground'
                     }`}
                   >
                     {formatPercent(growth, 0)}
@@ -122,18 +122,18 @@ export function SensitivityTable({ assets, assumptions }: SensitivityTableProps)
         </div>
 
         {/* Legend */}
-        <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
+        <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
-              <div className="w-3 h-3 bg-green-100 rounded"></div>
+              <div className="w-3 h-3 bg-green-light rounded"></div>
               <span>Covered</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-3 h-3 bg-yellow-50 rounded"></div>
+              <div className="w-3 h-3 bg-orange-light/50 rounded"></div>
               <span>Marginal</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-3 h-3 bg-red-50 rounded"></div>
+              <div className="w-3 h-3 bg-red-light rounded"></div>
               <span>Shortfall</span>
             </div>
           </div>
@@ -144,8 +144,8 @@ export function SensitivityTable({ assets, assumptions }: SensitivityTableProps)
         </div>
 
         {/* Insights */}
-        <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-          <p className="text-xs text-blue-700">
+        <div className="mt-4 p-3 bg-accent-light rounded-lg">
+          <p className="text-xs text-primary">
             <span className="font-medium">Key insight:</span> Each 1% reduction in growth rate
             requires approximately{' '}
             {formatCurrency(

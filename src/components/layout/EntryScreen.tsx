@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 export function EntryScreen() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-br from-foreground via-foreground to-foreground flex flex-col items-center justify-center p-6">
       {/* Logo */}
       <div className="mb-8 flex items-center gap-3">
         <svg viewBox="0 0 32 32" className="h-10 w-10 shrink-0" fill="none" aria-label="Exit OS">
@@ -20,7 +20,7 @@ export function EntryScreen() {
           See how buyers value your business
         </h1>
 
-        <p className="text-lg text-slate-300">
+        <p className="text-lg text-muted">
           Get your personalized business valuation in minutes. Understand your exit options and maximize your company&apos;s worth.
         </p>
 
@@ -42,7 +42,7 @@ export function EntryScreen() {
               <ClockIcon className="h-5 w-5 text-primary" />
             </div>
             <h3 className="font-semibold text-white mb-1">Quick Assessment</h3>
-            <p className="text-sm text-slate-400">Get your initial valuation in under 10 minutes</p>
+            <p className="text-sm text-muted-foreground">Get your initial valuation in under 10 minutes</p>
           </div>
 
           <div className="p-4 rounded-lg bg-white/5 border border-white/10">
@@ -50,7 +50,7 @@ export function EntryScreen() {
               <ChartIcon className="h-5 w-5 text-primary" />
             </div>
             <h3 className="font-semibold text-white mb-1">Buyer&apos;s Perspective</h3>
-            <p className="text-sm text-slate-400">See exactly how buyers evaluate your business</p>
+            <p className="text-sm text-muted-foreground">See exactly how buyers evaluate your business</p>
           </div>
 
           <div className="p-4 rounded-lg bg-white/5 border border-white/10">
@@ -58,7 +58,7 @@ export function EntryScreen() {
               <TargetIcon className="h-5 w-5 text-primary" />
             </div>
             <h3 className="font-semibold text-white mb-1">Action Plan</h3>
-            <p className="text-sm text-slate-400">Get a roadmap to increase your exit value</p>
+            <p className="text-sm text-muted-foreground">Get a roadmap to increase your exit value</p>
           </div>
         </div>
       </div>

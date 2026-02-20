@@ -33,8 +33,8 @@ export function SessionTimeoutWarning() {
       <DialogContent showCloseButton={false}>
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100">
-              <Clock className="h-5 w-5 text-amber-600" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-light">
+              <Clock className="h-5 w-5 text-orange-dark" />
             </div>
             <div>
               <DialogTitle>Session Expiring</DialogTitle>
@@ -46,7 +46,7 @@ export function SessionTimeoutWarning() {
         </DialogHeader>
 
         <div className="flex flex-col items-center gap-2 py-4">
-          <p className="text-4xl font-mono font-semibold text-amber-600 tabular-nums">
+          <p className="text-4xl font-mono font-semibold text-orange-dark tabular-nums">
             {formatTime(remainingSeconds)}
           </p>
           <p className="text-sm text-muted-foreground">

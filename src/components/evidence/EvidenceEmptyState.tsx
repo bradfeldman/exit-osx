@@ -61,9 +61,9 @@ const CATEGORY_CARDS = [
 ]
 
 const IMPACT_COLORS = {
-  critical: 'text-rose-600 bg-rose-100 dark:bg-rose-900/30 dark:text-rose-400',
-  important: 'text-amber-600 bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400',
-  moderate: 'text-sky-600 bg-sky-100 dark:bg-sky-900/30 dark:text-sky-400',
+  critical: 'text-red-dark bg-red-light dark:bg-red-dark/30 dark:text-red',
+  important: 'text-orange-dark bg-orange-light dark:bg-orange-dark/30 dark:text-orange',
+  moderate: 'text-primary bg-accent-light dark:bg-primary/30 dark:text-primary',
 }
 
 interface EvidenceEmptyStateProps {

@@ -193,25 +193,25 @@ export function FinancialSettingsModal({
           <div className="space-y-6 py-4">
             {/* QuickBooks Integration Section */}
             <div className="space-y-3">
-              <h4 className="font-medium text-gray-900">QuickBooks Integration</h4>
-              <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 border">
+              <h4 className="font-medium text-foreground">QuickBooks Integration</h4>
+              <div className="flex items-center justify-between p-4 rounded-lg bg-secondary border">
                 <div className="flex items-center gap-3">
                   {isQuickBooksConnected ? (
                     <>
-                      <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      <CheckCircle2 className="h-5 w-5 text-green-dark" />
                       <div>
-                        <p className="font-medium text-green-700">Connected</p>
+                        <p className="font-medium text-green-dark">Connected</p>
                         {formattedSyncDate && (
-                          <p className="text-sm text-gray-500">Last sync: {formattedSyncDate}</p>
+                          <p className="text-sm text-muted-foreground">Last sync: {formattedSyncDate}</p>
                         )}
                       </div>
                     </>
                   ) : (
                     <>
-                      <Link2 className="h-5 w-5 text-gray-400" />
+                      <Link2 className="h-5 w-5 text-muted-foreground" />
                       <div>
-                        <p className="font-medium text-gray-700">Not Connected</p>
-                        <p className="text-sm text-gray-500">Connect to import financial data</p>
+                        <p className="font-medium text-foreground">Not Connected</p>
+                        <p className="text-sm text-muted-foreground">Connect to import financial data</p>
                       </div>
                     </>
                   )}
@@ -225,11 +225,11 @@ export function FinancialSettingsModal({
               </div>
             </div>
 
-            <hr className="border-gray-200" />
+            <hr className="border-border" />
 
             {/* WACC Assumptions Section */}
             <div className="space-y-4">
-              <h4 className="font-medium text-gray-900">WACC Assumptions</h4>
+              <h4 className="font-medium text-foreground">WACC Assumptions</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="riskFreeRate">Risk-Free Rate (%)</Label>
@@ -294,16 +294,16 @@ export function FinancialSettingsModal({
                   />
                 </div>
               </div>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 Cost of Equity: <span className="font-medium">{(costOfEquity * 100).toFixed(2)}%</span>
               </p>
             </div>
 
-            <hr className="border-gray-200" />
+            <hr className="border-border" />
 
             {/* Growth Assumptions Section */}
             <div className="space-y-4">
-              <h4 className="font-medium text-gray-900">Growth Assumptions</h4>
+              <h4 className="font-medium text-foreground">Growth Assumptions</h4>
               <div className="grid grid-cols-5 gap-2">
                 {['year1', 'year2', 'year3', 'year4', 'year5'].map((year, idx) => (
                   <div key={year} className="space-y-1">
@@ -323,11 +323,11 @@ export function FinancialSettingsModal({
               </div>
             </div>
 
-            <hr className="border-gray-200" />
+            <hr className="border-border" />
 
             {/* Terminal Value Section */}
             <div className="space-y-4">
-              <h4 className="font-medium text-gray-900">Terminal Value</h4>
+              <h4 className="font-medium text-foreground">Terminal Value</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="terminalMethod">Method</Label>

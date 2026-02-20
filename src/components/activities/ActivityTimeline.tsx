@@ -76,22 +76,22 @@ const ACTIVITY_ICONS: Record<string, React.ReactNode> = {
 
 // Color mapping for activity types
 const ACTIVITY_COLORS: Record<ActivityType, string> = {
-  EMAIL_SENT: 'text-blue-600 bg-blue-100 dark:bg-blue-900/30',
-  EMAIL_RECEIVED: 'text-blue-600 bg-blue-100 dark:bg-blue-900/30',
-  CALL_OUTBOUND: 'text-green-600 bg-green-100 dark:bg-green-900/30',
-  CALL_INBOUND: 'text-green-600 bg-green-100 dark:bg-green-900/30',
-  MEETING_SCHEDULED: 'text-purple-600 bg-purple-100 dark:bg-purple-900/30',
-  MEETING_COMPLETED: 'text-purple-600 bg-purple-100 dark:bg-purple-900/30',
-  MEETING_CANCELLED: 'text-gray-600 bg-gray-100 dark:bg-gray-900/30',
-  NOTE_ADDED: 'text-gray-600 bg-gray-100 dark:bg-gray-900/30',
-  STAGE_CHANGED: 'text-amber-600 bg-amber-100 dark:bg-amber-900/30',
-  DOCUMENT_SENT: 'text-indigo-600 bg-indigo-100 dark:bg-indigo-900/30',
-  DOCUMENT_RECEIVED: 'text-indigo-600 bg-indigo-100 dark:bg-indigo-900/30',
-  VDR_ACCESS_GRANTED: 'text-teal-600 bg-teal-100 dark:bg-teal-900/30',
-  VDR_ACCESS_REVOKED: 'text-red-600 bg-red-100 dark:bg-red-900/30',
-  APPROVAL_REQUESTED: 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30',
-  APPROVAL_GRANTED: 'text-green-600 bg-green-100 dark:bg-green-900/30',
-  APPROVAL_DENIED: 'text-red-600 bg-red-100 dark:bg-red-900/30',
+  EMAIL_SENT: 'text-primary bg-accent-light dark:bg-primary/30',
+  EMAIL_RECEIVED: 'text-primary bg-accent-light dark:bg-primary/30',
+  CALL_OUTBOUND: 'text-green-dark bg-green-light dark:bg-green-dark/30',
+  CALL_INBOUND: 'text-green-dark bg-green-light dark:bg-green-dark/30',
+  MEETING_SCHEDULED: 'text-purple-dark bg-purple-light dark:bg-purple-dark/30',
+  MEETING_COMPLETED: 'text-purple-dark bg-purple-light dark:bg-purple-dark/30',
+  MEETING_CANCELLED: 'text-muted-foreground bg-muted dark:bg-muted',
+  NOTE_ADDED: 'text-muted-foreground bg-muted dark:bg-muted',
+  STAGE_CHANGED: 'text-orange-dark bg-orange-light dark:bg-orange-dark/30',
+  DOCUMENT_SENT: 'text-primary bg-accent-light dark:bg-primary/30',
+  DOCUMENT_RECEIVED: 'text-primary bg-accent-light dark:bg-primary/30',
+  VDR_ACCESS_GRANTED: 'text-teal bg-teal-light dark:bg-teal/30',
+  VDR_ACCESS_REVOKED: 'text-red-dark bg-red-light dark:bg-red-dark/30',
+  APPROVAL_REQUESTED: 'text-orange bg-orange-light dark:bg-orange/30',
+  APPROVAL_GRANTED: 'text-green-dark bg-green-light dark:bg-green-dark/30',
+  APPROVAL_DENIED: 'text-red-dark bg-red-light dark:bg-red-dark/30',
 }
 
 const itemVariants = {

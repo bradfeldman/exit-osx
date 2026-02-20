@@ -68,10 +68,10 @@ interface SellerBuyerListProps {
 
 // Approval status colors
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
-  'Pending Review': { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-300' },
-  'Approved': { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-300' },
-  'On Hold': { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-700 dark:text-orange-300' },
-  'Denied': { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-300' },
+  'Pending Review': { bg: 'bg-orange-light dark:bg-orange-dark/30', text: 'text-orange-dark dark:text-orange' },
+  'Approved': { bg: 'bg-green-light dark:bg-green-dark/30', text: 'text-green-dark dark:text-green' },
+  'On Hold': { bg: 'bg-orange-light dark:bg-orange-dark/30', text: 'text-orange-dark dark:text-orange' },
+  'Denied': { bg: 'bg-red-light dark:bg-red-dark/30', text: 'text-red-dark dark:text-red' },
 }
 
 const containerVariants = {
@@ -151,7 +151,7 @@ export function SellerBuyerList({ dealId, onApprovalChange }: SellerBuyerListPro
           <h2 className="text-lg font-semibold">Prospective Buyers</h2>
           <p className="text-sm text-muted-foreground">
             {pendingCount > 0 && (
-              <span className="text-amber-600 font-medium">{pendingCount} pending your review • </span>
+              <span className="text-orange-dark font-medium">{pendingCount} pending your review • </span>
             )}
             {buyers.length} total buyers
           </p>
@@ -227,7 +227,7 @@ export function SellerBuyerList({ dealId, onApprovalChange }: SellerBuyerListPro
                         variants={rowVariants}
                         className={cn(
                           'border-b last:border-b-0 hover:bg-muted/30 transition-colors',
-                          isPending && 'bg-amber-50/50 dark:bg-amber-950/10'
+                          isPending && 'bg-orange-light/50 dark:bg-orange-dark/10'
                         )}
                       >
                         <TableCell>
@@ -265,7 +265,7 @@ export function SellerBuyerList({ dealId, onApprovalChange }: SellerBuyerListPro
                             <div
                               className={cn(
                                 'w-6 h-6 rounded flex items-center justify-center',
-                                buyer.hasNDA ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
+                                buyer.hasNDA ? 'bg-green-light text-green-dark' : 'bg-muted text-muted-foreground'
                               )}
                               title="NDA"
                             >
@@ -274,7 +274,7 @@ export function SellerBuyerList({ dealId, onApprovalChange }: SellerBuyerListPro
                             <div
                               className={cn(
                                 'w-6 h-6 rounded flex items-center justify-center',
-                                buyer.hasCIM ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
+                                buyer.hasCIM ? 'bg-green-light text-green-dark' : 'bg-muted text-muted-foreground'
                               )}
                               title="CIM"
                             >
@@ -283,7 +283,7 @@ export function SellerBuyerList({ dealId, onApprovalChange }: SellerBuyerListPro
                             <div
                               className={cn(
                                 'w-6 h-6 rounded flex items-center justify-center',
-                                buyer.hasIOI ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
+                                buyer.hasIOI ? 'bg-green-light text-green-dark' : 'bg-muted text-muted-foreground'
                               )}
                               title="IOI"
                             >
@@ -292,7 +292,7 @@ export function SellerBuyerList({ dealId, onApprovalChange }: SellerBuyerListPro
                             <div
                               className={cn(
                                 'w-6 h-6 rounded flex items-center justify-center',
-                                buyer.hasLOI ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
+                                buyer.hasLOI ? 'bg-green-light text-green-dark' : 'bg-muted text-muted-foreground'
                               )}
                               title="LOI"
                             >
@@ -311,7 +311,7 @@ export function SellerBuyerList({ dealId, onApprovalChange }: SellerBuyerListPro
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                className="h-8 w-8 text-green-dark hover:text-green-dark hover:bg-green-light"
                                 onClick={() => handleApproval(buyer.id, 'approve')}
                                 disabled={isProcessing === buyer.id}
                               >
@@ -324,7 +324,7 @@ export function SellerBuyerList({ dealId, onApprovalChange }: SellerBuyerListPro
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                className="h-8 w-8 text-red-dark hover:text-red-dark hover:bg-red-light"
                                 onClick={() => {
                                   const reason = prompt('Reason for denial:')
                                   if (reason) handleApproval(buyer.id, 'deny', reason)
@@ -351,7 +351,7 @@ export function SellerBuyerList({ dealId, onApprovalChange }: SellerBuyerListPro
                                   <DropdownMenuItem
                                     onClick={() => handleApproval(buyer.id, 'approve')}
                                   >
-                                    <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                                    <CheckCircle className="h-4 w-4 mr-2 text-green-dark" />
                                     Approve
                                   </DropdownMenuItem>
                                 )}
@@ -359,7 +359,7 @@ export function SellerBuyerList({ dealId, onApprovalChange }: SellerBuyerListPro
                                   <DropdownMenuItem
                                     onClick={() => handleApproval(buyer.id, 'hold')}
                                   >
-                                    <Pause className="h-4 w-4 mr-2 text-orange-600" />
+                                    <Pause className="h-4 w-4 mr-2 text-orange" />
                                     Put on Hold
                                   </DropdownMenuItem>
                                 )}
@@ -370,7 +370,7 @@ export function SellerBuyerList({ dealId, onApprovalChange }: SellerBuyerListPro
                                       if (reason) handleApproval(buyer.id, 'deny', reason)
                                     }}
                                   >
-                                    <XCircle className="h-4 w-4 mr-2 text-red-600" />
+                                    <XCircle className="h-4 w-4 mr-2 text-red-dark" />
                                     Deny
                                   </DropdownMenuItem>
                                 )}

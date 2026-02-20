@@ -64,7 +64,7 @@ function YoYIndicator({ current, prior }: { current?: number; prior?: number }) 
 
   if (Math.abs(change) < 0.1) {
     return (
-      <div className="flex items-center gap-1 text-xs text-gray-500">
+      <div className="flex items-center gap-1 text-xs text-muted-foreground">
         <Minus className="h-3 w-3" />
         <span>0%</span>
       </div>
@@ -76,7 +76,7 @@ function YoYIndicator({ current, prior }: { current?: number; prior?: number }) 
   return (
     <div className={cn(
       "flex items-center gap-1 text-xs font-medium",
-      isPositive ? "text-emerald-600" : "text-red-600"
+      isPositive ? "text-green-dark" : "text-red-dark"
     )}>
       {isPositive ? (
         <TrendingUp className="h-3 w-3" />
@@ -101,13 +101,13 @@ function MetricRow({ label, value, priorValue, isHighlighted, isNegative, classN
   return (
     <div className={cn(
       "flex items-center justify-between py-2",
-      isHighlighted && "bg-blue-50 -mx-3 px-3 rounded-lg",
+      isHighlighted && "bg-accent-light -mx-3 px-3 rounded-lg",
       className
     )}>
       <div className="flex items-center gap-2">
         <span className={cn(
           "text-sm",
-          isHighlighted ? "font-semibold text-blue-900" : "text-gray-600"
+          isHighlighted ? "font-semibold text-primary" : "text-muted-foreground"
         )}>
           {label}
         </span>
@@ -115,7 +115,7 @@ function MetricRow({ label, value, priorValue, isHighlighted, isNegative, classN
       </div>
       <span className={cn(
         "font-semibold tabular-nums",
-        isHighlighted ? "text-blue-700" : isNegative ? "text-red-600" : "text-gray-900"
+        isHighlighted ? "text-primary" : isNegative ? "text-red-dark" : "text-foreground"
       )}>
         {formatCurrency(value)}
       </span>
@@ -180,13 +180,13 @@ export function FinancialSummaryPanel({
     return (
       <Card className={cn("animate-pulse", className)}>
         <CardHeader className="pb-2">
-          <div className="h-5 bg-gray-200 rounded w-32" />
+          <div className="h-5 bg-muted rounded w-32" />
         </CardHeader>
         <CardContent className="space-y-3">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="flex justify-between">
-              <div className="h-4 bg-gray-200 rounded w-24" />
-              <div className="h-4 bg-gray-200 rounded w-16" />
+              <div className="h-4 bg-muted rounded w-24" />
+              <div className="h-4 bg-muted rounded w-16" />
             </div>
           ))}
         </CardContent>
@@ -198,7 +198,7 @@ export function FinancialSummaryPanel({
     <Card className={cn("sticky top-6", className)}>
       <CardHeader className="pb-3">
         <CardTitle className="text-base font-semibold flex items-center gap-2">
-          <Calculator className="h-4 w-4 text-blue-600" />
+          <Calculator className="h-4 w-4 text-primary" />
           Financial Summary
         </CardTitle>
       </CardHeader>
@@ -206,8 +206,8 @@ export function FinancialSummaryPanel({
         {/* Profitability Section */}
         <div className="pb-2">
           <div className="flex items-center gap-2 mb-2">
-            <DollarSign className="h-3.5 w-3.5 text-gray-400" />
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+            <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Profitability
             </span>
           </div>
@@ -221,7 +221,7 @@ export function FinancialSummaryPanel({
             label="Gross Profit"
             value={calculations.grossProfit}
           />
-          <div className="flex items-center justify-between py-1 text-xs text-gray-500">
+          <div className="flex items-center justify-between py-1 text-xs text-muted-foreground">
             <span>Gross Margin</span>
             <span>{calculations.grossMarginPct.toFixed(1)}%</span>
           </div>
@@ -231,7 +231,7 @@ export function FinancialSummaryPanel({
             priorValue={priorData?.ebitda}
             isNegative={calculations.ebitda < 0}
           />
-          <div className="flex items-center justify-between py-1 text-xs text-gray-500">
+          <div className="flex items-center justify-between py-1 text-xs text-muted-foreground">
             <span>EBITDA Margin</span>
             <span>{calculations.ebitdaMarginPct.toFixed(1)}%</span>
           </div>
@@ -239,7 +239,7 @@ export function FinancialSummaryPanel({
 
         <div className="border-t pt-2 pb-2">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Adjustments
             </span>
           </div>
@@ -255,7 +255,7 @@ export function FinancialSummaryPanel({
             isHighlighted
             isNegative={calculations.adjustedEbitda < 0}
           />
-          <div className="flex items-center justify-between py-1 text-xs text-gray-500">
+          <div className="flex items-center justify-between py-1 text-xs text-muted-foreground">
             <span>Adj. EBITDA Margin</span>
             <span>{calculations.adjustedEbitdaMarginPct.toFixed(1)}%</span>
           </div>
@@ -264,8 +264,8 @@ export function FinancialSummaryPanel({
         {/* Cash Flow Section */}
         <div className="border-t pt-2">
           <div className="flex items-center gap-2 mb-2">
-            <Wallet className="h-3.5 w-3.5 text-gray-400" />
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+            <Wallet className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Cash Flow
             </span>
           </div>
@@ -283,7 +283,7 @@ export function FinancialSummaryPanel({
             isNegative={calculations.ownerAdjustedFCF !== undefined && calculations.ownerAdjustedFCF < 0}
           />
           {calculations.ownerAddBacks > 0 && (
-            <div className="flex items-center justify-between py-1 text-xs text-gray-500">
+            <div className="flex items-center justify-between py-1 text-xs text-muted-foreground">
               <span>Owner Add-backs</span>
               <span>+{formatCurrency(calculations.ownerAddBacks)}</span>
             </div>

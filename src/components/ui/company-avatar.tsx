@@ -18,18 +18,18 @@ function getCompanyColor(name: string): { bg: string; text: string } {
 
   // Use predefined color palette for better aesthetics
   const colors = [
-    { bg: 'bg-blue-500', text: 'text-white' },
-    { bg: 'bg-emerald-500', text: 'text-white' },
-    { bg: 'bg-violet-500', text: 'text-white' },
-    { bg: 'bg-amber-500', text: 'text-white' },
-    { bg: 'bg-rose-500', text: 'text-white' },
-    { bg: 'bg-cyan-500', text: 'text-white' },
-    { bg: 'bg-indigo-500', text: 'text-white' },
-    { bg: 'bg-orange-500', text: 'text-white' },
-    { bg: 'bg-teal-500', text: 'text-white' },
-    { bg: 'bg-pink-500', text: 'text-white' },
-    { bg: 'bg-lime-600', text: 'text-white' },
-    { bg: 'bg-fuchsia-500', text: 'text-white' },
+    { bg: 'bg-primary', text: 'text-white' },
+    { bg: 'bg-green', text: 'text-white' },
+    { bg: 'bg-purple', text: 'text-white' },
+    { bg: 'bg-orange', text: 'text-white' },
+    { bg: 'bg-red', text: 'text-white' },
+    { bg: 'bg-teal', text: 'text-white' },
+    { bg: 'bg-primary', text: 'text-white' },
+    { bg: 'bg-orange', text: 'text-white' },
+    { bg: 'bg-teal', text: 'text-white' },
+    { bg: 'bg-red', text: 'text-white' },
+    { bg: 'bg-green-dark', text: 'text-white' },
+    { bg: 'bg-purple', text: 'text-white' },
   ]
 
   const index = Math.abs(hash) % colors.length

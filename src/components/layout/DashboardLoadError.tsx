@@ -16,7 +16,7 @@ export function DashboardLoadError() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-br from-foreground via-foreground to-foreground flex flex-col items-center justify-center p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -70,7 +70,7 @@ export function DashboardLoadError() {
           We&apos;re growing fast &mdash; hang tight!
         </h1>
 
-        <p className="text-slate-300 text-base leading-relaxed">
+        <p className="text-muted text-base leading-relaxed">
           We hit a temporary snag loading your dashboard. This usually resolves itself in a moment.
         </p>
 
@@ -87,7 +87,7 @@ export function DashboardLoadError() {
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-sm text-slate-400"
+            className="text-sm text-muted-foreground"
           >
             Still not working? Email us at{' '}
             <a href="mailto:support@exitosx.com" className="text-primary hover:underline">

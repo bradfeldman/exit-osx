@@ -9,10 +9,10 @@ interface ScoreGaugeProps {
 }
 
 function getScoreTier(score: number): { label: string; color: string; bgColor: string } {
-  if (score >= 85) return { label: 'Strong', color: '#22C55E', bgColor: '#F0FDF4' }
-  if (score >= 70) return { label: 'Solid foundation', color: '#3B82F6', bgColor: '#EFF6FF' }
-  if (score >= 55) return { label: 'Typical', color: '#F59E0B', bgColor: '#FFFBEB' }
-  return { label: 'Early stage', color: '#EF4444', bgColor: '#FEF2F2' }
+  if (score >= 85) return { label: 'Strong', color: 'var(--green)', bgColor: 'var(--green-light)' }
+  if (score >= 70) return { label: 'Solid foundation', color: 'var(--primary)', bgColor: 'var(--primary-light, #EFF6FF)' }
+  if (score >= 55) return { label: 'Typical', color: 'var(--orange)', bgColor: 'var(--orange-light)' }
+  return { label: 'Early stage', color: 'var(--red)', bgColor: 'var(--red-light)' }
 }
 
 function subscribeReducedMotion(callback: () => void) {
@@ -100,10 +100,10 @@ export function ScoreGauge({ score, industryName }: ScoreGaugeProps) {
         >
           <defs>
             <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#EF4444" />
-              <stop offset="33%" stopColor="#F59E0B" />
-              <stop offset="66%" stopColor="#3B82F6" />
-              <stop offset="100%" stopColor="#22C55E" />
+              <stop offset="0%" stopColor="var(--red, #EF4444)" />
+              <stop offset="33%" stopColor="var(--orange, #F59E0B)" />
+              <stop offset="66%" stopColor="var(--primary, #3B82F6)" />
+              <stop offset="100%" stopColor="var(--green, #22C55E)" />
             </linearGradient>
           </defs>
 

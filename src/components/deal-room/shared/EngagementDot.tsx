@@ -3,8 +3,8 @@
 import { cn } from '@/lib/utils'
 
 const DOT_STYLES: Record<string, string> = {
-  hot: 'bg-emerald-500 animate-pulse',
-  warm: 'bg-amber-500',
+  hot: 'bg-green animate-pulse',
+  warm: 'bg-orange',
   cold: 'bg-muted-foreground/30',
   none: 'hidden',
 }

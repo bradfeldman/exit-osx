@@ -43,11 +43,11 @@ interface DriftReport {
 }
 
 const SEVERITY_CONFIG: Record<string, { color: string; bgColor: string }> = {
-  CRITICAL: { color: 'text-red-700', bgColor: 'bg-red-100' },
-  HIGH: { color: 'text-orange-700', bgColor: 'bg-orange-100' },
-  MEDIUM: { color: 'text-yellow-700', bgColor: 'bg-yellow-100' },
-  LOW: { color: 'text-blue-700', bgColor: 'bg-blue-100' },
-  INFO: { color: 'text-gray-700', bgColor: 'bg-gray-100' },
+  CRITICAL: { color: 'text-red-dark', bgColor: 'bg-red-light' },
+  HIGH: { color: 'text-orange-dark', bgColor: 'bg-orange-light' },
+  MEDIUM: { color: 'text-orange-dark', bgColor: 'bg-orange-light' },
+  LOW: { color: 'text-primary', bgColor: 'bg-accent-light' },
+  INFO: { color: 'text-foreground', bgColor: 'bg-muted' },
 }
 
 export function DriftReportPage() {
@@ -90,11 +90,11 @@ export function DriftReportPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Monthly Drift Report</h1>
+          <h1 className="text-2xl font-bold text-foreground">Monthly Drift Report</h1>
           <p className="text-muted-foreground">Track how your exit readiness changes over time</p>
         </div>
         <Card>
-          <CardContent className="py-8 text-center text-red-600">
+          <CardContent className="py-8 text-center text-red-dark">
             {error}
           </CardContent>
         </Card>
@@ -106,13 +106,13 @@ export function DriftReportPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Monthly Drift Report</h1>
+          <h1 className="text-2xl font-bold text-foreground">Monthly Drift Report</h1>
           <p className="text-muted-foreground">Track how your exit readiness changes over time</p>
         </div>
         <Card>
           <CardContent className="py-12 text-center">
             <Activity className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Drift Reports Yet</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-2">No Drift Reports Yet</h3>
             <p className="text-sm text-muted-foreground max-w-md mx-auto">
               Your first monthly drift report will be generated at the beginning of next month.
               It will show how your BRI score, valuation, and exit readiness have changed.
@@ -142,7 +142,7 @@ export function DriftReportPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Monthly Drift Report — {monthLabel}</h1>
+        <h1 className="text-2xl font-bold text-foreground">Monthly Drift Report — {monthLabel}</h1>
         <p className="text-muted-foreground">{latest.summary}</p>
       </div>
 
@@ -157,7 +157,7 @@ export function DriftReportPage() {
               <CardContent>
                 <div className="flex items-end gap-3">
                   <span className="text-4xl font-bold">{Math.round(latest.briScoreEnd * 100)}</span>
-                  <div className={`flex items-center gap-1 mb-1 text-sm font-semibold ${briChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <div className={`flex items-center gap-1 mb-1 text-sm font-semibold ${briChange >= 0 ? 'text-green-dark' : 'text-red-dark'}`}>
                     {briChange > 0.005 ? <TrendingUp className="h-4 w-4" /> : briChange < -0.005 ? <TrendingDown className="h-4 w-4" /> : <Minus className="h-4 w-4 text-muted-foreground" />}
                     {briChange >= 0 ? '+' : ''}{briChangePoints} pts
                   </div>
@@ -176,18 +176,18 @@ export function DriftReportPage() {
               <CardContent>
                 <div className="flex items-end gap-3">
                   <span className="text-4xl font-bold">{formatCurrency(latest.valuationEnd)}</span>
-                  <div className={`flex items-center gap-1 mb-1 text-sm font-semibold ${valuationChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <div className={`flex items-center gap-1 mb-1 text-sm font-semibold ${valuationChange >= 0 ? 'text-green-dark' : 'text-red-dark'}`}>
                     {valuationChange > 0 ? <TrendingUp className="h-4 w-4" /> : valuationChange < 0 ? <TrendingDown className="h-4 w-4" /> : <Minus className="h-4 w-4 text-muted-foreground" />}
                     {valuationChange >= 0 ? '+' : '-'}{formatCurrency(Math.abs(valuationChange))}
                   </div>
                 </div>
                 <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
-                    <CheckCircle className="h-3.5 w-3.5 text-green-500" />
+                    <CheckCircle className="h-3.5 w-3.5 text-green" />
                     {latest.tasksCompletedCount} tasks completed
                   </span>
                   <span className="flex items-center gap-1">
-                    <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                    <AlertTriangle className="h-3.5 w-3.5 text-orange" />
                     {latest.signalsCount} signals
                   </span>
                 </div>
@@ -209,14 +209,14 @@ export function DriftReportPage() {
                   <div key={cat.category} className="flex items-center justify-between">
                     <div className="flex items-center gap-2 min-w-0">
                       <div className={`flex h-6 w-6 items-center justify-center rounded-full ${
-                        cat.direction === 'up' ? 'bg-green-100' : cat.direction === 'down' ? 'bg-red-100' : 'bg-gray-100'
+                        cat.direction === 'up' ? 'bg-green-light' : cat.direction === 'down' ? 'bg-red-light' : 'bg-muted'
                       }`}>
                         {cat.direction === 'up' ? (
-                          <TrendingUp className="h-3.5 w-3.5 text-green-600" />
+                          <TrendingUp className="h-3.5 w-3.5 text-green-dark" />
                         ) : cat.direction === 'down' ? (
-                          <TrendingDown className="h-3.5 w-3.5 text-red-600" />
+                          <TrendingDown className="h-3.5 w-3.5 text-red-dark" />
                         ) : (
-                          <Minus className="h-3.5 w-3.5 text-gray-400" />
+                          <Minus className="h-3.5 w-3.5 text-muted-foreground" />
                         )}
                       </div>
                       <span className="text-sm font-medium">{cat.label}</span>
@@ -226,7 +226,7 @@ export function DriftReportPage() {
                       <span className="text-muted-foreground">→</span>
                       <span className="font-semibold">{cat.scoreAfter}</span>
                       <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
-                        cat.direction === 'up' ? 'text-green-700 bg-green-50' : cat.direction === 'down' ? 'text-red-700 bg-red-50' : 'text-gray-500 bg-gray-50'
+                        cat.direction === 'up' ? 'text-green-dark bg-green-light' : cat.direction === 'down' ? 'text-red-dark bg-red-light' : 'text-muted-foreground bg-secondary'
                       }`}>
                         {cat.direction === 'up' ? '+' : cat.direction === 'down' ? '' : ''}{cat.scoreAfter - cat.scoreBefore}
                       </span>

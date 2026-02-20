@@ -11,9 +11,9 @@ interface HeroEvidenceBarProps {
 }
 
 function getBarColor(percentage: number): string {
-  if (percentage >= 67) return 'bg-emerald-500'
-  if (percentage >= 34) return 'bg-amber-500'
-  return 'bg-rose-500'
+  if (percentage >= 67) return 'bg-green'
+  if (percentage >= 34) return 'bg-orange'
+  return 'bg-red'
 }
 
 export function HeroEvidenceBar({

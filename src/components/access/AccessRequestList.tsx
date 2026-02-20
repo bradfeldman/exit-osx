@@ -181,10 +181,10 @@ interface RequestItemProps {
 
 function RequestItem({ request, isProcessing, onApprove, onDeny }: RequestItemProps) {
   const statusColors: Record<string, string> = {
-    PENDING: 'bg-amber-100 text-amber-800',
-    APPROVED: 'bg-green-100 text-green-800',
-    DENIED: 'bg-red-100 text-red-800',
-    EXPIRED: 'bg-gray-100 text-gray-800',
+    PENDING: 'bg-orange-light text-orange-dark',
+    APPROVED: 'bg-green-light text-green-dark',
+    DENIED: 'bg-red-light text-red-dark',
+    EXPIRED: 'bg-muted text-foreground',
   }
 
   return (

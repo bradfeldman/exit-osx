@@ -54,7 +54,7 @@ export function CoachContextCard({ activeSources }: CoachContextCardProps) {
               <Icon className={`h-3.5 w-3.5 flex-shrink-0 ${isActive ? 'text-primary' : ''}`} />
               <span>{config.label}</span>
               {isActive && (
-                <div className="ml-auto h-1.5 w-1.5 rounded-full bg-green-500" />
+                <div className="ml-auto h-1.5 w-1.5 rounded-full bg-green" />
               )}
             </div>
           )

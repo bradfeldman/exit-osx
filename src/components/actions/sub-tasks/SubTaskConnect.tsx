@@ -24,7 +24,7 @@ export function SubTaskConnect({ title, completed, integrationKey }: SubTaskConn
         <Check className="w-4 h-4 mt-0.5 text-[var(--burnt-orange)] shrink-0" />
         <div className="flex-1 min-w-0">
           <span className="text-sm text-muted-foreground line-through">{title}</span>
-          <p className="text-xs text-emerald-600 mt-0.5">
+          <p className="text-xs text-green-dark mt-0.5">
             Connected to {integrationName}
           </p>
         </div>

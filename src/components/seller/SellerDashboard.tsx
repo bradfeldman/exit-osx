@@ -142,8 +142,8 @@ export function SellerDashboard({ dealId, className }: SellerDashboardProps) {
                   className={cn(
                     'text-sm',
                     summary.status === 'ACTIVE'
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-gray-100 text-gray-700'
+                      ? 'bg-green-light text-green-dark'
+                      : 'bg-muted text-foreground'
                   )}
                 >
                   {summary.status}
@@ -165,8 +165,8 @@ export function SellerDashboard({ dealId, className }: SellerDashboardProps) {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                  <Users className="h-5 w-5 text-blue-600" />
+                <div className="w-10 h-10 rounded-lg bg-accent-light dark:bg-primary/30 flex items-center justify-center">
+                  <Users className="h-5 w-5 text-primary" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{summary.stats.totalBuyers}</p>
@@ -178,11 +178,11 @@ export function SellerDashboard({ dealId, className }: SellerDashboardProps) {
         </motion.div>
 
         <motion.div variants={itemVariants}>
-          <Card className={summary.stats.pendingApproval > 0 ? 'border-amber-200 bg-amber-50/50 dark:bg-amber-950/10' : ''}>
+          <Card className={summary.stats.pendingApproval > 0 ? 'border-orange/20 bg-orange-light/50 dark:bg-orange-dark/10' : ''}>
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                  <Clock className="h-5 w-5 text-amber-600" />
+                <div className="w-10 h-10 rounded-lg bg-orange-light dark:bg-orange-dark/30 flex items-center justify-center">
+                  <Clock className="h-5 w-5 text-orange-dark" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{summary.stats.pendingApproval}</p>
@@ -197,8 +197,8 @@ export function SellerDashboard({ dealId, className }: SellerDashboardProps) {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
+                <div className="w-10 h-10 rounded-lg bg-green-light dark:bg-green-dark/30 flex items-center justify-center">
+                  <CheckCircle className="h-5 w-5 text-green-dark" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{summary.stats.activeInProcess}</p>
@@ -213,8 +213,8 @@ export function SellerDashboard({ dealId, className }: SellerDashboardProps) {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                  <TrendingUp className="h-5 w-5 text-purple-600" />
+                <div className="w-10 h-10 rounded-lg bg-purple-light dark:bg-purple-dark/30 flex items-center justify-center">
+                  <TrendingUp className="h-5 w-5 text-purple-dark" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{conversionRate}%</p>
@@ -238,7 +238,7 @@ export function SellerDashboard({ dealId, className }: SellerDashboardProps) {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <CheckCircle className="h-4 w-4 text-green-dark" />
                     <span className="text-sm">Approved</span>
                   </div>
                   <span className="font-medium">{summary.stats.approved}</span>
@@ -252,7 +252,7 @@ export function SellerDashboard({ dealId, className }: SellerDashboardProps) {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Pause className="h-4 w-4 text-orange-600" />
+                    <Pause className="h-4 w-4 text-orange" />
                     <span className="text-sm">On Hold</span>
                   </div>
                   <span className="font-medium">{summary.stats.onHold}</span>
@@ -266,7 +266,7 @@ export function SellerDashboard({ dealId, className }: SellerDashboardProps) {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <XCircle className="h-4 w-4 text-red-600" />
+                    <XCircle className="h-4 w-4 text-red-dark" />
                     <span className="text-sm">Denied</span>
                   </div>
                   <span className="font-medium">{summary.stats.denied}</span>

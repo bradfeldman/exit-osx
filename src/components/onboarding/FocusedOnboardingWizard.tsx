@@ -490,7 +490,7 @@ export function FocusedOnboardingWizard({ userName: _userName }: FocusedOnboardi
               <Button
                 size="lg"
                 onClick={handleContinueToDashboard}
-                className="text-lg px-10 py-7 shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 hover:-translate-y-1 transition-all font-semibold bg-gradient-to-r from-primary to-amber-600 hover:from-primary/90 hover:to-amber-500"
+                className="text-lg px-10 py-7 shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 hover:-translate-y-1 transition-all font-semibold bg-gradient-to-r from-primary to-orange-dark hover:from-primary/90 hover:to-orange"
               >
                 <span>See Where Buyers Will Discount You</span>
                 <motion.svg

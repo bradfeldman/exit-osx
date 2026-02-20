@@ -36,7 +36,7 @@ export function PlaybookLinkInPanel({ playbooks, planTier }: PlaybookLinkInPanel
               {playbook.title}
             </span>
             {isLocked ? (
-              <Lock className="w-3 h-3 text-amber-500 shrink-0" />
+              <Lock className="w-3 h-3 text-orange shrink-0" />
             ) : (
               <span className="text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                 Open →

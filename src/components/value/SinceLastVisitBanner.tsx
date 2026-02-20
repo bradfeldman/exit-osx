@@ -19,7 +19,7 @@ function getEventIcon(type: string) {
   switch (type) {
     case 'market': return <TrendingUp className="w-3.5 h-3.5 text-primary" />
     case 'valuation': return <BarChart3 className="w-3.5 h-3.5 text-primary" />
-    case 'drift': return <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+    case 'drift': return <AlertTriangle className="w-3.5 h-3.5 text-orange" />
     default: return <Bell className="w-3.5 h-3.5 text-primary" />
   }
 }

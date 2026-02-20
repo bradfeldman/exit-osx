@@ -120,14 +120,14 @@ export function CashFlowTab({ companyId, periodId }: CashFlowTabProps) {
   if (!cashFlow && !canCalculate && missingData) {
     return (
       <div className="text-center py-12">
-        <AlertCircle className="h-12 w-12 mx-auto mb-4 text-amber-500" />
-        <h3 className="font-semibold text-gray-900 mb-2">Cannot Calculate Cash Flow</h3>
-        <p className="text-gray-600 mb-4 max-w-md mx-auto">
+        <AlertCircle className="h-12 w-12 mx-auto mb-4 text-orange" />
+        <h3 className="font-semibold text-foreground mb-2">Cannot Calculate Cash Flow</h3>
+        <p className="text-muted-foreground mb-4 max-w-md mx-auto">
           Cash Flow Statement requires both current and prior year data to calculate changes.
         </p>
-        <div className="inline-block text-left bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-          <p className="text-sm font-medium text-amber-800 mb-2">Missing data:</p>
-          <ul className="text-sm text-amber-700 space-y-1">
+        <div className="inline-block text-left bg-orange-light border border-orange/20 rounded-lg p-4 mb-6">
+          <p className="text-sm font-medium text-orange-dark mb-2">Missing data:</p>
+          <ul className="text-sm text-orange-dark space-y-1">
             {missingData.currentPL && <li>- Current year P&L (Income Statement)</li>}
             {missingData.currentBS && <li>- Current year Balance Sheet</li>}
             {missingData.priorBS && (
@@ -135,7 +135,7 @@ export function CashFlowTab({ companyId, periodId }: CashFlowTabProps) {
             )}
           </ul>
         </div>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted-foreground">
           Please complete the P&L and Balance Sheet tabs, and ensure prior year data exists.
         </p>
       </div>
@@ -145,9 +145,9 @@ export function CashFlowTab({ companyId, periodId }: CashFlowTabProps) {
   if (!cashFlow) {
     return (
       <div className="text-center py-12">
-        <Wallet className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-        <p className="font-medium text-gray-700">No cash flow data available</p>
-        <p className="text-sm text-gray-500 mt-2">
+        <Wallet className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+        <p className="font-medium text-foreground">No cash flow data available</p>
+        <p className="text-sm text-muted-foreground mt-2">
           Enter P&L and Balance Sheet data to calculate cash flow.
         </p>
       </div>
@@ -170,7 +170,7 @@ export function CashFlowTab({ companyId, periodId }: CashFlowTabProps) {
         <div className={`flex items-center justify-center w-8 h-8 rounded-full ${color}`}>
           <Icon className="h-4 w-4" />
         </div>
-        <h3 className="font-semibold text-gray-900">{title}</h3>
+        <h3 className="font-semibold text-foreground">{title}</h3>
       </div>
       <div className="ml-11">{children}</div>
     </div>
@@ -189,15 +189,15 @@ export function CashFlowTab({ companyId, periodId }: CashFlowTabProps) {
   }) => (
     <div
       className={`flex justify-between items-center py-2 px-3 ${
-        isTotal ? 'bg-gray-50 rounded-lg font-semibold' : ''
+        isTotal ? 'bg-secondary rounded-lg font-semibold' : ''
       } ${indent ? 'pl-6' : ''}`}
     >
-      <span className={`${isTotal ? 'text-gray-900' : 'text-gray-600'} ${indent ? 'text-sm' : ''}`}>
+      <span className={`${isTotal ? 'text-foreground' : 'text-muted-foreground'} ${indent ? 'text-sm' : ''}`}>
         {label}
       </span>
       <span
         className={`font-medium ${
-          value >= 0 ? 'text-gray-900' : 'text-red-600'
+          value >= 0 ? 'text-foreground' : 'text-red-dark'
         } ${isTotal ? 'text-lg' : ''}`}
       >
         {value >= 0 ? formatCurrency(value) : `(${formatCurrency(Math.abs(value))})`}
@@ -215,9 +215,9 @@ export function CashFlowTab({ companyId, periodId }: CashFlowTabProps) {
     variant?: 'default' | 'success' | 'primary'
   }) => {
     const colors = {
-      default: 'bg-gray-100 text-gray-900',
-      success: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-      primary: 'bg-blue-50 text-blue-700 border-blue-200',
+      default: 'bg-secondary text-foreground',
+      success: 'bg-green-light text-green-dark border-green/20',
+      primary: 'bg-accent-light text-primary border-primary/20',
     }
     return (
       <div className={`flex justify-between items-center px-4 py-3 rounded-lg border ${colors[variant]}`}>
@@ -248,16 +248,16 @@ export function CashFlowTab({ companyId, periodId }: CashFlowTabProps) {
       <Section
         icon={ArrowUpCircle}
         title="Operating Activities"
-        color="bg-emerald-100 text-emerald-600"
+        color="bg-green-light text-green-dark"
       >
-        <div className="bg-white border border-gray-200 rounded-lg divide-y divide-gray-100">
+        <div className="bg-white border border-border rounded-lg divide-y divide-border">
           <LineItem label="Net Income" value={cashFlow.netIncome} />
-          <div className="py-1 px-3 text-xs font-medium text-gray-500 bg-gray-50">
+          <div className="py-1 px-3 text-xs font-medium text-muted-foreground bg-secondary">
             Adjustments to reconcile net income
           </div>
           <LineItem label="Depreciation" value={cashFlow.depreciation} indent />
           <LineItem label="Amortization" value={cashFlow.amortization} indent />
-          <div className="py-1 px-3 text-xs font-medium text-gray-500 bg-gray-50">
+          <div className="py-1 px-3 text-xs font-medium text-muted-foreground bg-secondary">
             Changes in working capital
           </div>
           <LineItem label="Accounts Receivable" value={cashFlow.changeInAccountsReceivable} indent />
@@ -278,9 +278,9 @@ export function CashFlowTab({ companyId, periodId }: CashFlowTabProps) {
       <Section
         icon={ArrowDownCircle}
         title="Investing Activities"
-        color="bg-orange-100 text-orange-600"
+        color="bg-orange-light text-orange"
       >
-        <div className="bg-white border border-gray-200 rounded-lg divide-y divide-gray-100">
+        <div className="bg-white border border-border rounded-lg divide-y divide-border">
           <LineItem label="Capital Expenditures (CapEx)" value={cashFlow.capitalExpenditures} />
           <LineItem label="Change in Intangible Assets" value={cashFlow.changeInIntangibleAssets} />
           <LineItem label="Change in Other Long-term Assets" value={cashFlow.changeInOtherLongTermAssets} />
@@ -294,9 +294,9 @@ export function CashFlowTab({ companyId, periodId }: CashFlowTabProps) {
       <Section
         icon={Wallet}
         title="Financing Activities"
-        color="bg-purple-100 text-purple-600"
+        color="bg-purple-light text-purple-dark"
       >
-        <div className="bg-white border border-gray-200 rounded-lg divide-y divide-gray-100">
+        <div className="bg-white border border-border rounded-lg divide-y divide-border">
           <LineItem label="Change in Current Portion of LTD" value={cashFlow.changeInCurrentPortionLtd} />
           <LineItem label="Change in Long-term Debt" value={cashFlow.changeInLongTermDebt} />
           <LineItem label="Change in Other LT Liabilities" value={cashFlow.changeInOtherLongTermLiabilities} />
@@ -311,24 +311,24 @@ export function CashFlowTab({ companyId, periodId }: CashFlowTabProps) {
       <Section
         icon={TrendingUp}
         title="Summary"
-        color="bg-blue-100 text-blue-600"
+        color="bg-accent-light text-primary"
       >
         <div className="space-y-3">
-          <div className="bg-white border border-gray-200 rounded-lg divide-y divide-gray-100">
+          <div className="bg-white border border-border rounded-lg divide-y divide-border">
             <LineItem label="Net Change in Cash" value={cashFlow.netChangeInCash} isTotal />
             <LineItem label="Beginning Cash" value={cashFlow.beginningCash} />
             <LineItem label="Ending Cash" value={cashFlow.endingCash} />
           </div>
 
-          <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200">
+          <div className="p-4 bg-gradient-to-br from-accent-light to-accent-light rounded-xl border-2 border-primary/20">
             <div className="flex justify-between items-center">
               <div>
-                <span className="font-semibold text-blue-700">Free Cash Flow</span>
-                <p className="text-xs text-blue-600 mt-0.5">
+                <span className="font-semibold text-primary">Free Cash Flow</span>
+                <p className="text-xs text-primary mt-0.5">
                   Cash from Operations - Capital Expenditures
                 </p>
               </div>
-              <span className={`font-bold text-2xl ${cashFlow.freeCashFlow >= 0 ? 'text-blue-700' : 'text-red-600'}`}>
+              <span className={`font-bold text-2xl ${cashFlow.freeCashFlow >= 0 ? 'text-primary' : 'text-red-dark'}`}>
                 {cashFlow.freeCashFlow >= 0
                   ? formatCurrency(cashFlow.freeCashFlow)
                   : `(${formatCurrency(Math.abs(cashFlow.freeCashFlow))})`}
@@ -338,7 +338,7 @@ export function CashFlowTab({ companyId, periodId }: CashFlowTabProps) {
 
           {/* Validation */}
           {Math.abs(cashFlow.beginningCash + cashFlow.netChangeInCash - cashFlow.endingCash) > 0.01 && (
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700">
+            <div className="p-3 bg-orange-light border border-orange/20 rounded-lg text-sm text-orange-dark">
               <strong>Note:</strong> The ending cash does not match beginning cash + net change.
               This may indicate data inconsistencies.
             </div>

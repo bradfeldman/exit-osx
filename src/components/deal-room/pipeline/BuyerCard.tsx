@@ -26,10 +26,10 @@ export interface PipelineBuyer {
 }
 
 const APPROVAL_COLORS: Record<string, { border: string; band: string }> = {
-  APPROVED: { border: 'border-emerald-500/60', band: 'bg-emerald-500' },
+  APPROVED: { border: 'border-green/60', band: 'bg-green' },
   PENDING: { border: 'border-border/50', band: 'bg-muted-foreground/40' },
-  HOLD: { border: 'border-amber-500/60', band: 'bg-amber-500' },
-  DENIED: { border: 'border-red-500/60', band: 'bg-red-500' },
+  HOLD: { border: 'border-orange/60', band: 'bg-orange' },
+  DENIED: { border: 'border-red/60', band: 'bg-red' },
 }
 
 const BUYER_TYPE_LETTER: Record<string, string> = {

@@ -80,13 +80,13 @@ export function TaskNotes({ taskId, taskTitle, disabled = false }: TaskNotesProp
   const getNoteTypeBadgeColor = (type: string) => {
     switch (type) {
       case 'COMPLETION':
-        return 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20'
+        return 'bg-green/10 text-green-dark border-green/20'
       case 'BLOCKER':
-        return 'bg-red-500/10 text-red-700 border-red-500/20'
+        return 'bg-red/10 text-red-dark border-red/20'
       case 'PROGRESS':
-        return 'bg-blue-500/10 text-blue-700 border-blue-500/20'
+        return 'bg-primary/10 text-primary border-primary/20'
       default:
-        return 'bg-gray-500/10 text-gray-700 border-gray-500/20'
+        return 'bg-muted-foreground/10 text-foreground border-muted-foreground/20'
     }
   }
 

@@ -161,7 +161,7 @@ export default function CompanyInviteAcceptPage() {
       return (
         <div className={styles.loadingStateAlt}>
           <div className={styles.iconCircleRed}>
-            <XCircle style={{ width: 32, height: 32, color: '#dc2626' }} />
+            <XCircle style={{ width: 32, height: 32, color: 'var(--red-dark)' }} />
           </div>
           <div>
             <h2 className={styles.stateTitle}>Invitation Not Found</h2>
@@ -197,9 +197,9 @@ export default function CompanyInviteAcceptPage() {
             <div className={styles.companyStateCenter}>
               <div className={styles.iconCircleGreen}>
                 {invite.inviteType === 'GUEST_OWNER' ? (
-                  <Crown style={{ width: 32, height: 32, color: '#16a34a' }} />
+                  <Crown style={{ width: 32, height: 32, color: 'var(--green-dark)' }} />
                 ) : (
-                  <UserPlus style={{ width: 32, height: 32, color: '#16a34a' }} />
+                  <UserPlus style={{ width: 32, height: 32, color: 'var(--green-dark)' }} />
                 )}
               </div>
               <h2 className={styles.stateTitle} style={{ marginTop: 16 }}>You&apos;re Invited!</h2>
@@ -260,7 +260,7 @@ export default function CompanyInviteAcceptPage() {
           <div className={styles.companyStateWrap}>
             <div className={styles.companyStateCenter}>
               <div className={styles.iconCircleAmber}>
-                <AlertTriangle style={{ width: 32, height: 32, color: '#d97706' }} />
+                <AlertTriangle style={{ width: 32, height: 32, color: 'var(--orange-dark)' }} />
               </div>
               <h2 className={styles.stateTitle} style={{ marginTop: 16 }}>Wrong Account</h2>
               <p className={styles.stateSubtitle}>

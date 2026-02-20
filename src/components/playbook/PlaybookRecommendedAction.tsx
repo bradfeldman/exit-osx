@@ -30,7 +30,7 @@ export function PlaybookRecommendedAction({
           Recommended Playbook
         </p>
         {isLocked && (
-          <span className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+          <span className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded bg-orange-light text-orange-dark dark:bg-orange-dark/30 dark:text-orange">
             <Lock className="w-2.5 h-2.5" />
             Growth
           </span>

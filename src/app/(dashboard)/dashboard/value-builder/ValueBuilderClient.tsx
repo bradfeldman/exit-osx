@@ -256,9 +256,9 @@ export function ValueBuilderClient({ userName: _userName }: ValueBuilderClientPr
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-                className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-6"
+                className="w-20 h-20 rounded-full bg-green-light dark:bg-green-dark/30 flex items-center justify-center mx-auto mb-6"
               >
-                <Trophy className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
+                <Trophy className="w-10 h-10 text-green-dark dark:text-green" />
               </motion.div>
 
               <motion.div
@@ -266,7 +266,7 @@ export function ValueBuilderClient({ userName: _userName }: ValueBuilderClientPr
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
               >
-                <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-2">
+                <p className="text-3xl font-bold text-green-dark dark:text-green mb-2">
                   +{formatCurrency(lastCompletedValue || completedValue)}
                 </p>
                 <p className="text-lg font-semibold text-foreground mb-2">
@@ -311,7 +311,7 @@ export function ValueBuilderClient({ userName: _userName }: ValueBuilderClientPr
               <span className="text-sm font-medium text-foreground">
                 {completedCount} of {totalCount} tasks complete
               </span>
-              <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+              <span className="text-sm font-semibold text-green-dark dark:text-green">
                 {formatCurrency(completedValue)} recovered
               </span>
             </div>
@@ -320,7 +320,7 @@ export function ValueBuilderClient({ userName: _userName }: ValueBuilderClientPr
                 initial={{ width: 0 }}
                 animate={{ width: `${taskProgressPercent}%` }}
                 transition={{ duration: 0.5, ease: 'easeOut' }}
-                className="h-full bg-emerald-500 rounded-full"
+                className="h-full bg-green rounded-full"
               />
             </div>
             {totalValue > completedValue && (
@@ -352,7 +352,7 @@ export function ValueBuilderClient({ userName: _userName }: ValueBuilderClientPr
           transition={{ delay: 0.2 }}
           className="text-center mb-8"
         >
-          <p className="text-4xl font-bold text-red-600 dark:text-red-500">
+          <p className="text-4xl font-bold text-red-dark dark:text-red">
             {formatCurrency(valueGap)}
           </p>
           <p className="text-muted-foreground">Value gap to close</p>
@@ -404,8 +404,8 @@ export function ValueBuilderClient({ userName: _userName }: ValueBuilderClientPr
                   <span className="font-medium text-foreground">{formatRiskLabel(nextTask.briCategory)}</span>
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <TrendingUp className="w-4 h-4 text-emerald-500" />
-                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                  <TrendingUp className="w-4 h-4 text-green" />
+                  <span className="font-semibold text-green-dark dark:text-green">
                     +{formatCurrency(Number(nextTask.rawImpact))}
                   </span>
                 </span>
@@ -442,7 +442,7 @@ export function ValueBuilderClient({ userName: _userName }: ValueBuilderClientPr
                       className="flex items-center justify-between py-2 px-3 bg-muted/30 rounded-lg"
                     >
                       <span className="text-foreground truncate pr-4">{task.title}</span>
-                      <span className="text-emerald-600 dark:text-emerald-400 font-medium whitespace-nowrap">
+                      <span className="text-green-dark dark:text-green font-medium whitespace-nowrap">
                         +{formatCurrency(Number(task.rawImpact))}
                       </span>
                     </div>
@@ -461,8 +461,8 @@ export function ValueBuilderClient({ userName: _userName }: ValueBuilderClientPr
             transition={{ delay: 0.3 }}
             className="text-center"
           >
-            <div className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-6">
-              <Trophy className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
+            <div className="w-20 h-20 rounded-full bg-green-light dark:bg-green-dark/30 flex items-center justify-center mx-auto mb-6">
+              <Trophy className="w-10 h-10 text-green-dark dark:text-green" />
             </div>
             <h3 className="text-xl font-bold text-foreground mb-2">
               All tasks complete!
@@ -553,7 +553,7 @@ export function ValueBuilderClient({ userName: _userName }: ValueBuilderClientPr
             transition={{ delay: 0.3 }}
             className="text-center"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-full text-sm font-medium mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-light dark:bg-green-dark/30 text-green-dark dark:text-green rounded-full text-sm font-medium mb-6">
               <CheckCircle2 className="w-4 h-4" />
               Financials connected
             </div>

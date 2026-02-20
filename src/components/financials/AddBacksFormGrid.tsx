@@ -268,7 +268,7 @@ export function AddBacksFormGrid({ companyId }: AddBacksFormGridProps) {
 
           {/* ── Add-Backs ── */}
           <div className="space-y-3 mb-6">
-            <SectionHeader icon={TrendingUp} label="Add-Backs" bgColor="bg-emerald-100" textColor="text-emerald-600" />
+            <SectionHeader icon={TrendingUp} label="Add-Backs" bgColor="bg-green-light" textColor="text-green-dark" />
 
             {addBackDescs.map(desc => (
               <div key={desc}>
@@ -277,19 +277,19 @@ export function AddBacksFormGrid({ companyId }: AddBacksFormGridProps) {
                   style={{ gridTemplateColumns: `200px repeat(${periods.length}, 1fr) 32px` }}
                 >
                   <div className="flex items-center pl-8">
-                    <span className="text-sm text-gray-600 truncate" title={desc}>{desc}</span>
+                    <span className="text-sm text-muted-foreground truncate" title={desc}>{desc}</span>
                   </div>
                   {periods.map(period => {
                     const adj = findAdj(desc, period.id, 'ADD_BACK')
                     return (
                       <div key={period.id} className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
                         <Input
                           type="text"
                           inputMode="numeric"
                           value={formatInputValue(Number(adj?.amount) || 0)}
                           onChange={(e) => handleAmountChange(desc, period.id, 'ADD_BACK', parseInputValue(e.target.value))}
-                          className="pl-7 h-9 text-sm font-medium bg-gray-50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-right"
+                          className="pl-7 h-9 text-sm font-medium bg-secondary border-border focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-right"
                           placeholder="0"
                         />
                       </div>
@@ -298,7 +298,7 @@ export function AddBacksFormGrid({ companyId }: AddBacksFormGridProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-9 w-8 p-0 text-gray-400 hover:text-red-500"
+                    className="h-9 w-8 p-0 text-muted-foreground hover:text-red"
                     onClick={() => deleteRow(desc, 'ADD_BACK')}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -362,7 +362,7 @@ export function AddBacksFormGrid({ companyId }: AddBacksFormGridProps) {
 
           {/* ── Deductions ── */}
           <div className="space-y-3 mb-6">
-            <SectionHeader icon={TrendingDown} label="Deductions" bgColor="bg-red-100" textColor="text-red-600" />
+            <SectionHeader icon={TrendingDown} label="Deductions" bgColor="bg-red-light" textColor="text-red-dark" />
 
             {deductionDescs.map(desc => (
               <div key={desc}>
@@ -371,19 +371,19 @@ export function AddBacksFormGrid({ companyId }: AddBacksFormGridProps) {
                   style={{ gridTemplateColumns: `200px repeat(${periods.length}, 1fr) 32px` }}
                 >
                   <div className="flex items-center pl-8">
-                    <span className="text-sm text-gray-600 truncate" title={desc}>{desc}</span>
+                    <span className="text-sm text-muted-foreground truncate" title={desc}>{desc}</span>
                   </div>
                   {periods.map(period => {
                     const adj = findAdj(desc, period.id, 'DEDUCTION')
                     return (
                       <div key={period.id} className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
                         <Input
                           type="text"
                           inputMode="numeric"
                           value={formatInputValue(Number(adj?.amount) || 0)}
                           onChange={(e) => handleAmountChange(desc, period.id, 'DEDUCTION', parseInputValue(e.target.value))}
-                          className="pl-7 h-9 text-sm font-medium bg-gray-50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-right"
+                          className="pl-7 h-9 text-sm font-medium bg-secondary border-border focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-right"
                           placeholder="0"
                         />
                       </div>
@@ -392,7 +392,7 @@ export function AddBacksFormGrid({ companyId }: AddBacksFormGridProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-9 w-8 p-0 text-gray-400 hover:text-red-500"
+                    className="h-9 w-8 p-0 text-muted-foreground hover:text-red"
                     onClick={() => deleteRow(desc, 'DEDUCTION')}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -456,7 +456,7 @@ export function AddBacksFormGrid({ companyId }: AddBacksFormGridProps) {
 
           {/* ── Results ── */}
           <div className="space-y-3">
-            <SectionHeader icon={Calculator} label="Results" bgColor="bg-blue-100" textColor="text-blue-600" />
+            <SectionHeader icon={Calculator} label="Results" bgColor="bg-accent-light" textColor="text-primary" />
 
             <FormRow label="Net Adjustment" periods={periods}>
               {(p) => <CalcCell value={calcTotals(p.id).netAdjustment} format="currency" />}

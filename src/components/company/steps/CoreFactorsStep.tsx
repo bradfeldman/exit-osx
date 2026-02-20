@@ -80,13 +80,13 @@ function FactorSelect({ label, value, onChange, options, helpText }: FactorSelec
             <SelectItem key={option.value} value={option.value}>
               <div className="flex flex-col">
                 <span>{option.label}</span>
-                <span className="text-xs text-gray-500">{option.description}</span>
+                <span className="text-xs text-muted-foreground">{option.description}</span>
               </div>
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
-      {helpText && <p className="mt-1 text-xs text-gray-500">{helpText}</p>}
+      {helpText && <p className="mt-1 text-xs text-muted-foreground">{helpText}</p>}
     </div>
   )
 }
@@ -95,8 +95,8 @@ export function CoreFactorsStep({ formData, updateFormData }: CoreFactorsStepPro
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Business Profile</h2>
-        <p className="text-sm text-gray-600 mb-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">Business Profile</h2>
+        <p className="text-sm text-muted-foreground mb-6">
           These factors help us calculate your Core Score, which affects your valuation multiple.
           Be honest - accurate inputs lead to better insights.
         </p>
@@ -152,9 +152,9 @@ export function CoreFactorsStep({ formData, updateFormData }: CoreFactorsStepPro
         />
       </div>
 
-      <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-        <h3 className="text-sm font-medium text-blue-800 mb-2">Why These Matter</h3>
-        <p className="text-sm text-blue-700">
+      <div className="mt-6 p-4 bg-accent-light rounded-lg border border-primary/20">
+        <h3 className="text-sm font-medium text-primary mb-2">Why These Matter</h3>
+        <p className="text-sm text-primary">
           Buyers pay premiums for businesses with recurring revenue, high margins,
           low owner dependence, and scalable operations. These factors directly
           impact your valuation multiple.
