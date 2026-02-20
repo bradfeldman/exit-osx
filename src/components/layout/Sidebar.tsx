@@ -208,9 +208,12 @@ export function Sidebar({ user, isOpen, onClose }: SidebarProps) {
   const { companies, selectedCompanyId } = useCompany()
   const { planTier } = useSubscription()
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
+  const [prevPathname, setPrevPathname] = useState(pathname)
 
   // Auto-expand parent items when a child route is active
-  useEffect(() => {
+  // (React-supported "adjust state during render" pattern instead of useEffect)
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname)
     const newExpanded = new Set<string>()
     const allSections = [mainSection, improveSection, sellSection]
     for (const section of allSections) {
@@ -227,7 +230,7 @@ export function Sidebar({ user, isOpen, onClose }: SidebarProps) {
       }
     }
     setExpandedItems(newExpanded)
-  }, [pathname])
+  }
 
   // Close drawer on Escape key
   useEffect(() => {

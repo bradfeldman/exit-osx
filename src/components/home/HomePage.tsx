@@ -229,11 +229,17 @@ export function HomePage() {
   const { progressionData } = useProgression()
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [prevCompanyId, setPrevCompanyId] = useState(selectedCompanyId)
+
+  // Reset loading when company changes (React-supported "adjust state during render" pattern)
+  if (prevCompanyId !== selectedCompanyId) {
+    setPrevCompanyId(selectedCompanyId)
+    setLoading(true)
+  }
 
   useEffect(() => {
     if (!selectedCompanyId) return
     let cancelled = false
-    setLoading(true)
     fetch(`/api/companies/${selectedCompanyId}/dashboard`)
       .then(res => res.ok ? res.json() : null)
       .then(d => {

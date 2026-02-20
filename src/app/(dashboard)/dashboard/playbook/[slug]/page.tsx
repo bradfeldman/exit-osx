@@ -38,7 +38,7 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ slug:
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!selectedCompanyId) { setLoading(false); return }
+    if (!selectedCompanyId) return
     let cancelled = false
 
     fetch(`/api/companies/${selectedCompanyId}/active-playbooks`)
