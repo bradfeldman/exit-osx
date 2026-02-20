@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, X, Check, Loader2 } from 'lucide-react'
+import { ArrowLeft, X, Check, Loader2, Menu } from 'lucide-react'
 
 interface FocusBarProps {
   playbookId: string
@@ -11,6 +11,7 @@ interface FocusBarProps {
   totalSections: number
   saveStatus?: 'saved' | 'saving' | 'idle'
   referrer?: string | null
+  onMenuToggle?: () => void
 }
 
 export function FocusBar({
@@ -20,6 +21,7 @@ export function FocusBar({
   totalSections,
   saveStatus = 'idle',
   referrer,
+  onMenuToggle,
 }: FocusBarProps) {
   const router = useRouter()
   const progressPercent = totalSections > 0 ? ((currentSection + 1) / totalSections) * 100 : 0
@@ -97,6 +99,16 @@ export function FocusBar({
               <Check className="w-3 h-3" />
               Auto-saved
             </span>
+          )}
+
+          {onMenuToggle && (
+            <button
+              onClick={onMenuToggle}
+              className="lg:hidden w-11 h-11 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+              aria-label="Open section menu"
+            >
+              <Menu className="w-4 h-4" style={{ color: 'var(--text-secondary, #6E6E73)' }} />
+            </button>
           )}
 
           <button

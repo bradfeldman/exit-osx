@@ -16,6 +16,8 @@ interface PlaybookSidebarProps {
   currentSection: number
   compositeScore?: number | null
   percentComplete: number
+  variant?: 'desktop' | 'mobile'
+  onNavigate?: () => void
 }
 
 export function PlaybookSidebar({
@@ -25,9 +27,18 @@ export function PlaybookSidebar({
   currentSection,
   compositeScore,
   percentComplete,
+  variant = 'desktop',
+  onNavigate,
 }: PlaybookSidebarProps) {
   return (
-    <aside className="hidden lg:flex flex-col w-64 h-full bg-white border-r overflow-y-auto" style={{ borderColor: 'var(--border, #E5E7EB)' }}>
+    <aside
+      className={
+        variant === 'mobile'
+          ? 'flex flex-col w-full bg-white overflow-y-auto'
+          : 'hidden lg:flex flex-col w-64 h-full bg-white border-r overflow-y-auto'
+      }
+      style={variant === 'desktop' ? { borderColor: 'var(--border, #E5E7EB)' } : undefined}
+    >
       {/* Brand block */}
       <div className="px-5 pt-5 pb-4 border-b" style={{ borderColor: 'var(--border-light, #F2F2F7)' }}>
         <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--accent, #0071E3)' }}>
@@ -82,6 +93,7 @@ export function PlaybookSidebar({
                 ) : (
                   <Link
                     href={`/playbook/${playbookId}/${section.order}`}
+                    onClick={onNavigate}
                     className={`flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${
                       isActive ? 'border-l-[3px]' : 'border-l-[3px] border-transparent hover:bg-gray-50'
                     }`}

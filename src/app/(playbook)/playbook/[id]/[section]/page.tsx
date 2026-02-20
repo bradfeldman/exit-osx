@@ -236,7 +236,7 @@ export default function FocusModePage() {
         src={iframeSrc}
         title={`${definition.title} — Section ${sectionIndex + 1}`}
         className="w-full border-0"
-        style={{ minHeight: 'calc(100vh - 120px)' }}
+        style={{ minHeight: 'calc(100dvh - 120px)' }}
         sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
       />
     </FocusModeContent>
