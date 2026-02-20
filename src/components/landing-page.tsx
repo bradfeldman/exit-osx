@@ -569,7 +569,7 @@ export function LandingPage() {
                 },
                 {
                   q: '"Can I invite my CFO or advisor?"',
-                  a: 'Yes. Growth plans include up to 3 team members. Exit-Ready includes unlimited team access so your whole advisory team can collaborate.',
+                  a: 'Yes. Growth plans include up to 3 team members. Deal Room includes unlimited team access so your whole advisory team can collaborate.',
                 },
               ].map((item) => (
                 <AnimatedItem key={item.q}>

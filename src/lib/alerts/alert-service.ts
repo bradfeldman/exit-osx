@@ -287,7 +287,7 @@ export async function createTrialEndingAlert(
     recipientId: userId,
     type: 'TRIAL_ENDING',
     title: 'Trial Ending Soon',
-    message: `Your trial ends in ${daysRemaining} day${daysRemaining === 1 ? '' : 's'}. Subscribe to keep your Exit-Ready features.`,
+    message: `Your trial ends in ${daysRemaining} day${daysRemaining === 1 ? '' : 's'}. Subscribe to keep your Deal Room features.`,
     actionUrl: `/dashboard/settings?tab=billing`,
     metadata: { daysRemaining },
   })

@@ -64,7 +64,7 @@ export async function sendTrialEndingSoonEmail(params: TrialEndingSoonEmailParam
               </h1>
 
               <p style="margin: 0 0 32px 0; font-size: 16px; line-height: 1.6; color: #666666; text-align: center;">
-                Your Exit-Ready trial for ${companyName} ends on <strong>${endsFormatted}</strong>. Here's what you'll lose access to:
+                Your Deal Room trial for ${companyName} ends on <strong>${endsFormatted}</strong>. Here's what you'll lose access to:
               </p>
 
               <!-- What You'll Lose -->

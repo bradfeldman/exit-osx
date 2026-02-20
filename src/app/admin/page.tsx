@@ -88,7 +88,7 @@ async function getDashboardData() {
 const planTierLabel: Record<string, string> = {
   FOUNDATION: 'Foundation',
   GROWTH: 'Growth',
-  EXIT_READY: 'Exit Ready',
+  DEAL_ROOM: 'Deal Room',
 }
 
 export default async function AdminDashboard() {

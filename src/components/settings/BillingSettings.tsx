@@ -247,7 +247,7 @@ export function BillingSettings() {
       <div>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
           <h2 className="text-lg font-semibold">
-            {planTier === 'exit-ready' ? 'Your Plan' : 'Upgrade Your Plan'}
+            {planTier === 'deal-room' ? 'Your Plan' : 'Upgrade Your Plan'}
           </h2>
 
           {/* Billing Cycle Toggle */}
@@ -288,7 +288,7 @@ export function BillingSettings() {
           {PRICING_PLANS.map((plan) => {
             const isCurrentPlan = plan.id === planTier
             const isDowngrade =
-              (planTier === 'exit-ready' && plan.id !== 'exit-ready') ||
+              (planTier === 'deal-room' && plan.id !== 'deal-room') ||
               (planTier === 'growth' && plan.id === 'foundation')
             const canUpgrade = !isCurrentPlan && !isDowngrade
             const price = billingCycle === 'annual' ? plan.annualPrice : plan.monthlyPrice

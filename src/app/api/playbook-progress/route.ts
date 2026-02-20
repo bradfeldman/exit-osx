@@ -14,6 +14,7 @@ import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { getPlaybookDefinition } from '@/lib/playbook/playbook-registry'
 import { getPlaybookPrimaryBriCategory } from '@/lib/playbook/playbook-surface-mapping'
 import { recalculateSnapshotForCompany } from '@/lib/valuation/recalculate-snapshot'
+import { createLedgerEntryForTaskCompletion } from '@/lib/value-ledger/create-entry'
 
 // BRI bonus calculation: playbook depth (section count) × relevance weight
 // Range: +3 to +8 points on the 0-100 BRI category scale
@@ -112,8 +113,8 @@ export async function POST(request: Request) {
     },
   })
 
-  // BRI feedback: if newly completed with score >= 70, apply category boost
-  let briFeedback: { category: string; bonus: number; snapshotRecalculated: boolean } | null = null
+  // BRI feedback: if newly completed with score >= 70, apply category boost + auto-complete tasks
+  let briFeedback: { category: string; bonus: number; snapshotRecalculated: boolean; autoCompletedTasks: number } | null = null
 
   if (isNewlyCompleted && compositeScore != null && compositeScore >= 70) {
     const definition = getPlaybookDefinition(playbookSlug)
@@ -130,6 +131,58 @@ export async function POST(request: Request) {
         },
       })
 
+      // Auto-complete pending/in-progress tasks in the same BRI category
+      let autoCompletedTasks = 0
+      try {
+        const relatedTasks = await prisma.task.findMany({
+          where: {
+            companyId,
+            briCategory: primaryCategory as never,
+            status: { in: ['PENDING', 'IN_PROGRESS'] },
+          },
+          select: { id: true, title: true, briCategory: true, normalizedValue: true },
+        })
+
+        if (relatedTasks.length > 0) {
+          const completionNote = `Addressed via ${definition.title} program (score: ${compositeScore}/100)`
+
+          await prisma.task.updateMany({
+            where: { id: { in: relatedTasks.map(t => t.id) } },
+            data: {
+              status: 'COMPLETED',
+              completedAt: now,
+              completionNotes: completionNote,
+              completedValue: relatedTasks[0].normalizedValue, // updateMany applies same value; ledger entries handle per-task
+            },
+          })
+
+          // Set per-task completedValue and create ledger entries
+          for (const task of relatedTasks) {
+            await prisma.task.update({
+              where: { id: task.id },
+              data: { completedValue: task.normalizedValue },
+            })
+            try {
+              await createLedgerEntryForTaskCompletion({
+                companyId,
+                taskId: task.id,
+                taskTitle: task.title,
+                briCategory: task.briCategory,
+                completedValue: Number(task.normalizedValue),
+                briImpact: null,
+                valueBefore: null,
+                valueAfter: null,
+              })
+            } catch (err) {
+              console.error(`[PlaybookProgress] Ledger entry failed for task ${task.id}:`, err)
+            }
+          }
+          autoCompletedTasks = relatedTasks.length
+        }
+      } catch (err) {
+        console.error('[PlaybookProgress] Auto-complete tasks failed:', err)
+      }
+
       // Trigger snapshot recalculation to incorporate the boost
       try {
         await recalculateSnapshotForCompany(
@@ -137,10 +190,10 @@ export async function POST(request: Request) {
           `Playbook completed: ${definition.title} (score: ${compositeScore})`,
           userId
         )
-        briFeedback = { category: primaryCategory, bonus, snapshotRecalculated: true }
+        briFeedback = { category: primaryCategory, bonus, snapshotRecalculated: true, autoCompletedTasks }
       } catch (err) {
         console.error('[PlaybookProgress] Snapshot recalculation failed:', err)
-        briFeedback = { category: primaryCategory, bonus, snapshotRecalculated: false }
+        briFeedback = { category: primaryCategory, bonus, snapshotRecalculated: false, autoCompletedTasks }
       }
     }
   }

@@ -123,6 +123,7 @@ interface DashboardData {
       status: string
       buyerConsequence: string | null
       effortLevel: string
+      linkedPlaybookSlug: string | null
       startedAt: string | null
     } | null
     comingUp: Array<{

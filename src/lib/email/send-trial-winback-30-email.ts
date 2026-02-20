@@ -48,7 +48,7 @@ export async function sendTrialWinback30Email(params: TrialWinback30EmailParams)
               </h1>
 
               <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #666666; text-align: center;">
-                It's been a month since your Exit-Ready trial ended. We just wanted to check in.
+                It's been a month since your Deal Room trial ended. We just wanted to check in.
               </p>
 
               <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #666666; text-align: center;">

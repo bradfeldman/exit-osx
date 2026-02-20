@@ -13,7 +13,7 @@ const FEATURE_TO_STAFF_FIELD: Record<PersonalFeature, 'hasPFSAccess' | 'hasRetir
   'business-loans': 'hasLoansAccess',
 }
 
-// Comped email domains that get full Exit-Ready access
+// Comped email domains that get full Deal Room access
 const COMPED_DOMAINS = ['pasadena-private.com', 'pasadenapw.com']
 
 export interface CompanyWithRole {
@@ -180,7 +180,7 @@ export async function getCompanyPlanTier(companyId: string): Promise<PlanTier> {
   const subscribingOwner = await getCompanySubscribingOwner(companyId)
 
   if (subscribingOwner?.userType === 'COMPED') {
-    return 'exit-ready'
+    return 'deal-room'
   }
 
   // Get the company to find its workspace
@@ -625,11 +625,11 @@ export async function checkCanInviteStaff(companyId: string): Promise<{ allowed:
 export async function checkCanInviteOwner(companyId: string): Promise<{ allowed: boolean; reason?: string }> {
   const planTier = await getCompanyPlanTier(companyId)
 
-  // Guest owners only available on Exit-Ready
-  if (planTier !== 'exit-ready') {
+  // Guest owners only available on Deal Room
+  if (planTier !== 'deal-room') {
     return {
       allowed: false,
-      reason: 'Guest owners are only available on the Exit-Ready plan',
+      reason: 'Guest owners are only available on the Deal Room plan',
     }
   }
 
@@ -642,7 +642,7 @@ export async function checkCanInviteOwner(companyId: string): Promise<{ allowed:
     },
   })
 
-  const limit = 10 // Exit-Ready allows 10 guest owners
+  const limit = 10 // Deal Room allows 10 guest owners
   if (ownerCount >= limit) {
     return {
       allowed: false,

@@ -12,11 +12,11 @@ describe('Pricing Plans', () => {
       expect(PRICING_PLANS).toHaveLength(3)
     })
 
-    it('should have foundation, growth, and exit-ready tiers', () => {
+    it('should have foundation, growth, and deal-room tiers', () => {
       const tierIds = PRICING_PLANS.map(p => p.id)
       expect(tierIds).toContain('foundation')
       expect(tierIds).toContain('growth')
-      expect(tierIds).toContain('exit-ready')
+      expect(tierIds).toContain('deal-room')
     })
 
     it('foundation plan should be free', () => {
@@ -31,10 +31,10 @@ describe('Pricing Plans', () => {
       expect(growth?.annualPrice).toBe(149)
     })
 
-    it('exit-ready plan should have correct pricing', () => {
-      const exitReady = PRICING_PLANS.find(p => p.id === 'exit-ready')
-      expect(exitReady?.monthlyPrice).toBe(449)
-      expect(exitReady?.annualPrice).toBe(379)
+    it('deal-room plan should have correct pricing', () => {
+      const dealRoom = PRICING_PLANS.find(p => p.id === 'deal-room')
+      expect(dealRoom?.monthlyPrice).toBe(449)
+      expect(dealRoom?.annualPrice).toBe(379)
     })
 
     it('annual pricing should be less than monthly for paid plans', () => {
@@ -63,7 +63,7 @@ describe('Pricing Plans', () => {
       // All plans include Exit Readiness Assessment
       expect(hasFeatureAccess('foundation', 'Exit Readiness Assessment')).toBe(true)
       expect(hasFeatureAccess('growth', 'Exit Readiness Assessment')).toBe(true)
-      expect(hasFeatureAccess('exit-ready', 'Exit Readiness Assessment')).toBe(true)
+      expect(hasFeatureAccess('deal-room', 'Exit Readiness Assessment')).toBe(true)
     })
 
     it('should return false for excluded features', () => {
@@ -78,17 +78,19 @@ describe('Pricing Plans', () => {
       expect(hasFeatureAccess('growth', 'Automated Financial Sync')).toBe(true)
     })
 
-    it('should return true for exit-ready-only features', () => {
-      expect(hasFeatureAccess('exit-ready', 'Buyer-Ready Data Room')).toBe(true)
-      expect(hasFeatureAccess('exit-ready', 'Discounted Cash Flow Analysis')).toBe(true)
-      expect(hasFeatureAccess('exit-ready', 'Multi-Company Portfolio')).toBe(true)
+    it('should return true for deal-room-only features', () => {
+      expect(hasFeatureAccess('deal-room', 'Buyer-Ready Data Room')).toBe(true)
+      expect(hasFeatureAccess('deal-room', 'Discounted Cash Flow Analysis')).toBe(true)
+      expect(hasFeatureAccess('deal-room', 'Multi-Company Portfolio')).toBe(true)
     })
 
-    it('should return false for exit-ready-only features on lower tiers', () => {
+    it('should return false for deal-room-only features on lower tiers', () => {
       expect(hasFeatureAccess('foundation', 'Buyer-Ready Data Room')).toBe(false)
       expect(hasFeatureAccess('growth', 'Buyer-Ready Data Room')).toBe(false)
       expect(hasFeatureAccess('foundation', 'Discounted Cash Flow Analysis')).toBe(false)
-      expect(hasFeatureAccess('growth', 'Discounted Cash Flow Analysis')).toBe(false)
+      // Note: Growth plan includes DCF, so hasFeatureAccess('growth', 'Discounted Cash Flow Analysis') is true
+      expect(hasFeatureAccess('foundation', 'Deal Pipeline Manager')).toBe(false)
+      expect(hasFeatureAccess('growth', 'Deal Pipeline Manager')).toBe(false)
     })
 
     it('should return false for non-existent features', () => {
@@ -111,9 +113,9 @@ describe('Pricing Plans', () => {
       expect(growth?.id).toBe('growth')
       expect(growth?.name).toBe('Growth')
 
-      const exitReady = getPlan('exit-ready')
-      expect(exitReady?.id).toBe('exit-ready')
-      expect(exitReady?.name).toBe('Exit-Ready')
+      const dealRoom = getPlan('deal-room')
+      expect(dealRoom?.id).toBe('deal-room')
+      expect(dealRoom?.name).toBe('Deal Room')
     })
 
     it('should return undefined for invalid tier', () => {

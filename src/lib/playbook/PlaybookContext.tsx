@@ -15,6 +15,7 @@ interface BriFeedback {
   category: string
   bonus: number
   snapshotRecalculated: boolean
+  autoCompletedTasks?: number
 }
 
 interface PlaybookContextValue {

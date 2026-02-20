@@ -12,15 +12,15 @@ function getPlanTierEnum(planId: string): PlanTier | null {
       return 'FOUNDATION'
     case 'growth':
       return 'GROWTH'
-    case 'exit-ready':
-      return 'EXIT_READY'
+    case 'deal-room':
+      return 'DEAL_ROOM'
     default:
       return null
   }
 }
 
 // Plan hierarchy for validation
-const PLAN_HIERARCHY = ['foundation', 'growth', 'exit-ready']
+const PLAN_HIERARCHY = ['foundation', 'growth', 'deal-room']
 
 function isUpgrade(currentPlan: string, targetPlan: string): boolean {
   const currentIndex = PLAN_HIERARCHY.indexOf(currentPlan.toLowerCase().replace('_', '-'))

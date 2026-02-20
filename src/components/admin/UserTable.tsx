@@ -42,7 +42,7 @@ interface UserTableProps {
 const planTierConfig: Record<string, { label: string; variant: 'secondary' | 'default' | 'outline' ; className?: string }> = {
   FOUNDATION: { label: 'Foundation', variant: 'secondary' },
   GROWTH: { label: 'Growth', variant: 'default', className: 'bg-blue-100 text-blue-800 hover:bg-blue-100 dark:bg-blue-900 dark:text-blue-300' },
-  EXIT_READY: { label: 'Exit Ready', variant: 'default', className: 'bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900 dark:text-green-300' },
+  DEAL_ROOM: { label: 'Deal Room', variant: 'default', className: 'bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900 dark:text-green-300' },
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {

@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { validateRequestBody } from '@/lib/security/validation'
 
 const postSchema = z.object({
-  planId: z.enum(['growth', 'exit-ready']),
+  planId: z.enum(['growth', 'deal-room']),
   billingCycle: z.enum(['monthly', 'annual']).default('annual'),
 })
 
@@ -74,7 +74,7 @@ export async function POST(request: Request) {
     }
 
     // Determine plan tier for metadata
-    const planTier = planId === 'exit-ready' ? 'EXIT_READY' : 'GROWTH'
+    const planTier = planId === 'deal-room' ? 'DEAL_ROOM' : 'GROWTH'
 
     // Only offer trial if workspace has never had a Stripe subscription
     const hasHadSubscription = !!workspace.stripeSubscriptionId

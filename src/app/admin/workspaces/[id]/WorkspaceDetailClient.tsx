@@ -193,7 +193,7 @@ export function WorkspaceDetailClient({ workspace }: WorkspaceDetailClientProps)
                     <SelectContent>
                       <SelectItem value="FOUNDATION">Foundation (Free)</SelectItem>
                       <SelectItem value="GROWTH">Growth ($149/mo)</SelectItem>
-                      <SelectItem value="EXIT_READY">Exit-Ready ($379/mo)</SelectItem>
+                      <SelectItem value="DEAL_ROOM">Deal Room ($379/mo)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

@@ -10,6 +10,7 @@ import { type RichTaskDescription, hasRichDescription } from './rich-task-descri
 import { calculateTaskPriorityFromAttributes, initializeActionPlan } from '@/lib/tasks/action-plan'
 import { generateBuyerConsequences, type TaskForConsequence } from '@/lib/ai/buyer-consequences'
 import { enrichTasksWithContext } from '@/lib/tasks/enrich-task-context'
+import { getPlaybookForContext } from './playbook-surface-mapping'
 
 // Use flexible types to handle Prisma Decimal
 type NumberLike = string | number | { toString(): string }
@@ -374,6 +375,9 @@ export async function generateTasksForCompany(
         task.estimatedHours
       )
 
+      // Look up best-matching playbook for this task's BRI category
+      const playbookMatch = getPlaybookForContext({ briCategory: task.briCategory })
+
       const newTask = await prisma.task.create({
         data: {
           companyId,
@@ -397,6 +401,7 @@ export async function generateTasksForCompany(
           taskNature: getTaskNature(task.actionType),
           inActionPlan: false, // Tasks start in queue, not action plan
           ...(defaultAssigneeId && { primaryAssigneeId: defaultAssigneeId }),
+          linkedPlaybookSlug: playbookMatch?.playbook.slug ?? null,
           status: 'PENDING',
         },
       })
@@ -838,6 +843,9 @@ export async function generateTasksFromProjectAssessment(
     const normalizedValue = estimatedValueImpact / effortMultiplier
 
     try {
+      // Look up best-matching playbook for this task's BRI category
+      const playbookMatch = getPlaybookForContext({ briCategory: question.briCategory })
+
       await prisma.task.create({
         data: {
           companyId,
@@ -857,6 +865,7 @@ export async function generateTasksFromProjectAssessment(
           taskNature: getTaskNature('TYPE_III_OPERATIONAL'),
           inActionPlan: false, // Goes to queue first
           status: 'PENDING',
+          linkedPlaybookSlug: playbookMatch?.playbook.slug ?? null,
           ...(defaultAssigneeId && { primaryAssigneeId: defaultAssigneeId }),
         }
       })
@@ -871,4 +880,42 @@ export async function generateTasksFromProjectAssessment(
   console.log(`[TASK_ENGINE] Project assessment generated ${created} tasks, skipped ${skipped}`)
 
   return { created, skipped }
+}
+
+/**
+ * Backfill linkedPlaybookSlug for existing tasks that don't have one.
+ * Groups tasks by briCategory and sets the best-matching playbook for each.
+ */
+export async function backfillPlaybookLinks(companyId: string): Promise<number> {
+  const tasks = await prisma.task.findMany({
+    where: {
+      companyId,
+      linkedPlaybookSlug: null,
+    },
+    select: { id: true, briCategory: true },
+  })
+
+  if (tasks.length === 0) return 0
+
+  // Group by briCategory to avoid redundant lookups
+  const byCategory = new Map<string, string[]>()
+  for (const task of tasks) {
+    const ids = byCategory.get(task.briCategory) ?? []
+    ids.push(task.id)
+    byCategory.set(task.briCategory, ids)
+  }
+
+  let updated = 0
+  for (const [category, taskIds] of byCategory) {
+    const match = getPlaybookForContext({ briCategory: category })
+    if (!match) continue
+
+    const result = await prisma.task.updateMany({
+      where: { id: { in: taskIds } },
+      data: { linkedPlaybookSlug: match.playbook.slug },
+    })
+    updated += result.count
+  }
+
+  return updated
 }

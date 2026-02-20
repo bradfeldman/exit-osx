@@ -111,7 +111,7 @@ export async function GET(request: Request) {
     // Get company-specific access info if companyId provided
     let userRole: 'subscribing_owner' | 'owner' | 'staff' | undefined
     let staffAccess: { hasPFSAccess: boolean; hasRetirementAccess: boolean; hasLoansAccess: boolean } | undefined
-    let effectivePlanTier = workspace.planTier.toLowerCase().replace('_', '-') as 'foundation' | 'growth' | 'exit-ready'
+    let effectivePlanTier = workspace.planTier.toLowerCase().replace('_', '-') as 'foundation' | 'growth' | 'deal-room'
 
     if (companyId) {
       const accessInfo = await getUserAccessInfo(dbUser.id, companyId)
@@ -130,7 +130,7 @@ export async function GET(request: Request) {
       subscription: {
         workspaceId: workspace.id,
         workspaceName: workspace.name,
-        planTier: isComped ? 'exit-ready' : effectivePlanTier,
+        planTier: isComped ? 'deal-room' : effectivePlanTier,
         status: trialExpired ? 'EXPIRED' : workspace.subscriptionStatus,
         billingCycle: workspace.billingCycle,
         isTrialing: isTrialing && !trialExpired,

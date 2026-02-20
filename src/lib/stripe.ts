@@ -26,15 +26,15 @@ export const stripe = new Proxy({} as Stripe, {
 export const STRIPE_PRICE_MAP: Record<string, string> = {
   'growth-monthly': 'price_1T0lGECcx9aWfHqLlz6BSDRO',
   'growth-annual': 'price_1T0wklCcx9aWfHqLjPzEBXUe',
-  'exit-ready-monthly': 'price_1T0n6UCcx9aWfHqLoWciIgin',
-  'exit-ready-annual': 'price_1T0wnNCcx9aWfHqLn7kOmcVf',
+  'deal-room-monthly': 'price_1T0n6UCcx9aWfHqLoWciIgin',
+  'deal-room-annual': 'price_1T0wnNCcx9aWfHqLn7kOmcVf',
 }
 
 // Reverse lookup: Stripe Price ID → plan tier
-export function getPlanTierFromPriceId(priceId: string): 'GROWTH' | 'EXIT_READY' | null {
+export function getPlanTierFromPriceId(priceId: string): 'GROWTH' | 'DEAL_ROOM' | null {
   for (const [key, value] of Object.entries(STRIPE_PRICE_MAP)) {
     if (value === priceId) {
-      return key.startsWith('growth') ? 'GROWTH' : 'EXIT_READY'
+      return key.startsWith('growth') ? 'GROWTH' : 'DEAL_ROOM'
     }
   }
   return null

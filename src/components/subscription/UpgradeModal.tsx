@@ -89,9 +89,9 @@ export function UpgradeModal({
   const _isGrowth = planTier === 'growth'
 
   // Determine which plan to suggest based on current plan and required feature
-  // If user needs Exit-Ready feature, suggest Exit-Ready
+  // If user needs Deal Room feature, suggest Deal Room
   // If user is on Foundation and needs Growth feature, suggest Growth
-  const targetPlan = requiredPlan === 'exit-ready' ? 'exit-ready' : (isFoundation ? 'growth' : 'exit-ready')
+  const targetPlan = requiredPlan === 'deal-room' ? 'deal-room' : (isFoundation ? 'growth' : 'deal-room')
   const targetPlanData = getPlan(targetPlan)
 
   // Determine the right CTA text based on user's current state

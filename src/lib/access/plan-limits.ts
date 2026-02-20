@@ -23,7 +23,7 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
     staff: 3,
     guestOwners: 0,
   },
-  'exit-ready': {
+  'deal-room': {
     companies: Infinity,
     staff: Infinity,
     guestOwners: 10,
@@ -92,7 +92,7 @@ export function getCompaniesToHandle(currentPlan: PlanTier, newPlan: PlanTier, c
  */
 export const TRIAL_CONFIG = {
   durationDays: 14,
-  defaultPlan: 'exit-ready' as PlanTier,
+  defaultPlan: 'deal-room' as PlanTier,
   fallbackPlan: 'foundation' as PlanTier,
   reminderDays: 3, // Send reminder 3 days before trial ends
 }

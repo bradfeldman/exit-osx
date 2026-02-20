@@ -125,7 +125,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
   // Check company feature access (based on subscribing owner's plan)
   const checkCompanyFeatureAccess = useCallback((feature: string): boolean => {
-    // COMPED users always have Exit-Ready access
+    // COMPED users always have Deal Room access
     if (isComped) {
       return true
     }

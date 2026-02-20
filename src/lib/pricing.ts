@@ -1,4 +1,4 @@
-export type PlanTier = 'foundation' | 'growth' | 'exit-ready'
+export type PlanTier = 'foundation' | 'growth' | 'deal-room'
 
 export interface PlanFeature {
   name: string
@@ -73,8 +73,8 @@ export const PRICING_PLANS: PricingPlan[] = [
     ],
   },
   {
-    id: 'exit-ready',
-    name: 'Exit-Ready',
+    id: 'deal-room',
+    name: 'Deal Room',
     description: 'Full suite for M&A-ready businesses preparing to exit',
     monthlyPrice: 449,
     annualPrice: 379,
@@ -136,16 +136,16 @@ export const FEATURE_REQUIREMENTS: Record<string, PlanTier> = {
   'team-members': 'growth', // limit: 3
   'proceeds-waterfall': 'growth',
 
-  // Exit-Ready required
-  'data-room': 'exit-ready',
+  // Deal Room required
+  'data-room': 'deal-room',
   'dcf-valuation': 'growth',
-  'deal-tracker': 'exit-ready',
-  'unlimited-team': 'exit-ready',
-  'multiple-companies': 'exit-ready',
+  'deal-tracker': 'deal-room',
+  'unlimited-team': 'deal-room',
+  'multiple-companies': 'deal-room',
 }
 
 // Plan hierarchy for comparison
-const PLAN_HIERARCHY: PlanTier[] = ['foundation', 'growth', 'exit-ready']
+const PLAN_HIERARCHY: PlanTier[] = ['foundation', 'growth', 'deal-room']
 
 /**
  * Get the minimum required plan for a feature
@@ -181,12 +181,12 @@ export function getUpgradeMessage(feature: string): string {
 /**
  * Company limits by plan tier
  * Foundation and Growth: 1 company
- * Exit-Ready: up to 3 companies
+ * Deal Room: up to 3 companies
  */
 export const COMPANY_LIMITS: Record<PlanTier, number> = {
   'foundation': 1,
   'growth': 1,
-  'exit-ready': 3,
+  'deal-room': 3,
 } as const
 
 /**
@@ -195,7 +195,7 @@ export const COMPANY_LIMITS: Record<PlanTier, number> = {
 export const TEAM_MEMBER_LIMITS: Record<PlanTier, number> = {
   'foundation': 1,
   'growth': 3,
-  'exit-ready': Infinity,
+  'deal-room': Infinity,
 }
 
 /**

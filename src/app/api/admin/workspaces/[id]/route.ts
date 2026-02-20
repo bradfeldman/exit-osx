@@ -60,7 +60,7 @@ export async function GET(
 
 const workspaceUpdateSchema = z.object({
   name: shortText.optional(),
-  planTier: z.enum(['FOUNDATION', 'GROWTH', 'EXIT_READY']).optional(),
+  planTier: z.enum(['FOUNDATION', 'GROWTH', 'DEAL_ROOM']).optional(),
   subscriptionStatus: z.enum(['ACTIVE', 'PAST_DUE', 'CANCELED', 'TRIALING', 'PAUSED']).optional(),
   trialEndsAt: z.string().datetime().optional().nullable(),
 })

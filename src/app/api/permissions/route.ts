@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     }
 
     // Check workspace's subscription tier and user's role
-    // Exit-Ready tier owners get all permissions automatically
+    // Deal Room tier owners get all permissions automatically
     const workspaceMember = await prisma.workspaceMember.findUnique({
       where: { id: context.workspaceMemberId },
       include: {
@@ -42,17 +42,17 @@ export async function GET(request: Request) {
       },
     })
 
-    // If user is workspace owner (SUPER_ADMIN/ADMIN) and on Exit-Ready tier, grant all permissions
+    // If user is workspace owner (SUPER_ADMIN/ADMIN) and on Deal Room tier, grant all permissions
     const isOwnerRole = workspaceMember?.workspaceRole === 'OWNER' || workspaceMember?.workspaceRole === 'ADMIN'
     const isComped = workspaceMember?.user.userType === 'COMPED'
-    const isExitReadyOrComped = workspaceMember?.workspace.planTier === 'EXIT_READY' || isComped
+    const isDealRoomOrComped = workspaceMember?.workspace.planTier === 'DEAL_ROOM' || isComped
     const hasActiveSubscription = workspaceMember?.workspace.subscriptionStatus !== 'CANCELLED' && workspaceMember?.workspace.subscriptionStatus !== 'EXPIRED'
 
     // Resolve all permissions for this user
     let resolved = await resolveUserPermissions(context.workspaceMemberId)
 
-    // Override permissions for Exit-Ready owners
-    if (isOwnerRole && isExitReadyOrComped && hasActiveSubscription) {
+    // Override permissions for Deal Room owners
+    if (isOwnerRole && isDealRoomOrComped && hasActiveSubscription) {
       // Grant all permissions from owner template
       resolved = {
         ...resolved,

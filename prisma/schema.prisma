@@ -533,6 +533,7 @@ model Task {
   startedAt            DateTime?          @map("started_at")
   assigneeRole         String?            @map("assignee_role")
   sourceType           TaskSourceType     @default(ASSESSMENT) @map("source_type")
+  linkedPlaybookSlug   String?            @map("linked_playbook_slug")
   supersededById       String?            @map("superseded_by_id")
   proofDocuments       DataRoomDocument[] @relation("TaskProofDocuments")
   assignments          TaskAssignment[]
@@ -2036,7 +2037,7 @@ enum DocumentStatus {
 enum PlanTier {
   FOUNDATION
   GROWTH
-  EXIT_READY
+  DEAL_ROOM
 }
 
 enum BillingCycle {

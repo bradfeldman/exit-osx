@@ -513,7 +513,7 @@ export const buyerUpdateSchema = z.object({
 
 /** Subscription Upgrade POST */
 export const subscriptionUpgradeSchema = z.object({
-  targetPlan: z.enum(['foundation', 'growth', 'exit-ready']),
+  targetPlan: z.enum(['foundation', 'growth', 'deal-room']),
   billingCycle: z.enum(['monthly', 'annual']).default('annual'),
 })
 

@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Clock, ChevronDown, ChevronUp } from 'lucide-react'
+import Link from 'next/link'
+import { Clock, ChevronDown, ChevronUp, BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { getBRICategoryLabel, getBRICategoryColor } from '@/lib/constants/bri-categories'
@@ -21,6 +22,7 @@ interface NextMoveTask {
   status: string
   buyerConsequence: string | null
   effortLevel: string
+  linkedPlaybookSlug: string | null
   startedAt: string | null
 }
 
@@ -51,6 +53,7 @@ export function NextMoveCard({ task, comingUp, isFreeUser: _isFreeUser = false, 
   const [showRationale, setShowRationale] = useState(false)
   const isInProgress = task?.status === 'IN_PROGRESS'
   const playbookMatch = task ? getPlaybookForContext({ briCategory: task.briCategory }) : null
+  const playbookSlug = task?.linkedPlaybookSlug ?? playbookMatch?.playbook.slug ?? null
 
   const handleStart = async () => {
     if (task) {
@@ -123,13 +126,15 @@ export function NextMoveCard({ task, comingUp, isFreeUser: _isFreeUser = false, 
         </p>
       )}
 
-      {/* Related Playbook */}
-      {playbookMatch && (
-        <PlaybookSuggestionInline
-          playbook={playbookMatch.playbook}
-          reason={playbookMatch.reason}
-          planTier={planTier}
-        />
+      {/* Open full program link */}
+      {playbookSlug && (
+        <Link
+          href={`/playbook/${playbookSlug}`}
+          className="inline-flex items-center gap-1.5 mt-3 text-sm text-muted-foreground hover:text-primary transition-colors"
+        >
+          <BookOpen className="h-3.5 w-3.5" />
+          Open full program &rarr;
+        </Link>
       )}
 
       {/* Button Row */}

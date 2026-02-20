@@ -82,7 +82,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const subscription = await stripe.subscriptions.retrieve(subscriptionId)
   const priceId = subscription.items.data[0]?.price?.id
 
-  const resolvedPlanTier = planTier === 'EXIT_READY' || planTier === 'GROWTH'
+  const resolvedPlanTier = planTier === 'DEAL_ROOM' || planTier === 'GROWTH'
     ? planTier
     : (priceId ? getPlanTierFromPriceId(priceId) : null)
 

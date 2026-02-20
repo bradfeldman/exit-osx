@@ -695,6 +695,7 @@ export async function GET(
         status: true,
         buyerConsequence: true,
         effortLevel: true,
+        linkedPlaybookSlug: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -721,6 +722,7 @@ export async function GET(
         status: true,
         buyerConsequence: true,
         effortLevel: true,
+        linkedPlaybookSlug: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -1059,6 +1061,7 @@ export async function GET(
             || BUYER_CONSEQUENCE_TEMPLATES[nextPendingTask.briCategory]
             || null,
           effortLevel: nextPendingTask.effortLevel,
+          linkedPlaybookSlug: nextPendingTask.linkedPlaybookSlug,
           startedAt: nextPendingTask.status === 'IN_PROGRESS'
             ? nextPendingTask.updatedAt.toISOString()
             : null,

@@ -69,7 +69,7 @@ export default function FocusModePage() {
 
   const [progress, setProgress] = useState<StoredProgress>(() => loadProgress(playbookId))
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'idle'>('idle')
-  const [celebration, setCelebration] = useState<{ score: number; category: string; bonus: number } | null>(null)
+  const [celebration, setCelebration] = useState<{ score: number; category: string; bonus: number; autoCompletedTasks: number } | null>(null)
   const { syncProgress } = usePlaybookSync()
   const syncDebounceRef = useRef<ReturnType<typeof setTimeout>>(null)
 
@@ -98,6 +98,7 @@ export default function FocusModePage() {
           score: updatedProgress.compositeScore ?? 0,
           category: result.briFeedback.category,
           bonus: result.briFeedback.bonus,
+          autoCompletedTasks: result.briFeedback.autoCompletedTasks ?? 0,
         })
       }
     }, 2000) // 2 second debounce to batch rapid updates
@@ -222,6 +223,9 @@ export default function FocusModePage() {
           <p className="text-sm text-emerald-700 dark:text-emerald-400 mt-1">
             This score has been shared with your Exit OS dashboard.
             Your {celebration.category.toLowerCase().replace('_', ' ')} readiness improved by +{celebration.bonus} points.
+            {celebration.autoCompletedTasks > 0 && (
+              <> Also completed {celebration.autoCompletedTasks} related action item{celebration.autoCompletedTasks === 1 ? '' : 's'}.</>
+            )}
           </p>
           <Link
             href="/dashboard/diagnosis"

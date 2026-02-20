@@ -17,7 +17,7 @@ export async function sendTrialWelcomeEmail(params: TrialWelcomeEmailParams) {
   const endsFormatted = trialEndsAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })
   const unsubscribeLink = await getUnsubscribeLink(userId)
 
-  const subject = 'Welcome to your 7-day Exit-Ready trial'
+  const subject = 'Welcome to your 7-day Deal Room trial'
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -57,7 +57,7 @@ export async function sendTrialWelcomeEmail(params: TrialWelcomeEmailParams) {
               </h1>
 
               <p style="margin: 0 0 8px 0; font-size: 16px; line-height: 1.6; color: #666666; text-align: center;">
-                You have <strong>full Exit-Ready access</strong> for ${companyName} until <strong>${endsFormatted}</strong>.
+                You have <strong>full Deal Room access</strong> for ${companyName} until <strong>${endsFormatted}</strong>.
               </p>
 
               <p style="margin: 0 0 32px 0; font-size: 15px; line-height: 1.6; color: #888888; text-align: center;">

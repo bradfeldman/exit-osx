@@ -90,7 +90,7 @@ const TOUR_STEPS: TourStep[] = [
     heading: 'Financial Modeling Tools',
     description:
       'Upload your Business Financials to unlock advanced tools — DCF Valuation, Retirement Calculator, and Personal Financial Statement.',
-    hint: 'Available on Growth and Exit-Ready plans.',
+    hint: 'Available on Growth and Deal Room plans.',
     highlightId: 'value-modeling',
   },
   {

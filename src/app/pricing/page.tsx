@@ -257,7 +257,7 @@ export default function PricingPage() {
               const planDescriptions: Record<string, string> = {
                 'foundation': 'See where you stand. Free forever.',
                 'growth': 'Find the leaks. Fix the value.',
-                'exit-ready': 'Done-with-you exit preparation.',
+                'deal-room': 'Done-with-you exit preparation.',
               }
 
               return (
@@ -401,7 +401,7 @@ export default function PricingPage() {
                     <th className="text-left py-4 px-4 font-medium text-muted-foreground">Feature</th>
                     <th className="text-center py-4 px-4 font-semibold text-foreground">Foundation</th>
                     <th className="text-center py-4 px-4 font-semibold text-primary bg-primary/5">Growth</th>
-                    <th className="text-center py-4 px-4 font-semibold text-foreground">Exit-Ready</th>
+                    <th className="text-center py-4 px-4 font-semibold text-foreground">Deal Room</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -482,7 +482,7 @@ export default function PricingPage() {
               </div>
 
               <div className="bg-card border border-border rounded-xl p-6">
-                <h3 className="font-semibold text-foreground mb-3">Exit-Ready</h3>
+                <h3 className="font-semibold text-foreground mb-3">Deal Room</h3>
                 <p className="text-sm text-muted-foreground mb-4">Built for founders who:</p>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-start gap-2">
@@ -518,7 +518,7 @@ export default function PricingPage() {
               />
               <FAQItem
                 question="Can I invite my CFO or advisor?"
-                answer="Yes. Growth plans include up to 3 team seats. Exit-Ready includes unlimited seats. Team members can collaborate on tasks, upload evidence, and track progress—without seeing your personal financial data."
+                answer="Yes. Growth plans include up to 3 team seats. Deal Room includes unlimited seats. Team members can collaborate on tasks, upload evidence, and track progress—without seeing your personal financial data."
               />
               <FAQItem
                 question="How is my valuation calculated?"
