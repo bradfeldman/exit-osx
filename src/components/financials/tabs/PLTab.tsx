@@ -14,6 +14,7 @@ import {
   Calculator,
   TrendingUp,
 } from 'lucide-react'
+import styles from '@/components/financials/financials-pages.module.css'
 
 interface PLTabProps {
   companyId: string
@@ -25,7 +26,7 @@ interface PLTabProps {
 export interface PLData {
   grossRevenue: number
   cogs: number
-  totalExpenses: number  // Renamed from operatingExpenses - includes all expenses below gross profit
+  totalExpenses: number  // All expenses below gross profit (includes D, A, I, T)
   grossProfit: number
   grossMarginPct: number
   ebitda: number
@@ -42,7 +43,7 @@ interface IncomeStatement {
   periodId: string
   grossRevenue: number
   cogs: number
-  operatingExpenses: number  // API still uses this name, we display as "Total Expenses"
+  operatingExpenses: number  // API field name; displayed as "Total Expenses"
   grossProfit: number
   grossMarginPct: number
   ebitda: number
@@ -68,7 +69,7 @@ export function PLTab({ companyId, periodId, onDataChange, onDirty }: PLTabProps
   // Form state
   const [grossRevenue, setGrossRevenue] = useState<number>(0)
   const [cogs, setCogs] = useState<number>(0)
-  const [totalExpenses, setTotalExpenses] = useState<number>(0)  // All expenses below gross profit (includes D, A, I, T)
+  const [totalExpenses, setTotalExpenses] = useState<number>(0)
   const [depreciation, setDepreciation] = useState<number>(0)
   const [amortization, setAmortization] = useState<number>(0)
   const [interestExpense, setInterestExpense] = useState<number>(0)
@@ -77,15 +78,13 @@ export function PLTab({ companyId, periodId, onDataChange, onDirty }: PLTabProps
   // Calculated values
   const grossProfit = grossRevenue - cogs
   const grossMarginPct = grossRevenue > 0 ? (grossProfit / grossRevenue) * 100 : 0
-  // EBITDA = Gross Profit - Total Expenses + D + A + I + T
-  // (Total Expenses includes everything, so we add back ITDA to get EBITDA)
   const ebitda = grossProfit - totalExpenses + depreciation + amortization + interestExpense + taxExpense
   const ebitdaMarginPct = grossRevenue > 0 ? (ebitda / grossRevenue) * 100 : 0
   const ebit = ebitda - depreciation - amortization
   const ebt = ebit - interestExpense
   const netOperatingIncome = ebt - taxExpense
 
-  // Notify parent of data changes (using ref to avoid infinite loop)
+  // Notify parent of data changes
   useEffect(() => {
     onDataChangeRef.current?.({
       grossRevenue,
@@ -119,7 +118,7 @@ export function PLTab({ companyId, periodId, onDataChange, onDirty }: PLTabProps
           setIncomeStatement(stmt)
           setGrossRevenue(stmt.grossRevenue || 0)
           setCogs(stmt.cogs || 0)
-          setTotalExpenses(stmt.operatingExpenses || 0)  // API uses operatingExpenses, we display as Total Expenses
+          setTotalExpenses(stmt.operatingExpenses || 0)
           setDepreciation(stmt.depreciation || 0)
           setAmortization(stmt.amortization || 0)
           setInterestExpense(stmt.interestExpense || 0)
@@ -132,7 +131,6 @@ export function PLTab({ companyId, periodId, onDataChange, onDirty }: PLTabProps
       console.error('Failed to fetch income statement:', error)
     } finally {
       setIsLoading(false)
-      // Mark as initialized after a small delay to avoid triggering dirty on initial load
       setTimeout(() => setIsInitialized(true), 100)
     }
   }, [companyId, periodId])
@@ -173,7 +171,7 @@ export function PLTab({ companyId, periodId, onDataChange, onDirty }: PLTabProps
             body: JSON.stringify({
               grossRevenue,
               cogs,
-              operatingExpenses: totalExpenses,  // API still uses operatingExpenses field name
+              operatingExpenses: totalExpenses,
               depreciation,
               amortization,
               interestExpense,
@@ -189,18 +187,15 @@ export function PLTab({ companyId, periodId, onDataChange, onDirty }: PLTabProps
     return () => clearTimeout(timer)
   }, [companyId, periodId, grossRevenue, cogs, totalExpenses, depreciation, amortization, interestExpense, taxExpense, isLoading])
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value)
-  }
 
-  const formatPercent = (value: number) => {
-    return `${value.toFixed(1)}%`
-  }
+  const formatPercent = (value: number) => `${value.toFixed(1)}%`
 
   const formatInputValue = (value: number) => {
     if (value === 0) return ''
@@ -212,179 +207,188 @@ export function PLTab({ companyId, periodId, onDataChange, onDirty }: PLTabProps
     return parseFloat(cleaned) || 0
   }
 
+  const marginBadgeClass = (pct: number, threshold1: number, threshold2: number) => {
+    if (pct >= threshold1) return `${styles.stmtMarginBadge} ${styles.stmtMarginBadgeGreen}`
+    if (pct >= threshold2) return `${styles.stmtMarginBadge} ${styles.stmtMarginBadgeYellow}`
+    return `${styles.stmtMarginBadge} ${styles.stmtMarginBadgeGray}`
+  }
+
   if (isLoading) {
     return (
-      <div className="flex justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className={styles.stmtTabLoading}>
+        <div className={styles.stmtSpinner} />
       </div>
     )
   }
 
   return (
-    <div className="space-y-8">
+    <div className={styles.stmtSection} style={{ gap: '32px' }}>
+
       {/* Revenue Section */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-600">
-            <DollarSign className="h-4 w-4" />
+      <div className={styles.stmtSection}>
+        <div className={styles.stmtSectionHead}>
+          <div className={`${styles.stmtIconBadge} ${styles.stmtIconBadgeGreen}`}>
+            <DollarSign />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900">Revenue</h3>
-            <p className="text-sm text-gray-500">Your total sales before any deductions</p>
+            <p className={styles.stmtSectionLabel}>Revenue</p>
+            <p className={styles.stmtSectionDesc}>Your total sales before any deductions</p>
           </div>
         </div>
 
-        <div className="ml-11">
-          <Label htmlFor="grossRevenue" className="text-sm font-medium text-gray-700">
-            Gross Revenue
-          </Label>
-          <div className="relative mt-1.5">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">$</span>
-            <Input
-              id="grossRevenue"
-              type="text"
-              inputMode="numeric"
-              value={formatInputValue(grossRevenue)}
-              onChange={(e) => setGrossRevenue(parseInputValue(e.target.value))}
-              className="pl-8 h-12 text-lg font-medium bg-gray-50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
-              placeholder="0"
-            />
+        <div className={styles.stmtSectionIndent}>
+          <div>
+            <Label htmlFor="grossRevenue" className={styles.stmtFieldLabel}>
+              Gross Revenue
+            </Label>
+            <div className={styles.stmtInputWrap}>
+              <span className={styles.stmtInputPrefix}>$</span>
+              <Input
+                id="grossRevenue"
+                type="text"
+                inputMode="numeric"
+                value={formatInputValue(grossRevenue)}
+                onChange={(e) => setGrossRevenue(parseInputValue(e.target.value))}
+                className="pl-8 h-12 text-lg font-medium"
+                placeholder="0"
+              />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Visual Divider */}
-      <div className="flex items-center gap-3 pl-11">
-        <div className="flex-1 h-px bg-gray-200" />
-        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100">
-          <Minus className="h-3 w-3 text-gray-400" />
+      {/* Divider: minus */}
+      <div className={styles.stmtDivider}>
+        <div className={styles.stmtDividerLine} />
+        <div className={styles.stmtDividerIcon}>
+          <Minus />
         </div>
-        <div className="flex-1 h-px bg-gray-200" />
+        <div className={styles.stmtDividerLine} />
       </div>
 
       {/* Costs Section */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-100 text-orange-600">
-            <Receipt className="h-4 w-4" />
+      <div className={styles.stmtSection}>
+        <div className={styles.stmtSectionHead}>
+          <div className={`${styles.stmtIconBadge} ${styles.stmtIconBadgeOrange}`}>
+            <Receipt />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900">Costs & Expenses</h3>
-            <p className="text-sm text-gray-500">Direct costs and operating expenses</p>
+            <p className={styles.stmtSectionLabel}>Costs &amp; Expenses</p>
+            <p className={styles.stmtSectionDesc}>Direct costs and operating expenses</p>
           </div>
         </div>
 
-        <div className="ml-11 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className={styles.stmtSectionIndent}>
+          <div className={styles.stmtFieldGrid}>
             <div>
-              <Label htmlFor="cogs" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="cogs" className={styles.stmtFieldLabel}>
                 Cost of Goods Sold
               </Label>
-              <div className="relative mt-1.5">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">$</span>
+              <div className={styles.stmtInputWrap}>
+                <span className={styles.stmtInputPrefix}>$</span>
                 <Input
                   id="cogs"
                   type="text"
                   inputMode="numeric"
                   value={formatInputValue(cogs)}
                   onChange={(e) => setCogs(parseInputValue(e.target.value))}
-                  className="pl-8 h-11 font-medium bg-gray-50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                  className="pl-8 h-11 font-medium"
                   placeholder="0"
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-1.5">Direct costs to produce your product/service</p>
+              <p className={styles.stmtInputHint}>Direct costs to produce your product/service</p>
             </div>
 
             <div>
-              <Label htmlFor="totalExpenses" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="totalExpenses" className={styles.stmtFieldLabel}>
                 Total Expenses
               </Label>
-              <div className="relative mt-1.5">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">$</span>
+              <div className={styles.stmtInputWrap}>
+                <span className={styles.stmtInputPrefix}>$</span>
                 <Input
                   id="totalExpenses"
                   type="text"
                   inputMode="numeric"
                   value={formatInputValue(totalExpenses)}
                   onChange={(e) => setTotalExpenses(parseInputValue(e.target.value))}
-                  className="pl-8 h-11 font-medium bg-gray-50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                  className="pl-8 h-11 font-medium"
                   placeholder="0"
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-1.5">All expenses below gross profit (from QuickBooks)</p>
+              <p className={styles.stmtInputHint}>All expenses below gross profit (from QuickBooks)</p>
             </div>
           </div>
 
-          {/* D, A, I, T breakdown - used to calculate EBITDA from Total Expenses */}
-          <div className="bg-orange-50/50 rounded-lg p-4 border border-orange-100">
-            <p className="text-sm font-medium text-orange-800 mb-3">
+          {/* DAIT breakdown */}
+          <div className={styles.stmtBreakdownBox}>
+            <p className={styles.stmtBreakdownBoxLabel}>
               Breakdown of Total Expenses (added back to calculate EBITDA)
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className={styles.stmtBreakdownGrid}>
               <div>
-                <Label htmlFor="depreciation" className="text-xs font-medium text-gray-600">
+                <Label htmlFor="depreciation" className={styles.stmtFieldLabelSm}>
                   Depreciation
                 </Label>
-                <div className="relative mt-1">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                <div className={styles.stmtInputWrap}>
+                  <span className={styles.stmtInputPrefixSm}>$</span>
                   <Input
                     id="depreciation"
                     type="text"
                     inputMode="numeric"
                     value={formatInputValue(depreciation)}
                     onChange={(e) => setDepreciation(parseInputValue(e.target.value))}
-                    className="pl-7 h-9 text-sm font-medium bg-white border-gray-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                    className="pl-7 h-9 text-sm font-medium"
                     placeholder="0"
                   />
                 </div>
               </div>
               <div>
-                <Label htmlFor="amortization" className="text-xs font-medium text-gray-600">
+                <Label htmlFor="amortization" className={styles.stmtFieldLabelSm}>
                   Amortization
                 </Label>
-                <div className="relative mt-1">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                <div className={styles.stmtInputWrap}>
+                  <span className={styles.stmtInputPrefixSm}>$</span>
                   <Input
                     id="amortization"
                     type="text"
                     inputMode="numeric"
                     value={formatInputValue(amortization)}
                     onChange={(e) => setAmortization(parseInputValue(e.target.value))}
-                    className="pl-7 h-9 text-sm font-medium bg-white border-gray-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                    className="pl-7 h-9 text-sm font-medium"
                     placeholder="0"
                   />
                 </div>
               </div>
               <div>
-                <Label htmlFor="interestExpense" className="text-xs font-medium text-gray-600">
+                <Label htmlFor="interestExpense" className={styles.stmtFieldLabelSm}>
                   Interest
                 </Label>
-                <div className="relative mt-1">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                <div className={styles.stmtInputWrap}>
+                  <span className={styles.stmtInputPrefixSm}>$</span>
                   <Input
                     id="interestExpense"
                     type="text"
                     inputMode="numeric"
                     value={formatInputValue(interestExpense)}
                     onChange={(e) => setInterestExpense(parseInputValue(e.target.value))}
-                    className="pl-7 h-9 text-sm font-medium bg-white border-gray-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                    className="pl-7 h-9 text-sm font-medium"
                     placeholder="0"
                   />
                 </div>
               </div>
               <div>
-                <Label htmlFor="taxExpense" className="text-xs font-medium text-gray-600">
+                <Label htmlFor="taxExpense" className={styles.stmtFieldLabelSm}>
                   Taxes
                 </Label>
-                <div className="relative mt-1">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                <div className={styles.stmtInputWrap}>
+                  <span className={styles.stmtInputPrefixSm}>$</span>
                   <Input
                     id="taxExpense"
                     type="text"
                     inputMode="numeric"
                     value={formatInputValue(taxExpense)}
                     onChange={(e) => setTaxExpense(parseInputValue(e.target.value))}
-                    className="pl-7 h-9 text-sm font-medium bg-white border-gray-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                    className="pl-7 h-9 text-sm font-medium"
                     placeholder="0"
                   />
                 </div>
@@ -394,109 +398,95 @@ export function PLTab({ companyId, periodId, onDataChange, onDirty }: PLTabProps
         </div>
       </div>
 
-      {/* Visual Divider */}
-      <div className="flex items-center gap-3 pl-11">
-        <div className="flex-1 h-px bg-gray-200" />
-        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100">
-          <Equal className="h-3 w-3 text-gray-400" />
+      {/* Divider: equals */}
+      <div className={styles.stmtDivider}>
+        <div className={styles.stmtDividerLine} />
+        <div className={styles.stmtDividerIcon}>
+          <Equal />
         </div>
-        <div className="flex-1 h-px bg-gray-200" />
+        <div className={styles.stmtDividerLine} />
       </div>
 
-      {/* Results Section */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600">
-            <Calculator className="h-4 w-4" />
+      {/* Calculated Results */}
+      <div className={styles.stmtSection}>
+        <div className={styles.stmtSectionHead}>
+          <div className={`${styles.stmtIconBadge} ${styles.stmtIconBadgeBlue}`}>
+            <Calculator />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900">Calculated Results</h3>
-            <p className="text-sm text-gray-500">Auto-calculated from your inputs above</p>
+            <p className={styles.stmtSectionLabel}>Calculated Results</p>
+            <p className={styles.stmtSectionDesc}>Auto-calculated from your inputs above</p>
           </div>
         </div>
 
-        <div className="ml-11">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Gross Profit Card */}
-            <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-xl p-4 border border-gray-200">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-medium text-gray-600">Gross Profit</span>
-                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                  grossMarginPct >= 50 ? 'bg-emerald-100 text-emerald-700' :
-                  grossMarginPct >= 30 ? 'bg-yellow-100 text-yellow-700' :
-                  'bg-gray-100 text-gray-600'
-                }`}>
+        <div className={styles.stmtSectionIndent}>
+          <div className={styles.stmtResultGrid}>
+            {/* Gross Profit card */}
+            <div className={styles.stmtResultCard}>
+              <div className={styles.stmtResultCardHeader}>
+                <span className={styles.stmtResultCardName}>Gross Profit</span>
+                <span className={marginBadgeClass(grossMarginPct, 50, 30)}>
                   {formatPercent(grossMarginPct)} margin
                 </span>
               </div>
-              <p className={`text-2xl font-bold ${grossProfit >= 0 ? 'text-gray-900' : 'text-red-600'}`}>
+              <p className={grossProfit >= 0 ? styles.stmtResultValue : `${styles.stmtResultValue} ${styles.stmtResultValueNeg}`}>
                 {formatCurrency(grossProfit)}
               </p>
-              <p className="text-xs text-gray-500 mt-1">Revenue minus COGS</p>
+              <p className={styles.stmtResultHint}>Revenue minus COGS</p>
             </div>
 
-            {/* EBITDA Card */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-medium text-blue-700">EBITDA</span>
-                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                  ebitdaMarginPct >= 20 ? 'bg-emerald-100 text-emerald-700' :
-                  ebitdaMarginPct >= 10 ? 'bg-yellow-100 text-yellow-700' :
-                  'bg-gray-100 text-gray-600'
-                }`}>
+            {/* EBITDA card */}
+            <div className={styles.stmtResultCardBlue}>
+              <div className={styles.stmtResultCardHeader}>
+                <span className={styles.stmtResultCardNameBlue}>EBITDA</span>
+                <span className={marginBadgeClass(ebitdaMarginPct, 20, 10)}>
                   {formatPercent(ebitdaMarginPct)} margin
                 </span>
               </div>
-              <p className={`text-2xl font-bold ${ebitda >= 0 ? 'text-blue-700' : 'text-red-600'}`}>
+              <p className={ebitda >= 0 ? styles.stmtResultValueBlue : `${styles.stmtResultValueBlue} ${styles.stmtResultValueNeg}`}>
                 {formatCurrency(ebitda)}
               </p>
-              <p className="text-xs text-blue-600/70 mt-1">Key metric for valuation</p>
+              <p className={styles.stmtResultHintBlue}>Key metric for valuation</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Below-the-line Results Section */}
-      <div className="border-t">
-        <Button
-          variant="ghost"
+      {/* Below-the-line collapsible */}
+      <div className={styles.stmtBelowLine}>
+        <button
+          className={styles.stmtBelowLineToggle}
           onClick={() => setShowBelowTheLine(!showBelowTheLine)}
-          className="w-full justify-between py-6 px-0 hover:bg-transparent"
         >
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-500">
-              <TrendingUp className="h-4 w-4" />
+          <div className={styles.stmtBelowLineToggleLeft}>
+            <div className={`${styles.stmtIconBadge} ${styles.stmtIconBadgeGray}`}>
+              <TrendingUp />
             </div>
-            <div className="text-left">
-              <h3 className="font-medium text-gray-700">Below-the-Line Results</h3>
-              <p className="text-sm text-gray-500 font-normal">EBIT, EBT, and Net Operating Income</p>
+            <div>
+              <p className={styles.stmtBelowLineTitle}>Below-the-Line Results</p>
+              <p className={styles.stmtBelowLineSubtitle}>EBIT, EBT, and Net Operating Income</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-gray-400">
-            <span className="text-sm">{showBelowTheLine ? 'Hide' : 'Show'}</span>
-            {showBelowTheLine ? (
-              <ChevronUp className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
-            )}
+          <div className={styles.stmtBelowLineToggleRight}>
+            <span>{showBelowTheLine ? 'Hide' : 'Show'}</span>
+            {showBelowTheLine ? <ChevronUp /> : <ChevronDown />}
           </div>
-        </Button>
+        </button>
 
         {showBelowTheLine && (
-          <div className="pb-6 bg-gray-50/50 rounded-b-lg px-4 -mx-4">
-            {/* Below-the-line Results */}
-            <div className="ml-11 bg-white rounded-lg border border-gray-200 divide-y divide-gray-100">
-              <div className="flex justify-between items-center px-4 py-3">
-                <span className="text-sm text-gray-600">EBIT (Operating Income)</span>
-                <span className="font-semibold text-gray-900">{formatCurrency(ebit)}</span>
+          <div className={styles.stmtBelowLineContent}>
+            <div className={styles.stmtBelowLineTable}>
+              <div className={styles.stmtBelowLineRow}>
+                <span className={styles.stmtBelowLineRowLabel}>EBIT (Operating Income)</span>
+                <span className={styles.stmtBelowLineRowValue}>{formatCurrency(ebit)}</span>
               </div>
-              <div className="flex justify-between items-center px-4 py-3">
-                <span className="text-sm text-gray-600">EBT (Pre-Tax Income)</span>
-                <span className="font-semibold text-gray-900">{formatCurrency(ebt)}</span>
+              <div className={styles.stmtBelowLineRow}>
+                <span className={styles.stmtBelowLineRowLabel}>EBT (Pre-Tax Income)</span>
+                <span className={styles.stmtBelowLineRowValue}>{formatCurrency(ebt)}</span>
               </div>
-              <div className="flex justify-between items-center px-4 py-3 bg-gray-50">
-                <span className="text-sm font-semibold text-gray-900">Net Operating Income</span>
-                <span className={`font-bold text-lg ${netOperatingIncome >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+              <div className={styles.stmtBelowLineRowTotal}>
+                <span className={styles.stmtBelowLineRowTotalLabel}>Net Operating Income</span>
+                <span className={netOperatingIncome >= 0 ? styles.stmtBelowLineRowTotalValuePos : styles.stmtBelowLineRowTotalValueNeg}>
                   {formatCurrency(netOperatingIncome)}
                 </span>
               </div>

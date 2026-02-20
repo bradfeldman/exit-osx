@@ -8,10 +8,10 @@ import { useCompany } from '@/contexts/CompanyContext'
 import { formatCurrency } from '@/lib/utils/currency'
 import { FinancialsDataEntry } from '@/components/financials/FinancialsDataEntry'
 import { Pencil, Loader2, CheckCircle, Link2, AlertCircle, X, TrendingUp } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
 import { fetchWithRetry } from '@/lib/fetch-with-retry'
 import { analytics } from '@/lib/analytics'
 import { TrackPageView } from '@/components/tracking/TrackPageView'
+import styles from '@/components/financials/financials-pages.module.css'
 
 interface FinancialPeriod {
   id: string
@@ -100,22 +100,22 @@ function FinancialsEmptyState({
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="space-y-8"
+      className={styles.editEmptyRoot}
     >
       {/* Hero Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="text-center max-w-2xl mx-auto"
+        className={styles.editHero}
       >
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-          className="w-20 h-20 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl flex items-center justify-center mx-auto mb-6"
+          className={styles.editHeroIcon}
         >
-          <svg className="w-10 h-10 text-primary" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
           </svg>
         </motion.div>
@@ -124,7 +124,7 @@ function FinancialsEmptyState({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="text-3xl md:text-4xl font-bold text-foreground font-display mb-3"
+          className={styles.editHeroTitle}
         >
           {headline.title}
         </motion.h1>
@@ -133,38 +133,39 @@ function FinancialsEmptyState({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="text-lg text-muted-foreground"
+          className={styles.editHeroDesc}
         >
           {headline.description}
         </motion.p>
 
-        {/* Additional context for users with BRI score */}
         {hasBriScore && (
           <motion.p
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="text-sm text-muted-foreground mt-2"
+            className={styles.editHeroSub}
           >
             Add 3 years of historical financials plus your trailing 12 months.
           </motion.p>
         )}
       </motion.div>
 
-      {/* Task Value Context */}
+      {/* Task Value Context Banner */}
       {completedTaskCount > 0 && completedTaskValue > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45 }}
-          className="max-w-3xl mx-auto"
+          className={styles.editContextBanner}
         >
-          <div className="flex items-center gap-3 px-4 py-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg">
-            <div className="p-1.5 bg-emerald-100 dark:bg-emerald-900/40 rounded-full">
-              <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+          <div className={styles.editBannerEmerald}>
+            <div className={styles.editBannerEmeraldIcon}>
+              <TrendingUp size={16} />
             </div>
-            <p className="text-sm text-emerald-700 dark:text-emerald-300">
-              You&apos;ve already improved your value by <span className="font-semibold">{formatCurrency(completedTaskValue)}</span> through {completedTaskCount} completed task{completedTaskCount !== 1 ? 's' : ''}.
+            <p>
+              You&apos;ve already improved your value by{' '}
+              <span className={styles.editBannerBold}>{formatCurrency(completedTaskValue)}</span>{' '}
+              through {completedTaskCount} completed task{completedTaskCount !== 1 ? 's' : ''}.
               Add your financials to see your total valuation.
             </p>
           </div>
@@ -176,171 +177,156 @@ function FinancialsEmptyState({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45 }}
-          className="max-w-3xl mx-auto"
+          className={styles.editContextBanner}
         >
-          <div className="flex items-center gap-3 px-4 py-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-            <div className="p-1.5 bg-blue-100 dark:bg-blue-900/40 rounded-full">
-              <CheckCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          <div className={styles.editBannerBlue}>
+            <div className={styles.editBannerBlueIcon}>
+              <CheckCircle size={16} />
             </div>
-            <p className="text-sm text-blue-700 dark:text-blue-300">
+            <p>
               Your risk profile is assessed. Now add financials to see what buyers would actually pay.
             </p>
           </div>
         </motion.div>
       )}
 
-      {/* Timeline Visual */}
+      {/* Timeline Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="max-w-3xl mx-auto"
+        className={styles.editTimelineCard}
       >
-        <Card className="border-border/50 shadow-lg overflow-hidden">
-          <CardContent className="p-6 md:p-8">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-6 text-center">
-              Required Financial Periods
-            </h3>
+        <h3 className={styles.editTimelineHeading}>
+          Required Financial Periods
+        </h3>
 
-            {/* Timeline */}
-            <div className="relative">
-              <div className="absolute top-8 left-0 right-0 h-0.5 bg-gradient-to-r from-muted via-primary/30 to-primary hidden md:block" />
+        {/* Period Timeline */}
+        <div className={styles.editTimeline}>
+          <div className={styles.editTimelineTrack} />
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {requiredYears.map((period, index) => (
-                  <motion.div
-                    key={period.year}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6 + index * 0.1 }}
-                    className="relative"
-                  >
-                    <div className="hidden md:flex w-4 h-4 rounded-full bg-muted border-2 border-primary/30 mx-auto mb-4 relative z-10" />
-
-                    <div className="bg-muted/50 rounded-xl p-4 text-center hover:bg-muted/70 transition-colors">
-                      <div className="text-2xl font-bold text-foreground font-display">
-                        {period.label}
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        {period.description}
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-
-            {/* Divider */}
-            <div className="relative my-8">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-card text-muted-foreground">Choose how to add your data</span>
-              </div>
-            </div>
-
-            {/* Two Paths */}
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* QuickBooks Path */}
+          <div className={styles.editTimelineGrid}>
+            {requiredYears.map((period, index) => (
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.9 }}
-                className={`relative p-6 rounded-xl border-2 transition-all ${
-                  integrationData.hasQuickBooksIntegration
-                    ? 'border-green-500/50 bg-green-50/50'
-                    : 'border-primary/20 bg-gradient-to-br from-primary/5 to-transparent hover:border-primary/40'
-                }`}
+                key={period.year}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 + index * 0.1 }}
               >
-                {integrationData.configured && !integrationData.hasQuickBooksIntegration && (
-                  <div className="absolute -top-3 left-4">
-                    <span className="px-2 py-1 text-xs font-medium bg-primary text-primary-foreground rounded-full">
-                      Recommended
-                    </span>
-                  </div>
-                )}
-
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-white shadow-sm flex items-center justify-center flex-shrink-0">
-                    <QuickBooksLogo />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-foreground">QuickBooks Online</h4>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {integrationData.hasQuickBooksIntegration
-                        ? `Connected${integrationData.providerCompanyName ? ` to ${integrationData.providerCompanyName}` : ''}`
-                        : 'Import P&L and Balance Sheet data automatically'
-                      }
-                    </p>
-                  </div>
+                <div className={styles.editTimelineDot} />
+                <div className={styles.editPeriodTile}>
+                  <div className={styles.editPeriodYear}>{period.label}</div>
+                  <div className={styles.editPeriodDesc}>{period.description}</div>
                 </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
 
-                <div className="mt-4">
-                  {integrationData.hasQuickBooksIntegration ? (
-                    <div className="flex items-center gap-2 text-sm text-green-600">
-                      <CheckCircle className="h-4 w-4" />
-                      <span>Connected and syncing</span>
-                    </div>
-                  ) : integrationData.configured ? (
-                    <Button
-                      onClick={onQuickBooksConnect}
-                      disabled={isConnecting}
-                      className="w-full"
-                    >
-                      {isConnecting ? (
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      ) : (
-                        <Link2 className="h-4 w-4 mr-2" />
-                      )}
-                      Connect QuickBooks
-                    </Button>
+        {/* Divider */}
+        <div className={styles.editDivider}>
+          <div className={styles.editDividerInner}>
+            <hr className={styles.editDividerLine} />
+            <span className={styles.editDividerLabel}>Choose how to add your data</span>
+            <hr className={styles.editDividerLine} />
+          </div>
+        </div>
+
+        {/* Two Paths */}
+        <div className={styles.editPathGrid}>
+          {/* QuickBooks Path */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.9 }}
+            className={
+              integrationData.hasQuickBooksIntegration
+                ? `${styles.editQbCard} ${styles.editQbCardConnected}`
+                : styles.editQbCard
+            }
+          >
+            {integrationData.configured && !integrationData.hasQuickBooksIntegration && (
+              <span className={styles.editRecommendedBadge}>Recommended</span>
+            )}
+
+            <div className={styles.editPathHeader}>
+              <div className={styles.editQbLogoWrap}>
+                <QuickBooksLogo />
+              </div>
+              <div className={styles.editPathMeta}>
+                <h4 className={styles.editPathTitle}>QuickBooks Online</h4>
+                <p className={styles.editPathDesc}>
+                  {integrationData.hasQuickBooksIntegration
+                    ? `Connected${integrationData.providerCompanyName ? ` to ${integrationData.providerCompanyName}` : ''}`
+                    : 'Import P&L and Balance Sheet data automatically'
+                  }
+                </p>
+              </div>
+            </div>
+
+            <div className={styles.editPathAction}>
+              {integrationData.hasQuickBooksIntegration ? (
+                <div className={styles.editQbConnectedStatus}>
+                  <CheckCircle size={16} />
+                  <span>Connected and syncing</span>
+                </div>
+              ) : integrationData.configured ? (
+                <Button
+                  onClick={onQuickBooksConnect}
+                  disabled={isConnecting}
+                  className="w-full"
+                >
+                  {isConnecting ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   ) : (
-                    <p className="text-xs text-muted-foreground">
-                      QuickBooks integration not configured for your account
-                    </p>
+                    <Link2 className="h-4 w-4 mr-2" />
                   )}
-                </div>
-              </motion.div>
-
-              {/* Manual Path */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 1 }}
-                className="p-6 rounded-xl border-2 border-border hover:border-primary/30 transition-all"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                    <Pencil className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-foreground">Enter Manually</h4>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Add your financial data year by year
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-4">
-                  <Button variant="outline" onClick={() => onAddYear(12, 31)} className="w-full" disabled={isCreatingPeriods}>
-                    {isCreatingPeriods ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Setting up your periods...
-                      </>
-                    ) : (
-                      <>
-                        <Pencil className="h-4 w-4 mr-2" />
-                        Enter Manually
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </motion.div>
+                  Connect QuickBooks
+                </Button>
+              ) : (
+                <p className={styles.editQbNotConfigured}>
+                  QuickBooks integration not configured for your account
+                </p>
+              )}
             </div>
-          </CardContent>
-        </Card>
+          </motion.div>
+
+          {/* Manual Entry Path */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 1 }}
+            className={styles.editManualCard}
+          >
+            <div className={styles.editPathHeader}>
+              <div className={styles.editManualIconWrap}>
+                <Pencil size={24} />
+              </div>
+              <div className={styles.editPathMeta}>
+                <h4 className={styles.editPathTitle}>Enter Manually</h4>
+                <p className={styles.editPathDesc}>
+                  Add your financial data year by year
+                </p>
+              </div>
+            </div>
+
+            <div className={styles.editPathAction}>
+              <Button variant="outline" onClick={() => onAddYear(12, 31)} className="w-full" disabled={isCreatingPeriods}>
+                {isCreatingPeriods ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Setting up your periods...
+                  </>
+                ) : (
+                  <>
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Enter Manually
+                  </>
+                )}
+              </Button>
+            </div>
+          </motion.div>
+        </div>
       </motion.div>
 
       {/* Benefits */}
@@ -348,9 +334,9 @@ function FinancialsEmptyState({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.1 }}
-        className="max-w-3xl mx-auto"
+        className={styles.editBenefits}
       >
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className={styles.editBenefitsGrid}>
           {[
             { icon: '📊', title: 'Accurate Valuation', desc: 'Based on your actual EBITDA trends' },
             { icon: '📈', title: 'Growth Analysis', desc: 'See revenue and profit trajectories' },
@@ -361,11 +347,11 @@ function FinancialsEmptyState({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.2 + index * 0.1 }}
-              className="text-center p-4"
+              className={styles.editBenefit}
             >
-              <div className="text-3xl mb-2">{benefit.icon}</div>
-              <h4 className="font-medium text-foreground">{benefit.title}</h4>
-              <p className="text-sm text-muted-foreground">{benefit.desc}</p>
+              <div className={styles.editBenefitIcon}>{benefit.icon}</div>
+              <h4 className={styles.editBenefitTitle}>{benefit.title}</h4>
+              <p className={styles.editBenefitDesc}>{benefit.desc}</p>
             </motion.div>
           ))}
         </div>
@@ -503,11 +489,10 @@ function FinancialsContent() {
     hasTrackedPageView.current = true
     analytics.track('financials_page_viewed', {
       entryPoint: 'navigation',
-      subscriptionTier: 'unknown', // Could be enriched from context
+      subscriptionTier: 'unknown',
       hasExistingData: periods.length > 0,
     })
 
-    // Track empty state if no data
     if (periods.length === 0) {
       analytics.track('financials_empty_state_seen', {
         section: 'main',
@@ -516,7 +501,6 @@ function FinancialsContent() {
   }, [isLoading, periods.length])
 
   // Check for OAuth callback params
-  // This effect intentionally sets state based on URL params for OAuth callback handling
   useEffect(() => {
     const qbConnected = searchParams.get('qb_connected')
     const qbErrorParam = searchParams.get('qb_error')
@@ -536,7 +520,6 @@ function FinancialsContent() {
   const handleQuickBooksConnect = async () => {
     if (!selectedCompanyId) return
 
-    // Track QuickBooks connect click
     analytics.track('quickbooks_connect_clicked', {
       currentDataState: periods.length === 0 ? 'empty' : 'partial',
     })
@@ -573,7 +556,6 @@ function FinancialsContent() {
     analytics.track('financials_enter_manually_clicked', {})
 
     try {
-      // Save FYE to company first
       await fetch(`/api/companies/${selectedCompanyId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -610,22 +592,22 @@ function FinancialsContent() {
 
   if (!selectedCompanyId) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <p className="text-muted-foreground">Please select a company</p>
+      <div className={styles.editCentered}>
+        <p>Please select a company</p>
       </div>
     )
   }
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className={styles.editCentered}>
+        <Loader2 className="h-8 w-8 animate-spin" style={{ color: 'var(--text-secondary)' }} />
       </div>
     )
   }
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className={styles.editContainer}>
       {/* QB Messages */}
       <AnimatePresence>
         {qbError && (
@@ -633,12 +615,12 @@ function FinancialsContent() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="flex items-start gap-2 text-sm text-red-600 bg-red-50 px-4 py-3 rounded-lg"
+            className={styles.editAlertError}
           >
-            <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+            <AlertCircle size={16} />
             <span>{qbError}</span>
-            <button onClick={() => setQbError(null)} className="ml-auto">
-              <X className="h-4 w-4" />
+            <button onClick={() => setQbError(null)} className={styles.editAlertDismiss}>
+              <X size={16} />
             </button>
           </motion.div>
         )}
@@ -647,12 +629,12 @@ function FinancialsContent() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="flex items-start gap-2 text-sm text-green-600 bg-green-50 px-4 py-3 rounded-lg"
+            className={styles.editAlertSuccess}
           >
-            <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+            <CheckCircle size={16} />
             <span>{qbSuccess}</span>
-            <button onClick={() => setQbSuccess(null)} className="ml-auto">
-              <X className="h-4 w-4" />
+            <button onClick={() => setQbSuccess(null)} className={styles.editAlertDismiss}>
+              <X size={16} />
             </button>
           </motion.div>
         )}
@@ -685,8 +667,8 @@ export default function FinancialsPage() {
     <>
       <TrackPageView page="/dashboard/financials" />
       <Suspense fallback={
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className={styles.editCentered}>
+          <Loader2 className="h-8 w-8 animate-spin" style={{ color: 'var(--text-secondary)' }} />
         </div>
       }>
         <FinancialsContent />

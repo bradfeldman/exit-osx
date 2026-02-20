@@ -14,6 +14,7 @@ import {
 import type { PFSWizardStepProps } from '../PFSWizardTypes'
 import { DEBT_CATEGORIES } from '../PFSWizardTypes'
 import { formatInputValue, parseInputValue } from '../pfs-wizard-utils'
+import styles from '@/components/financials/financials-pages.module.css'
 
 interface DebtsStepProps extends PFSWizardStepProps {
   onSkip: () => void
@@ -48,22 +49,18 @@ export function DebtsStep({ data, onUpdate, onNext, onBack, onSkip }: DebtsStepP
   }
 
   return (
-    <div className="space-y-8">
+    <div className={styles.pfsStep}>
       <div>
-        <h3 className="text-lg font-semibold font-display text-foreground mb-1">
-          Other Debts
-        </h3>
-        <p className="text-sm text-muted-foreground">
+        <h3 className={styles.pfsStepTitle}>Other Debts</h3>
+        <p className={styles.pfsStepSubtitle}>
           Most successful founders carry strategic debt while building value.
         </p>
       </div>
 
       {/* Has other debts? */}
-      <div className="space-y-3">
-        <label className="block text-sm font-medium text-foreground">
-          Any debts besides your mortgage?
-        </label>
-        <div className="flex gap-3">
+      <div className={styles.pfsFieldGroup}>
+        <label className={styles.pfsFieldLabel}>Any debts besides your mortgage?</label>
+        <div className={styles.pfsToggleGroup}>
           {([true, false] as const).map((val) => (
             <motion.button
               key={String(val)}
@@ -78,11 +75,7 @@ export function DebtsStep({ data, onUpdate, onNext, onBack, onSkip }: DebtsStepP
                   ...(!val && { debts: [] }),
                 })
               }}
-              className={`flex-1 py-3 px-4 rounded-xl border-2 text-sm font-medium transition-all ${
-                data.hasOtherDebts === val
-                  ? 'border-primary bg-primary/5 text-primary'
-                  : 'border-border bg-card text-muted-foreground hover:border-primary/40'
-              }`}
+              className={`${styles.pfsToggleBtn} ${data.hasOtherDebts === val ? styles.pfsToggleBtnActive : ''}`}
             >
               {val ? 'Yes' : 'No'}
             </motion.button>
@@ -98,7 +91,7 @@ export function DebtsStep({ data, onUpdate, onNext, onBack, onSkip }: DebtsStepP
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="space-y-3 overflow-hidden"
+            className={styles.pfsCollapsible}
           >
             {data.debts.map((debt, index) => (
               <motion.div
@@ -107,12 +100,10 @@ export function DebtsStep({ data, onUpdate, onNext, onBack, onSkip }: DebtsStepP
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.15 }}
-                className="p-4 rounded-xl border border-border bg-card space-y-3"
+                className={styles.pfsWizardCard}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground font-medium">
-                    Debt {index + 1}
-                  </span>
+                <div className={styles.pfsWizardCardHeader}>
+                  <span className={styles.pfsWizardCardLabel}>Debt {index + 1}</span>
                   {data.debts.length > 1 && (
                     <Button
                       variant="ghost"
@@ -125,7 +116,7 @@ export function DebtsStep({ data, onUpdate, onNext, onBack, onSkip }: DebtsStepP
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className={styles.pfsWizardCardGrid}>
                   <Select
                     value={debt.category}
                     onValueChange={(value) => updateDebt(debt.id, 'category', value)}
@@ -140,8 +131,8 @@ export function DebtsStep({ data, onUpdate, onNext, onBack, onSkip }: DebtsStepP
                     </SelectContent>
                   </Select>
 
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                  <div className={styles.pfsCurrencyWrap}>
+                    <span className={styles.pfsCurrencySymbol}>$</span>
                     <Input
                       type="text"
                       inputMode="numeric"
@@ -169,17 +160,11 @@ export function DebtsStep({ data, onUpdate, onNext, onBack, onSkip }: DebtsStepP
       </AnimatePresence>
 
       {/* Navigation */}
-      <div className="flex items-center gap-3 pt-4">
-        <Button variant="ghost" onClick={onBack}>
-          Back
-        </Button>
-        <div className="flex-1" />
-        <Button variant="ghost" onClick={onSkip} className="text-muted-foreground">
-          Skip
-        </Button>
-        <Button onClick={onNext} disabled={!canProceed}>
-          See Your Snapshot
-        </Button>
+      <div className={styles.pfsNavRow}>
+        <Button variant="ghost" onClick={onBack}>Back</Button>
+        <div className={styles.pfsNavSpacer} />
+        <Button variant="ghost" onClick={onSkip} className="text-muted-foreground">Skip</Button>
+        <Button onClick={onNext} disabled={!canProceed}>See Your Snapshot</Button>
       </div>
     </div>
   )

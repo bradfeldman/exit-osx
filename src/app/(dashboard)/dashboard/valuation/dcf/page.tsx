@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useCompany } from '@/contexts/CompanyContext'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, Save, Calculator } from 'lucide-react'
 import { analytics } from '@/lib/analytics'
 import {
@@ -21,6 +20,7 @@ import {
   type DCFInputs,
   type DCFResults,
 } from '@/lib/valuation/dcf-calculator'
+import styles from '@/components/valuation/valuation-pages.module.css'
 
 interface DCFAssumptions {
   riskFreeRate: number
@@ -76,18 +76,16 @@ export default function ValuationPage() {
   const [ebitda, setEbitda] = useState(0)
   const [hasChanges, setHasChanges] = useState(false)
   const [originalAssumptions, setOriginalAssumptions] = useState<DCFAssumptions | null>(null)
-  const [useDCFValue, setUseDCFValue] = useState(false) // Toggle to use DCF value for scorecard/PFS/loans
+  const [useDCFValue, setUseDCFValue] = useState(false)
   const [workingCapital, setWorkingCapital] = useState<{ t12: number | null; lastFY: number | null; threeYearAvg: number | null } | null>(null)
   const [fcfIsEstimated, setFcfIsEstimated] = useState(false)
   const [originalUseDCFValue, setOriginalUseDCFValue] = useState(false)
   const [debtWeight, setDebtWeight] = useState(0.20)
   const [equityWeight, setEquityWeight] = useState(0.80)
 
-  // Analytics tracking
   const hasTrackedPageView = useRef(false)
   const _previousAssumptions = useRef<DCFAssumptions | null>(null)
 
-  // Industry data (could be fetched from API based on company)
   const [industryData, setIndustryData] = useState({
     betaLow: 0.8,
     betaHigh: 1.2,
@@ -98,7 +96,6 @@ export default function ValuationPage() {
     source: 'Default industry benchmarks',
   })
 
-  // Fetch existing assumptions
   const fetchAssumptions = useCallback(async () => {
     if (!selectedCompanyId) {
       setLoading(false)
@@ -152,18 +149,15 @@ export default function ValuationPage() {
           setAssumptions(loadedAssumptions)
           setOriginalAssumptions(loadedAssumptions)
 
-          // Set debt/equity weights from override or keep defaults
           if (data.assumptions.debtWeightOverride) {
             setDebtWeight(Number(data.assumptions.debtWeightOverride))
             setEquityWeight(1 - Number(data.assumptions.debtWeightOverride))
           }
 
-          // Load useDCFValue toggle
           const dcfToggle = data.assumptions.useDCFValue ?? false
           setUseDCFValue(dcfToggle)
           setOriginalUseDCFValue(dcfToggle)
         } else {
-          // No saved assumptions - use calibrated defaults from WACC engine
           const initial = { ...DEFAULT_ASSUMPTIONS }
           if (data.suggestedDefaults) {
             if (data.suggestedDefaults.riskFreeRate != null) initial.riskFreeRate = data.suggestedDefaults.riskFreeRate
@@ -183,12 +177,10 @@ export default function ValuationPage() {
           setOriginalUseDCFValue(false)
         }
 
-        // Set working capital data
         if (data.workingCapital) {
           setWorkingCapital(data.workingCapital)
         }
 
-        // Try to get financial data for base FCF and EBITDA
         if (data.financials) {
           if (data.financials.freeCashFlow) {
             setBaseFCF(Number(data.financials.freeCashFlow))
@@ -205,7 +197,6 @@ export default function ValuationPage() {
           }
         }
 
-        // Try to get industry multiples
         if (data.industryMultiples) {
           setIndustryData({
             betaLow: data.industryMultiples.betaLow || 0.8,
@@ -229,17 +220,14 @@ export default function ValuationPage() {
     fetchAssumptions()
   }, [fetchAssumptions])
 
-  // Track page view
   useEffect(() => {
     if (hasTrackedPageView.current || loading) return
-
     hasTrackedPageView.current = true
     analytics.track('dcf_page_viewed', {
       hasFinancials: baseFCF > 0 && ebitda > 0,
     })
   }, [loading, baseFCF, ebitda])
 
-  // Track changes
   useEffect(() => {
     if (originalAssumptions) {
       const assumptionsChanged = JSON.stringify(assumptions) !== JSON.stringify(originalAssumptions)
@@ -248,7 +236,6 @@ export default function ValuationPage() {
     }
   }, [assumptions, originalAssumptions, useDCFValue, originalUseDCFValue])
 
-  // Save assumptions
   const handleSave = async () => {
     if (!selectedCompanyId) return
 
@@ -275,7 +262,6 @@ export default function ValuationPage() {
         setOriginalUseDCFValue(useDCFValue)
         setHasChanges(false)
 
-        // Track DCF result viewed/saved
         if (dcfResults) {
           analytics.track('dcf_result_viewed', {
             valuationResult: dcfResults.equityValue,
@@ -293,7 +279,6 @@ export default function ValuationPage() {
     }
   }
 
-  // Calculate WACC
   const calculatedWACC = useMemo(() => {
     const costOfEquity = calculateCostOfEquity(
       assumptions.riskFreeRate,
@@ -303,13 +288,12 @@ export default function ValuationPage() {
       assumptions.companySpecificRisk
     )
 
-    const costOfDebt = assumptions.costOfDebtOverride || 0.10 // 10% default (calibrated)
-    const taxRate = assumptions.taxRateOverride || 0.25 // 25% default
+    const costOfDebt = assumptions.costOfDebtOverride || 0.10
+    const taxRate = assumptions.taxRateOverride || 0.25
 
     return equityWeight * costOfEquity + debtWeight * costOfDebt * (1 - taxRate)
   }, [assumptions, debtWeight, equityWeight])
 
-  // Calculate DCF results
   const dcfResults = useMemo<DCFResults | null>(() => {
     if (baseFCF <= 0) return null
 
@@ -340,7 +324,6 @@ export default function ValuationPage() {
     }
   }, [assumptions, baseFCF, calculatedWACC, netDebt, ebitda])
 
-  // WACC inputs for the calculator component
   const waccInputs: WACCInputs = {
     riskFreeRate: assumptions.riskFreeRate,
     marketRiskPremium: assumptions.marketRiskPremium,
@@ -351,7 +334,6 @@ export default function ValuationPage() {
     taxRate: assumptions.taxRateOverride,
   }
 
-  // Handle WACC input changes
   const handleWACCInputChange = <K extends keyof WACCInputs>(key: K, value: WACCInputs[K]) => {
     const prevValue = key === 'costOfDebt'
       ? assumptions.costOfDebtOverride
@@ -367,7 +349,6 @@ export default function ValuationPage() {
       setAssumptions((prev) => ({ ...prev, [key]: value }))
     }
 
-    // Track assumption change
     analytics.track('dcf_assumptions_modified', {
       assumptionChanged: key,
       previousValue: typeof prevValue === 'number' ? prevValue : 0,
@@ -375,7 +356,6 @@ export default function ValuationPage() {
     })
   }
 
-  // Handle growth rate changes
   const handleGrowthRateChange = (year: string, value: number) => {
     const prevValue = assumptions.growthAssumptions[year] || 0
 
@@ -384,7 +364,6 @@ export default function ValuationPage() {
       growthAssumptions: { ...prev.growthAssumptions, [year]: value },
     }))
 
-    // Track assumption change
     analytics.track('dcf_assumptions_modified', {
       assumptionChanged: `growth_${year}`,
       previousValue: prevValue,
@@ -392,7 +371,6 @@ export default function ValuationPage() {
     })
   }
 
-  // Handle DCF toggle change
   const handleDcfToggleChange = (checked: boolean) => {
     setUseDCFValue(checked)
 
@@ -405,7 +383,6 @@ export default function ValuationPage() {
     })
   }
 
-  // Handle EBITDA multiple override changes
   const handleMultipleOverrideChange = (low: number | null, high: number | null) => {
     setAssumptions((prev) => ({
       ...prev,
@@ -414,11 +391,9 @@ export default function ValuationPage() {
     }))
   }
 
-  // Calculate effective EBITDA multiples (override or industry default)
   const effectiveEbitdaMultipleLow = assumptions.ebitdaMultipleLowOverride ?? industryData.ebitdaMultipleLow
   const effectiveEbitdaMultipleHigh = assumptions.ebitdaMultipleHighOverride ?? industryData.ebitdaMultipleHigh
 
-  // DCF inputs for sensitivity table
   const dcfInputsForSensitivity: DCFInputs = useMemo(
     () => ({
       baseFCF,
@@ -439,14 +414,17 @@ export default function ValuationPage() {
     [assumptions, baseFCF, calculatedWACC, netDebt]
   )
 
+  // Suppress unused variable warning — toggle handler wired for future use
+  void handleDcfToggleChange
+
   if (!selectedCompanyId) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="w-16 h-16 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
-            <Calculator className="h-8 w-8 text-muted-foreground" />
+      <div className={styles.dcfValEmpty}>
+        <div className={styles.dcfValEmptyInner}>
+          <div className={styles.dcfValEmptyIcon}>
+            <Calculator />
           </div>
-          <p className="text-muted-foreground">Please select a company to view valuation</p>
+          <p className={styles.dcfValEmptyText}>Please select a company to view valuation</p>
         </div>
       </div>
     )
@@ -454,24 +432,22 @@ export default function ValuationPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <Loader2 className="h-10 w-10 text-primary animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground font-medium">Running valuation analysis...</p>
+      <div className={styles.dcfValEmpty}>
+        <div className={styles.dcfValEmptyInner}>
+          <Loader2 className={`${styles.dcfValLoadingSpinner} animate-spin`} />
+          <p className={styles.dcfValLoadingText}>Running valuation analysis...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className={styles.dcfValPage}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold font-display text-foreground tracking-tight">DCF Valuation</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Interactive discounted cash flow analysis with sensitivity tables
-          </p>
+      <div className={styles.dcfValHeader}>
+        <div className={styles.dcfValHeaderText}>
+          <h1>DCF Valuation</h1>
+          <p>Interactive discounted cash flow analysis with sensitivity tables</p>
         </div>
         <Button onClick={handleSave} disabled={saving || !hasChanges} className="shadow-lg shadow-primary/20">
           {saving ? (
@@ -489,9 +465,9 @@ export default function ValuationPage() {
       </div>
 
       {/* Three Column Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
+      <div className={styles.dcfValGrid}>
         {/* Left Column: Market & Industry Data */}
-        <div className="md:col-span-1 lg:col-span-3 space-y-4">
+        <div className={styles.dcfValCol}>
           <MarketDataPanel
             industryBetaLow={industryData.betaLow}
             industryBetaHigh={industryData.betaHigh}
@@ -508,7 +484,7 @@ export default function ValuationPage() {
         </div>
 
         {/* Center Column: Inputs */}
-        <div className="md:col-span-1 lg:col-span-5 space-y-4">
+        <div className={styles.dcfValCol}>
           <WACCCalculator
             inputs={waccInputs}
             onInputChange={handleWACCInputChange}
@@ -543,7 +519,7 @@ export default function ValuationPage() {
         </div>
 
         {/* Right Column: Results */}
-        <div className="md:col-span-2 lg:col-span-4 space-y-4">
+        <div className={styles.dcfValCol}>
           <ValuationResults
             results={dcfResults}
             wacc={calculatedWACC}
@@ -560,7 +536,6 @@ export default function ValuationPage() {
               finalEBITDA={ebitda}
             />
           )}
-
         </div>
       </div>
     </div>

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { PFSWizardStepProps } from '../PFSWizardTypes'
 import { formatInputValue, parseInputValue } from '../pfs-wizard-utils'
+import styles from '@/components/financials/financials-pages.module.css'
 
 interface HomeStepProps extends PFSWizardStepProps {
   onSkip: () => void
@@ -16,22 +17,16 @@ export function HomeStep({ data, onUpdate, onNext, onBack, onSkip }: HomeStepPro
     (data.ownsHome === true && data.homeValue >= 0)
 
   return (
-    <div className="space-y-8">
+    <div className={styles.pfsStep}>
       <div>
-        <h3 className="text-lg font-semibold font-display text-foreground mb-1">
-          Home & Real Estate
-        </h3>
-        <p className="text-sm text-muted-foreground">
-          Your largest personal asset is often your home.
-        </p>
+        <h3 className={styles.pfsStepTitle}>Home &amp; Real Estate</h3>
+        <p className={styles.pfsStepSubtitle}>Your largest personal asset is often your home.</p>
       </div>
 
       {/* Own a home? */}
-      <div className="space-y-3">
-        <label className="block text-sm font-medium text-foreground">
-          Do you own a home?
-        </label>
-        <div className="flex gap-3">
+      <div className={styles.pfsFieldGroup}>
+        <label className={styles.pfsFieldLabel}>Do you own a home?</label>
+        <div className={styles.pfsToggleGroup}>
           {([true, false] as const).map((val) => (
             <motion.button
               key={String(val)}
@@ -41,11 +36,7 @@ export function HomeStep({ data, onUpdate, onNext, onBack, onSkip }: HomeStepPro
                 ownsHome: val,
                 ...(!val && { homeValue: 0, mortgageBalance: 0 }),
               })}
-              className={`flex-1 py-3 px-4 rounded-xl border-2 text-sm font-medium transition-all ${
-                data.ownsHome === val
-                  ? 'border-primary bg-primary/5 text-primary'
-                  : 'border-border bg-card text-muted-foreground hover:border-primary/40'
-              }`}
+              className={`${styles.pfsToggleBtn} ${data.ownsHome === val ? styles.pfsToggleBtnActive : ''}`}
             >
               {val ? 'Yes' : 'No'}
             </motion.button>
@@ -61,14 +52,12 @@ export function HomeStep({ data, onUpdate, onNext, onBack, onSkip }: HomeStepPro
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="space-y-4 overflow-hidden"
+            className={styles.pfsCollapsible}
           >
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-foreground">
-                Approximate home value
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+            <div className={styles.pfsFieldGroup}>
+              <label className={styles.pfsFieldLabel}>Approximate home value</label>
+              <div className={styles.pfsCurrencyWrap}>
+                <span className={styles.pfsCurrencySymbol}>$</span>
                 <Input
                   type="text"
                   inputMode="numeric"
@@ -81,13 +70,13 @@ export function HomeStep({ data, onUpdate, onNext, onBack, onSkip }: HomeStepPro
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-foreground">
-                Mortgage balance
-                <span className="text-muted-foreground font-normal ml-1">(optional)</span>
+            <div className={styles.pfsFieldGroup}>
+              <label className={styles.pfsFieldLabel}>
+                Mortgage balance{' '}
+                <span style={{ color: 'var(--text-secondary)', fontWeight: 400 }}>(optional)</span>
               </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+              <div className={styles.pfsCurrencyWrap}>
+                <span className={styles.pfsCurrencySymbol}>$</span>
                 <Input
                   type="text"
                   inputMode="numeric"
@@ -110,12 +99,10 @@ export function HomeStep({ data, onUpdate, onNext, onBack, onSkip }: HomeStepPro
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="space-y-3 overflow-hidden"
+            className={styles.pfsCollapsible}
           >
-            <label className="block text-sm font-medium text-foreground">
-              Any other real estate?
-            </label>
-            <div className="flex gap-3">
+            <label className={styles.pfsFieldLabel}>Any other real estate?</label>
+            <div className={styles.pfsToggleGroup}>
               {([true, false] as const).map((val) => (
                 <motion.button
                   key={`re-${val}`}
@@ -125,11 +112,7 @@ export function HomeStep({ data, onUpdate, onNext, onBack, onSkip }: HomeStepPro
                     hasOtherRealEstate: val,
                     ...(!val && { otherRealEstateValue: 0, otherRealEstateDebt: 0 }),
                   })}
-                  className={`flex-1 py-3 px-4 rounded-xl border-2 text-sm font-medium transition-all ${
-                    data.hasOtherRealEstate === val
-                      ? 'border-primary bg-primary/5 text-primary'
-                      : 'border-border bg-card text-muted-foreground hover:border-primary/40'
-                  }`}
+                  className={`${styles.pfsToggleBtn} ${data.hasOtherRealEstate === val ? styles.pfsToggleBtnActive : ''}`}
                 >
                   {val ? 'Yes' : 'No'}
                 </motion.button>
@@ -143,14 +126,13 @@ export function HomeStep({ data, onUpdate, onNext, onBack, onSkip }: HomeStepPro
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="space-y-4 overflow-hidden pt-2"
+                  className={styles.pfsCollapsible}
+                  style={{ paddingTop: 8 }}
                 >
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-foreground">
-                      Total value of other real estate
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                  <div className={styles.pfsFieldGroup}>
+                    <label className={styles.pfsFieldLabel}>Total value of other real estate</label>
+                    <div className={styles.pfsCurrencyWrap}>
+                      <span className={styles.pfsCurrencySymbol}>$</span>
                       <Input
                         type="text"
                         inputMode="numeric"
@@ -161,13 +143,13 @@ export function HomeStep({ data, onUpdate, onNext, onBack, onSkip }: HomeStepPro
                       />
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-foreground">
-                      Mortgage on other properties
-                      <span className="text-muted-foreground font-normal ml-1">(optional)</span>
+                  <div className={styles.pfsFieldGroup}>
+                    <label className={styles.pfsFieldLabel}>
+                      Mortgage on other properties{' '}
+                      <span style={{ color: 'var(--text-secondary)', fontWeight: 400 }}>(optional)</span>
                     </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                    <div className={styles.pfsCurrencyWrap}>
+                      <span className={styles.pfsCurrencySymbol}>$</span>
                       <Input
                         type="text"
                         inputMode="numeric"
@@ -186,17 +168,11 @@ export function HomeStep({ data, onUpdate, onNext, onBack, onSkip }: HomeStepPro
       </AnimatePresence>
 
       {/* Navigation */}
-      <div className="flex items-center gap-3 pt-4">
-        <Button variant="ghost" onClick={onBack}>
-          Back
-        </Button>
-        <div className="flex-1" />
-        <Button variant="ghost" onClick={onSkip} className="text-muted-foreground">
-          Skip
-        </Button>
-        <Button onClick={onNext} disabled={!canProceed}>
-          Continue
-        </Button>
+      <div className={styles.pfsNavRow}>
+        <Button variant="ghost" onClick={onBack}>Back</Button>
+        <div className={styles.pfsNavSpacer} />
+        <Button variant="ghost" onClick={onSkip} className="text-muted-foreground">Skip</Button>
+        <Button onClick={onNext} disabled={!canProceed}>Continue</Button>
       </div>
     </div>
   )

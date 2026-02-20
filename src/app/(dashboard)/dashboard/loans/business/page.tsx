@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from '@/lib/motion'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -29,6 +28,7 @@ import {
   ArrowRight,
   X
 } from 'lucide-react'
+import styles from '@/components/financials/financials-pages.module.css'
 
 // Animation variants
 const containerVariants = {
@@ -189,7 +189,6 @@ export default function BusinessLoansPage() {
     setError(null)
 
     try {
-      // First, get list of companies and personal financials
       const [companiesResponse, pfsResponse] = await Promise.all([
         fetch('/api/companies'),
         fetch(`/api/companies/${selectedCompanyId}/personal-financials`)
@@ -202,12 +201,9 @@ export default function BusinessLoansPage() {
       const companiesData = await companiesResponse.json()
       const companies = companiesData.companies || []
 
-      // Load saved ownership percentages
       const savedOwnership = localStorage.getItem('pfs_businessOwnership')
       const ownership = savedOwnership ? JSON.parse(savedOwnership) : {}
 
-      // Fetch dashboard data for EACH company to get computed values
-      // (Dashboard API calculates values even without snapshots)
       const dashboardPromises = companies.map((company: { id: string }) =>
         fetch(`/api/companies/${company.id}/dashboard`).then(r => r.ok ? r.json() : null)
       )
@@ -223,14 +219,12 @@ export default function BusinessLoansPage() {
         const ownershipPercent = ownership[company.id] ?? 100
 
         if (dashboard) {
-          // Use dashboard-computed values (works even without snapshots)
           const currentValue = dashboard.tier1?.currentValue || 0
           const adjustedEbitda = dashboard.company?.adjustedEbitda || 0
 
           totalBusinessValue += currentValue * (ownershipPercent / 100)
           totalAdjustedEbitda += adjustedEbitda * (ownershipPercent / 100)
 
-          // Track selected company's dashboard for display
           if (company.id === selectedCompanyId) {
             selectedCompanyDashboard = dashboard
           }
@@ -239,7 +233,6 @@ export default function BusinessLoansPage() {
 
       setBusinessValue(totalBusinessValue)
 
-      // Set dashboard data with combined EBITDA across all companies
       if (selectedCompanyDashboard) {
         setDashboardData({
           ...selectedCompanyDashboard,
@@ -250,9 +243,6 @@ export default function BusinessLoansPage() {
         })
       }
 
-      // Load personal net worth from database (organization-level PFS)
-      // Note: This is personal assets/liabilities only, NOT including business interests
-      // Business value is tracked separately above
       let totalPersonalAssets = 0
       let totalPersonalLiabilities = 0
 
@@ -266,8 +256,6 @@ export default function BusinessLoansPage() {
         }
       }
 
-      // Personal net worth = personal assets - personal liabilities (excludes business interests)
-      // Total collateral = business value + personal net worth (calculated in qualification)
       setPersonalNetWorth(totalPersonalAssets - totalPersonalLiabilities)
     } catch (err) {
       console.error('Failed to load data:', err)
@@ -281,21 +269,18 @@ export default function BusinessLoansPage() {
     loadData()
   }, [loadData])
 
-  // Calculate qualification criteria
   const qualification = useMemo(() => {
     const ebitda = dashboardData?.company.adjustedEbitda || 0
     const totalCollateral = businessValue + personalNetWorth
 
-    // Calculate max loan based on different methods
     const cashFlowBasedMax = ebitda * PPL_PARAMS.maxLeverage
     const collateralBasedMax = totalCollateral * PPL_PARAMS.maxLtv
     const rawMaxLoan = Math.min(cashFlowBasedMax, collateralBasedMax)
     const maxLoan = Math.min(PPL_PARAMS.maxLoan, Math.max(0, rawMaxLoan))
 
-    // Calculate annual debt service for the max loan (assuming 5-year amortization at low rate)
     const interestRate = (PPL_PARAMS.primeRate + PPL_PARAMS.interestRateSpread.low) / 100
     const monthlyRate = interestRate / 12
-    const numPayments = 5 * 12 // 5-year amortization
+    const numPayments = 5 * 12
     const monthlyPayment = maxLoan > 0
       ? (maxLoan * monthlyRate * Math.pow(1 + monthlyRate, numPayments)) /
         (Math.pow(1 + monthlyRate, numPayments) - 1)
@@ -303,21 +288,15 @@ export default function BusinessLoansPage() {
     const annualDebtService = monthlyPayment * 12
     const dscr = annualDebtService > 0 ? ebitda / annualDebtService : 0
 
-    // Collateral coverage ratio
     const collateralCoverage = maxLoan > 0 ? totalCollateral / maxLoan : 0
 
-    // Calculate max loan based purely on DSCR (what could you borrow if DSCR was only criteria)
-    // At 1.25x DSCR: Annual Debt Service = EBITDA / 1.25
-    // Work backwards from annual debt service to loan amount
     const maxAnnualDebtService = ebitda / PPL_PARAMS.minDscr
     const maxMonthlyPayment = maxAnnualDebtService / 12
-    // Loan = Payment * [(1+r)^n - 1] / [r * (1+r)^n]
     const factor = Math.pow(1 + monthlyRate, numPayments)
     const dscrBasedMax = maxMonthlyPayment > 0
       ? maxMonthlyPayment * (factor - 1) / (monthlyRate * factor)
       : 0
 
-    // Build criteria checklist
     const criteria: QualificationCriteria[] = [
       {
         name: 'Minimum EBITDA',
@@ -375,7 +354,6 @@ export default function BusinessLoansPage() {
     }
   }, [dashboardData, businessValue, personalNetWorth])
 
-  // Handle loan request submission
   const handleSubmitRequest = async () => {
     if (!selectedCompanyId || !dashboardData) return
 
@@ -416,82 +394,72 @@ export default function BusinessLoansPage() {
     }
   }
 
-  // Show skeleton while company context or page data is loading
+  // Loading skeleton
   if (companyLoading || loading) {
     return (
-      <div className="space-y-6 max-w-5xl mx-auto p-6 animate-pulse">
+      <div className={`${styles.loansSkeleton} ${styles.loansSkeletonPulse}`}>
         {/* Header skeleton */}
         <div>
-          <div className="h-9 w-48 bg-muted rounded-lg" />
-          <div className="h-5 w-96 bg-muted rounded mt-2" />
+          <div className={styles.loansSkeletonBlock} style={{ height: 36, width: 192 }} />
+          <div className={styles.loansSkeletonBlock} style={{ height: 20, width: 384, marginTop: 8 }} />
         </div>
 
-        {/* PPL Overview Card skeleton */}
-        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
-          <CardContent className="pt-6">
-            <div className="flex items-start gap-4">
-              <div className="h-12 w-12 bg-muted rounded-xl" />
-              <div className="flex-1">
-                <div className="h-6 w-64 bg-muted rounded" />
-                <div className="h-4 w-full bg-muted rounded mt-2" />
-                <div className="h-4 w-3/4 bg-muted rounded mt-1" />
+        {/* Overview card skeleton */}
+        <div className={styles.loansSkeletonCard}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+            <div className={styles.loansSkeletonBlock} style={{ width: 48, height: 48, borderRadius: 12, flexShrink: 0 }} />
+            <div style={{ flex: 1 }}>
+              <div className={styles.loansSkeletonBlock} style={{ height: 24, width: 256 }} />
+              <div className={styles.loansSkeletonBlock} style={{ height: 16, width: '100%', marginTop: 8 }} />
+              <div className={styles.loansSkeletonBlock} style={{ height: 16, width: '75%', marginTop: 4 }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Qualification card skeleton */}
+        <div className={styles.loansSkeletonCard}>
+          <div className={styles.loansSkeletonBlock} style={{ height: 24, width: 192, marginBottom: 8 }} />
+          <div className={styles.loansSkeletonBlock} style={{ height: 16, width: 288, marginBottom: 16 }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 16px', borderRadius: 12, background: 'var(--muted)' }}>
+                <div className={styles.loansSkeletonBlock} style={{ height: 40, width: 40, borderRadius: 10 }} />
+                <div style={{ flex: 1 }}>
+                  <div className={styles.loansSkeletonBlock} style={{ height: 20, width: 160 }} />
+                  <div className={styles.loansSkeletonBlock} style={{ height: 16, width: 256, marginTop: 4 }} />
+                </div>
+                <div className={styles.loansSkeletonBlock} style={{ height: 24, width: 80, borderRadius: 20 }} />
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            ))}
+          </div>
+        </div>
 
-        {/* Qualification Status skeleton */}
-        <Card>
-          <CardHeader>
-            <div className="h-6 w-48 bg-muted rounded" />
-            <div className="h-4 w-72 bg-muted rounded mt-1" />
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-3">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-muted/30">
-                  <div className="h-10 w-10 bg-muted rounded-lg" />
-                  <div className="flex-1">
-                    <div className="h-5 w-40 bg-muted rounded" />
-                    <div className="h-4 w-64 bg-muted rounded mt-1" />
-                  </div>
-                  <div className="h-6 w-20 bg-muted rounded-full" />
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Loan Sizing skeleton */}
-        <Card>
-          <CardHeader>
-            <div className="h-6 w-56 bg-muted rounded" />
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-3 gap-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="p-4 rounded-xl bg-muted/30">
-                  <div className="h-4 w-24 bg-muted rounded mb-2" />
-                  <div className="h-8 w-32 bg-muted rounded" />
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Loan sizing skeleton */}
+        <div className={styles.loansSkeletonCard}>
+          <div className={styles.loansSkeletonBlock} style={{ height: 24, width: 224, marginBottom: 16 }} />
+          <div className={styles.loansMetaGrid}>
+            {[1, 2, 3].map((i) => (
+              <div key={i} style={{ padding: 16, borderRadius: 10, background: 'var(--muted)' }}>
+                <div className={styles.loansSkeletonBlock} style={{ height: 16, width: 96, marginBottom: 8 }} />
+                <div className={styles.loansSkeletonBlock} style={{ height: 32, width: 128 }} />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     )
   }
 
-  // Show "No Company Selected" only after loading is complete
+  // Empty state — no company selected
   if (!selectedCompanyId) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="w-16 h-16 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
-            <Building2 className="h-8 w-8 text-muted-foreground" />
+      <div className={styles.loansEmptyState}>
+        <div className={styles.loansEmptyInner}>
+          <div className={styles.loansEmptyIcon}>
+            <Building2 />
           </div>
-          <h3 className="text-lg font-semibold text-foreground mb-2">No Company Selected</h3>
-          <p className="text-muted-foreground">Select a company to explore business financing options</p>
+          <h3 className={styles.loansEmptyTitle}>No Company Selected</h3>
+          <p className={styles.loansEmptyDesc}>Select a company to explore business financing options</p>
         </div>
       </div>
     )
@@ -502,163 +470,146 @@ export default function BusinessLoansPage() {
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      className="space-y-6 max-w-5xl mx-auto p-6"
+      className={styles.loansPage}
     >
       {/* Header */}
-      <motion.div variants={itemVariants}>
-        <h1 className="text-3xl font-bold font-display tracking-tight text-foreground">Business Loans</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Check your eligibility for growth capital financing through Pasadena Private Lending
-        </p>
+      <motion.div variants={itemVariants} className={styles.loansPageHeader}>
+        <h1>Business Loans</h1>
+        <p>Check your eligibility for growth capital financing through Pasadena Private Lending</p>
       </motion.div>
 
       {/* PPL Overview Card */}
       <motion.div variants={itemVariants}>
-        <Card className="overflow-hidden border-border/50">
-          <div className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5">
-            <CardHeader className="pb-4">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center shadow-sm">
-                  <Building2 className="w-7 h-7 text-primary" />
-                </div>
-                <div>
-                  <CardTitle className="text-xl font-display">Pasadena Private Lending</CardTitle>
-                  <CardDescription>Owner-Guaranteed Business Loans</CardDescription>
-                </div>
+        <div className={styles.loansOverviewCard}>
+          <div className={styles.loansOverviewHeader}>
+            <div className={styles.loansOverviewHeaderInner}>
+              <div className={styles.loansOverviewIcon}>
+                <Building2 />
               </div>
-            </CardHeader>
+              <div>
+                <p className={styles.loansOverviewTitle}>Pasadena Private Lending</p>
+                <p className={styles.loansOverviewSubtitle}>Owner-Guaranteed Business Loans</p>
+              </div>
+            </div>
           </div>
-          <CardContent className="pt-6">
-            <div className="grid md:grid-cols-3 gap-4">
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="p-4 rounded-xl bg-muted/50 border border-border/50"
-              >
-                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                  <DollarSign className="w-4 h-4" />
-                  <span className="text-sm">Loan Range</span>
+          <div className={styles.loansOverviewBody}>
+            <div className={styles.loansMetaGrid}>
+              <motion.div whileHover={{ scale: 1.02 }} className={styles.loansMetaItem}>
+                <div className={styles.loansMetaLabel}>
+                  <DollarSign />
+                  <span>Loan Range</span>
                 </div>
-                <p className="font-semibold text-foreground text-lg">$2MM - $15MM</p>
+                <p className={styles.loansMetaValue}>$2MM - $15MM</p>
               </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="p-4 rounded-xl bg-muted/50 border border-border/50"
-              >
-                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                  <TrendingUp className="w-4 h-4" />
-                  <span className="text-sm">Interest Rate</span>
+              <motion.div whileHover={{ scale: 1.02 }} className={styles.loansMetaItem}>
+                <div className={styles.loansMetaLabel}>
+                  <TrendingUp />
+                  <span>Interest Rate</span>
                 </div>
-                <p className="font-semibold text-foreground text-lg">Prime + 3-7%</p>
+                <p className={styles.loansMetaValue}>Prime + 3-7%</p>
               </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="p-4 rounded-xl bg-muted/50 border border-border/50"
-              >
-                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                  <Clock className="w-4 h-4" />
-                  <span className="text-sm">Time to Fund</span>
+              <motion.div whileHover={{ scale: 1.02 }} className={styles.loansMetaItem}>
+                <div className={styles.loansMetaLabel}>
+                  <Clock />
+                  <span>Time to Fund</span>
                 </div>
-                <p className="font-semibold text-foreground text-lg">~14 business days</p>
+                <p className={styles.loansMetaValue}>~14 business days</p>
               </motion.div>
             </div>
-            <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
+            <p className={styles.loansOverviewDesc}>
               PPL provides growth capital for acquisitions, refinancing, working capital, and owner distributions.
               Unlike traditional banks, they examine multiple sources of repayment including future cash flows,
               working capital assets, real estate, and personal wealth.
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </motion.div>
 
       {/* Qualification Status */}
       <motion.div variants={itemVariants}>
-        <Card className={`overflow-hidden border-2 transition-colors ${
-          qualification.passesAllCritical
-            ? 'border-green-500/30 bg-gradient-to-br from-green-50/50 via-emerald-50/30 to-green-50/50 dark:from-green-950/20 dark:via-emerald-950/10 dark:to-green-950/20'
-            : 'border-amber-500/30 bg-gradient-to-br from-amber-50/50 via-orange-50/30 to-amber-50/50 dark:from-amber-950/20 dark:via-orange-950/10 dark:to-amber-950/20'
-        }`}>
-          <CardHeader className="pb-4">
+        <div className={`${styles.loansQualCard} ${qualification.passesAllCritical ? styles.loansQualCardPass : styles.loansQualCardFail}`}>
+          <div className={styles.loansQualHeader}>
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2, type: "spring" }}
-              className="flex items-center gap-3"
+              className={styles.loansQualStatusRow}
             >
               {qualification.passesAllCritical ? (
                 <>
-                  <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                    <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />
+                  <div className={`${styles.loansQualStatusIcon} ${styles.loansQualStatusIconPass}`}>
+                    <CheckCircle2 />
                   </div>
                   <div>
-                    <CardTitle className="text-green-700 dark:text-green-300 flex items-center gap-2">
+                    <p className={`${styles.loansQualStatusTitle} ${styles.loansQualStatusTitlePass}`}>
                       Congratulations!
-                      <Sparkles className="w-5 h-5" />
-                    </CardTitle>
-                    <CardDescription className="text-green-600/80 dark:text-green-400/80">
+                      <Sparkles />
+                    </p>
+                    <p className={`${styles.loansQualStatusDesc} ${styles.loansQualStatusDescPass}`}>
                       You meet the criteria for business financing
-                    </CardDescription>
+                    </p>
                   </div>
                 </>
               ) : (
                 <>
-                  <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                    <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                  <div className={`${styles.loansQualStatusIcon} ${styles.loansQualStatusIconFail}`}>
+                    <AlertTriangle />
                   </div>
                   <div>
-                    <CardTitle className="text-amber-700 dark:text-amber-300">Does Not Meet Criteria Yet</CardTitle>
-                    <CardDescription className="text-amber-600/80 dark:text-amber-400/80">
+                    <p className={`${styles.loansQualStatusTitle} ${styles.loansQualStatusTitleFail}`}>
+                      Does Not Meet Criteria Yet
+                    </p>
+                    <p className={`${styles.loansQualStatusDesc} ${styles.loansQualStatusDescFail}`}>
                       Based on your company financials and Personal Financial Statement
-                    </CardDescription>
+                    </p>
                   </div>
                 </>
               )}
             </motion.div>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Qualified - Exciting Message */}
+          </div>
+
+          <div className={styles.loansQualBody}>
+            {/* Qualified hero amount */}
             {qualification.passesAllCritical && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="text-center py-6"
+                className={styles.loansQualHero}
               >
-                <p className="text-lg text-foreground/80 mb-2">
+                <p className={styles.loansQualHeroIntro}>
                   You preliminarily qualify for a business loan of up to
                 </p>
                 <motion.div
                   initial={{ scale: 0.5, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: 0.5, type: "spring", stiffness: 100 }}
-                  className="my-4"
                 >
-                  <p className="text-5xl md:text-6xl font-bold font-display text-green-600 dark:text-green-400 tracking-tight">
+                  <p className={styles.loansQualHeroAmount}>
                     <AnimatedNumber value={qualification.maxLoan} />
                   </p>
                 </motion.div>
-                <p className="text-muted-foreground">
-                  Funding in as little as <span className="font-semibold text-foreground">4 weeks</span>
+                <p className={styles.loansQualHeroFunding}>
+                  Funding in as little as <strong>4 weeks</strong>
                 </p>
-                <div className="mt-6 pt-6 border-t border-green-200/50 dark:border-green-800/50">
-                  <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                    As an Exit OSx member, your financial profile is ready to go.
-                    Click below to start a conversation with our lending partner — no credit check, no obligation.
-                  </p>
-                </div>
+                <p className={styles.loansQualHeroNote}>
+                  As an Exit OSx member, your financial profile is ready to go.
+                  Click below to start a conversation with our lending partner — no credit check, no obligation.
+                </p>
               </motion.div>
             )}
 
             {/* Criteria Checklist */}
-            <div>
-              <h4 className="font-medium text-foreground mb-4 flex items-center gap-2">
-                <Target className="w-4 h-4 text-primary" />
+            <div className={styles.loansCriteriaSection}>
+              <h4>
+                <Target />
                 Qualification Criteria
               </h4>
               <motion.div
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
-                className="space-y-3"
+                className={styles.loansCriteriaList}
               >
                 {qualification.criteria.map((criterion, index) => {
                   const Icon = criterion.icon
@@ -667,41 +618,29 @@ export default function BusinessLoansPage() {
                       key={index}
                       variants={criteriaVariants}
                       whileHover={{ x: 4 }}
-                      className={`flex items-start gap-4 p-4 rounded-xl border transition-all ${
-                        criterion.passed
-                          ? 'bg-green-50/50 dark:bg-green-950/20 border-green-200/50 dark:border-green-800/30'
-                          : 'bg-red-50/50 dark:bg-red-950/20 border-red-200/50 dark:border-red-800/30'
-                      }`}
+                      className={`${styles.loansCriterionRow} ${criterion.passed ? styles.loansCriterionRowPass : styles.loansCriterionRowFail}`}
                     >
-                      <div className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center ${
-                        criterion.passed
-                          ? 'bg-green-100 dark:bg-green-900/50'
-                          : 'bg-red-100 dark:bg-red-900/50'
-                      }`}>
-                        {criterion.passed ? (
-                          <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
-                        ) : (
-                          <X className="w-5 h-5 text-red-600 dark:text-red-400" />
-                        )}
+                      <div className={`${styles.loansCriterionIcon} ${criterion.passed ? styles.loansCriterionIconPass : styles.loansCriterionIconFail}`}>
+                        {criterion.passed ? <CheckCircle2 /> : <X />}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Icon className={`w-4 h-4 ${criterion.passed ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`} />
-                          <p className={`font-medium ${criterion.passed ? 'text-green-900 dark:text-green-100' : 'text-red-900 dark:text-red-100'}`}>
+                      <div className={styles.loansCriterionContent}>
+                        <div className={`${styles.loansCriterionNameRow} ${criterion.passed ? styles.loansCriterionNameRowPass : styles.loansCriterionNameRowFail}`}>
+                          <Icon />
+                          <p className={`${styles.loansCriterionName} ${criterion.passed ? styles.loansCriterionNamePass : styles.loansCriterionNameFail}`}>
                             {criterion.name}
                           </p>
                           {criterion.critical && (
-                            <span className="text-xs px-2 py-0.5 bg-muted text-muted-foreground rounded-full">Required</span>
+                            <span className={styles.loansRequiredBadge}>Required</span>
                           )}
                         </div>
-                        <p className={`text-sm ${criterion.passed ? 'text-green-700/80 dark:text-green-300/80' : 'text-red-700/80 dark:text-red-300/80'}`}>
+                        <p className={`${styles.loansCriterionDesc} ${criterion.passed ? styles.loansCriterionDescPass : styles.loansCriterionDescFail}`}>
                           {criterion.description}
                         </p>
-                        <div className="mt-2 flex gap-4 text-xs">
-                          <span className={criterion.passed ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
+                        <div className={styles.loansCriterionValues}>
+                          <span className={`${styles.loansCriterionYourValue} ${criterion.passed ? styles.loansCriterionYourValuePass : styles.loansCriterionYourValueFail}`}>
                             Your value: <strong>{criterion.value}</strong>
                           </span>
-                          <span className="text-muted-foreground">
+                          <span className={styles.loansCriterionRequired}>
                             Required: {criterion.requirement}
                           </span>
                         </div>
@@ -713,18 +652,18 @@ export default function BusinessLoansPage() {
             </div>
 
             {/* Financial Summary */}
-            <div className="grid md:grid-cols-3 gap-4 pt-4 border-t border-border/50">
-              <div className="p-3 rounded-lg bg-muted/30">
-                <p className="text-sm text-muted-foreground mb-1">Leverage (3x EBITDA)</p>
-                <p className="font-medium text-foreground">Supports up to {formatCurrency(qualification.cashFlowBasedMax)}</p>
+            <div className={styles.loansSummaryGrid}>
+              <div className={styles.loansSummaryItem}>
+                <p className={styles.loansSummaryLabel}>Leverage (3x EBITDA)</p>
+                <p className={styles.loansSummaryValue}>Supports up to {formatCurrency(qualification.cashFlowBasedMax)}</p>
               </div>
-              <div className="p-3 rounded-lg bg-muted/30">
-                <p className="text-sm text-muted-foreground mb-1">Collateral (60% LTV)</p>
-                <p className="font-medium text-foreground">Supports up to {formatCurrency(qualification.collateralBasedMax)}</p>
+              <div className={styles.loansSummaryItem}>
+                <p className={styles.loansSummaryLabel}>Collateral (60% LTV)</p>
+                <p className={styles.loansSummaryValue}>Supports up to {formatCurrency(qualification.collateralBasedMax)}</p>
               </div>
-              <div className="p-3 rounded-lg bg-muted/30">
-                <p className="text-sm text-muted-foreground mb-1">Debt Service (1.25x DSCR)</p>
-                <p className="font-medium text-foreground">Supports up to {formatCurrency(qualification.dscrBasedMax)}</p>
+              <div className={styles.loansSummaryItem}>
+                <p className={styles.loansSummaryLabel}>Debt Service (1.25x DSCR)</p>
+                <p className={styles.loansSummaryValue}>Supports up to {formatCurrency(qualification.dscrBasedMax)}</p>
               </div>
             </div>
 
@@ -733,13 +672,13 @@ export default function BusinessLoansPage() {
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="p-4 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-800/30 rounded-xl"
+                className={styles.loansIncompleteAlert}
               >
-                <p className="font-medium text-blue-800 dark:text-blue-200 mb-2 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4" />
+                <p className={styles.loansIncompleteAlertTitle}>
+                  <AlertTriangle />
                   Complete your financial profile for accurate results:
                 </p>
-                <ul className="list-disc ml-6 space-y-1 text-sm text-blue-700 dark:text-blue-300">
+                <ul className={styles.loansIncompleteList}>
                   {qualification.ebitda === 0 && (
                     <li>Add company financials in the Business Financials section</li>
                   )}
@@ -752,8 +691,8 @@ export default function BusinessLoansPage() {
                 </ul>
               </motion.div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </motion.div>
 
       {/* Action Section */}
@@ -766,8 +705,8 @@ export default function BusinessLoansPage() {
             animate="visible"
             exit={{ opacity: 0, y: -20 }}
           >
-            <Card className="border-primary/30 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 overflow-hidden">
-              <CardContent className="pt-6">
+            <div className={styles.loansActionCard}>
+              <div className={styles.loansActionBody}>
                 <AnimatePresence mode="wait">
                   {!showRequestForm ? (
                     <motion.div
@@ -775,10 +714,10 @@ export default function BusinessLoansPage() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="text-center space-y-4 py-4"
+                      className={styles.loansCta}
                     >
-                      <h3 className="text-2xl font-semibold font-display text-foreground">Ready to Take the Next Step?</h3>
-                      <p className="text-muted-foreground max-w-lg mx-auto">
+                      <h3 className={styles.loansCtaTitle}>Ready to Take the Next Step?</h3>
+                      <p className={styles.loansCtaDesc}>
                         Your Exit OSx profile gives you a head start. We&apos;ll share your business summary
                         with our lending partner so you can skip the paperwork and get straight to the conversation.
                       </p>
@@ -798,7 +737,7 @@ export default function BusinessLoansPage() {
                           <ArrowRight className="ml-2 h-5 w-5" />
                         </Button>
                       </motion.div>
-                      <p className="text-xs text-muted-foreground pt-2">
+                      <p className={styles.loansCtaDisclaimer}>
                         No credit check. No obligation. Just a conversation.
                       </p>
                     </motion.div>
@@ -808,14 +747,14 @@ export default function BusinessLoansPage() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
-                      className="space-y-5"
+                      className={styles.loansForm}
                     >
-                      <div>
-                        <label className="block text-sm font-medium text-foreground mb-2">
+                      <div className={styles.loansFormField}>
+                        <label className={styles.loansFormLabel}>
                           Requested Loan Amount
                         </label>
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                        <div className={styles.loansFormInputWrap}>
+                          <span className={styles.loansFormInputPrefix}>$</span>
                           <Input
                             type="text"
                             inputMode="numeric"
@@ -824,13 +763,13 @@ export default function BusinessLoansPage() {
                             className="pl-7"
                           />
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1.5">
+                        <p className={styles.loansFormHint}>
                           Range: {formatCurrency(PPL_PARAMS.minLoan)} - {formatCurrency(Math.min(qualification.maxLoan, PPL_PARAMS.maxLoan))}
                         </p>
                       </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-foreground mb-2">
+                      <div className={styles.loansFormField}>
+                        <label className={styles.loansFormLabel}>
                           Purpose of Loan
                         </label>
                         <Select value={loanPurpose} onValueChange={setLoanPurpose}>
@@ -855,13 +794,13 @@ export default function BusinessLoansPage() {
                         <motion.div
                           initial={{ opacity: 0, scale: 0.95 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          className="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300"
+                          className={styles.loansFormError}
                         >
                           {error}
                         </motion.div>
                       )}
 
-                      <div className="flex gap-3 pt-2">
+                      <div className={styles.loansFormActions}>
                         <Button
                           onClick={handleSubmitRequest}
                           disabled={submitting || !loanPurpose || requestedAmount < PPL_PARAMS.minLoan}
@@ -888,15 +827,15 @@ export default function BusinessLoansPage() {
                         </Button>
                       </div>
 
-                      <p className="text-xs text-muted-foreground pt-2">
+                      <p className={styles.loansFormLegal}>
                         By submitting, you authorize Exit OSx to share your business and financial information
                         with Pasadena Private Lending for the purpose of evaluating your loan request.
                       </p>
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </motion.div>
         )}
 
@@ -908,21 +847,21 @@ export default function BusinessLoansPage() {
             initial="hidden"
             animate="visible"
           >
-            <Card className="border-green-200/50 dark:border-green-800/30 bg-gradient-to-br from-green-50/50 via-emerald-50/30 to-green-50/50 dark:from-green-950/20 dark:via-emerald-950/10 dark:to-green-950/20 overflow-hidden">
-              <CardContent className="pt-6">
+            <div className={styles.loansSuccessCard}>
+              <div className={styles.loansSuccessBody}>
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
-                  className="text-center space-y-4 py-4"
+                  className={styles.loansSuccessContent}
                 >
-                  <div className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center mx-auto">
+                  <div className={styles.loansSuccessIconWrap}>
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: "spring", stiffness: 200, delay: 0.4 }}
                     >
-                      <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
+                      <CheckCircle2 />
                     </motion.div>
                   </div>
                   <motion.div
@@ -930,18 +869,18 @@ export default function BusinessLoansPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5 }}
                   >
-                    <h3 className="text-2xl font-semibold font-display text-green-900 dark:text-green-100">You&apos;re On Your Way!</h3>
-                    <p className="text-green-700 dark:text-green-300 max-w-md mx-auto mt-2">
+                    <h3 className={styles.loansSuccessTitle}>You&apos;re On Your Way!</h3>
+                    <p className={styles.loansSuccessDesc}>
                       Your inquiry has been sent to Pasadena Private Lending along with your Exit OSx business profile.
-                      A financing specialist will reach out within <span className="font-semibold">1-2 business days</span> to discuss your options.
+                      A financing specialist will reach out within <strong>1-2 business days</strong> to discuss your options.
                     </p>
                   </motion.div>
-                  <p className="text-sm text-muted-foreground pt-4">
+                  <p className={styles.loansSuccessFootnote}>
                     In the meantime, keep building your exit readiness — the stronger your profile, the better your terms.
                   </p>
                 </motion.div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -949,70 +888,65 @@ export default function BusinessLoansPage() {
       {/* Not Qualified Guidance */}
       {!qualification.passesAllCritical && (
         <motion.div variants={itemVariants}>
-          <Card className="border-border/50">
-            <CardHeader>
-              <CardTitle className="font-display">How to Qualify</CardTitle>
-              <CardDescription>
+          <div className={styles.loansGuideCard}>
+            <div className={styles.loansGuideHeader}>
+              <p className={styles.loansGuideTitle}>How to Qualify</p>
+              <p className={styles.loansGuideSubtitle}>
                 Steps to improve your eligibility for PPL financing
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {qualification.criteria.filter(c => !c.passed && c.critical).map((criterion, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="p-4 bg-muted/50 rounded-xl border border-border/50"
-                  >
-                    <p className="font-medium text-foreground flex items-center gap-2">
-                      <criterion.icon className="w-4 h-4 text-primary" />
-                      {criterion.name}
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      {criterion.name === 'Minimum EBITDA' && (
-                        <>
-                          Your adjusted EBITDA of {criterion.value} is below the {criterion.requirement} minimum.
-                          Focus on increasing profitability through revenue growth or cost reduction.
-                        </>
-                      )}
-                      {criterion.name === 'Minimum Loan Size' && (
-                        <>
-                          Based on your financials, you qualify for {criterion.value} which is below the
-                          {criterion.requirement} minimum. Build your EBITDA and/or collateral base to qualify.
-                        </>
-                      )}
-                      {criterion.name === 'Debt Service Coverage' && (
-                        <>
-                          Your DSCR of {criterion.value} is below the required {criterion.requirement}.
-                          Increase EBITDA or reduce the loan amount to improve coverage.
-                        </>
-                      )}
-                      {criterion.name === 'Collateral Coverage' && (
-                        <>
-                          Your collateral of {criterion.value} is below the {criterion.requirement} minimum.
-                          Build your business value or personal assets to increase collateral coverage.
-                        </>
-                      )}
-                    </p>
-                  </motion.div>
-                ))}
-                <p className="text-sm text-muted-foreground pt-2">
-                  Consider alternative financing options such as SBA loans, traditional bank loans,
-                  or revenue-based financing for smaller capital needs.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+              </p>
+            </div>
+            <div className={styles.loansGuideBody}>
+              {qualification.criteria.filter(c => !c.passed && c.critical).map((criterion, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className={styles.loansGuideItem}
+                >
+                  <p className={styles.loansGuideItemTitle}>
+                    <criterion.icon />
+                    {criterion.name}
+                  </p>
+                  <p className={styles.loansGuideItemDesc}>
+                    {criterion.name === 'Minimum EBITDA' && (
+                      <>
+                        Your adjusted EBITDA of {criterion.value} is below the {criterion.requirement} minimum.
+                        Focus on increasing profitability through revenue growth or cost reduction.
+                      </>
+                    )}
+                    {criterion.name === 'Minimum Loan Size' && (
+                      <>
+                        Based on your financials, you qualify for {criterion.value} which is below the
+                        {criterion.requirement} minimum. Build your EBITDA and/or collateral base to qualify.
+                      </>
+                    )}
+                    {criterion.name === 'Debt Service Coverage' && (
+                      <>
+                        Your DSCR of {criterion.value} is below the required {criterion.requirement}.
+                        Increase EBITDA or reduce the loan amount to improve coverage.
+                      </>
+                    )}
+                    {criterion.name === 'Collateral Coverage' && (
+                      <>
+                        Your collateral of {criterion.value} is below the {criterion.requirement} minimum.
+                        Build your business value or personal assets to increase collateral coverage.
+                      </>
+                    )}
+                  </p>
+                </motion.div>
+              ))}
+              <p className={styles.loansGuideAlt}>
+                Consider alternative financing options such as SBA loans, traditional bank loans,
+                or revenue-based financing for smaller capital needs.
+              </p>
+            </div>
+          </div>
         </motion.div>
       )}
 
       {/* Disclaimer */}
-      <motion.p
-        variants={itemVariants}
-        className="text-xs text-muted-foreground text-center pb-6"
-      >
+      <motion.p variants={itemVariants} className={styles.loansDisclaimer}>
         This qualification assessment is for informational purposes only and does not guarantee loan approval.
         Final lending decisions are made by Pasadena Private Lending based on their full underwriting process.
       </motion.p>

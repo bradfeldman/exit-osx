@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useCompany } from '@/contexts/CompanyContext'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import styles from '@/components/valuation/valuation-pages.module.css'
 
 interface BriWeights {
   FINANCIAL: number
@@ -165,165 +165,172 @@ export default function CompanyBriWeightsPage() {
     }
   }
 
+  // Suppress unused variable warning
+  void isDefault
+
   const totalPercent = getTotalPercent()
 
   if (companyLoading || loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className={styles.briWeightsLoading}>
+        <div className={styles.briWeightsSpinner} />
       </div>
     )
   }
 
   if (!selectedCompanyId) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-muted-foreground">No company selected</p>
+      <div className={styles.briWeightsEmpty}>
+        <p>No company selected</p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">BRI Category Weights</h1>
-        <p className="text-gray-600">
+    <div className={styles.briWeightsPage}>
+      {/* Page header */}
+      <div className={styles.briWeightsHeader}>
+        <h1>BRI Category Weights</h1>
+        <p>
           Customize {selectedCompany?.name}&apos;s BRI category weights below or restore to default weights
         </p>
       </div>
 
-
       {/* Current Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Current Weight Source</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-2">
-            {isGlobal ? (
-              <>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                  Using Global {isDefault ? 'Defaults' : 'Custom Weights'}
-                </span>
-                <span className="text-sm text-gray-500">
-                  This company inherits weights from the system defaults
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                  Company-Specific Weights
-                </span>
-                <span className="text-sm text-gray-500">
-                  This company has custom weight settings
-                </span>
-              </>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      <div className={styles.briWeightsStatusCard}>
+        <p className={styles.briWeightsStatusTitle}>Current Weight Source</p>
+        <div className={styles.briWeightsStatusRow}>
+          {isGlobal ? (
+            <>
+              <span className={`${styles.briWeightsBadge} ${styles.global}`}>
+                Using Global {isDefault ? 'Defaults' : 'Custom Weights'}
+              </span>
+              <span className={styles.briWeightsStatusNote}>
+                This company inherits weights from the system defaults
+              </span>
+            </>
+          ) : (
+            <>
+              <span className={`${styles.briWeightsBadge} ${styles.custom}`}>
+                Company-Specific Weights
+              </span>
+              <span className={styles.briWeightsStatusNote}>
+                This company has custom weight settings
+              </span>
+            </>
+          )}
+        </div>
+      </div>
 
       {/* BRI Formula Display */}
-      <Card>
-        <CardHeader>
-          <CardTitle>BRI Calculation Formula</CardTitle>
-          <CardDescription>
-            The Buyer Readiness Index is a weighted average of six category scores
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="p-4 bg-gray-50 rounded-lg border font-mono text-sm">
-            <p className="text-gray-600 mb-2">{'// Weighted BRI Calculation'}</p>
-            <p>BRI = (Financial × <span className="text-blue-600">{(weights.FINANCIAL * 100).toFixed(0)}%</span>)</p>
-            <p className="ml-6">+ (Transferability × <span className="text-blue-600">{(weights.TRANSFERABILITY * 100).toFixed(0)}%</span>)</p>
-            <p className="ml-6">+ (Operational × <span className="text-blue-600">{(weights.OPERATIONAL * 100).toFixed(0)}%</span>)</p>
-            <p className="ml-6">+ (Market × <span className="text-blue-600">{(weights.MARKET * 100).toFixed(0)}%</span>)</p>
-            <p className="ml-6">+ (Legal/Tax × <span className="text-blue-600">{(weights.LEGAL_TAX * 100).toFixed(0)}%</span>)</p>
-            <p className="ml-6">+ (Personal × <span className="text-blue-600">{(weights.PERSONAL * 100).toFixed(0)}%</span>)</p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className={styles.briWeightsFormulaCard}>
+        <p className={styles.briWeightsFormulaTitle}>BRI Calculation Formula</p>
+        <p className={styles.briWeightsFormulaSubtitle}>
+          The Buyer Readiness Index is a weighted average of six category scores
+        </p>
+        <div className={styles.briWeightsFormulaBlock}>
+          <p className={styles.briWeightsFormulaComment}>{'// Weighted BRI Calculation'}</p>
+          <p>
+            BRI = (Financial &times;{' '}
+            <span className={styles.briWeightsFormulaAccent}>{(weights.FINANCIAL * 100).toFixed(0)}%</span>)
+          </p>
+          <p className={styles.briWeightsFormulaIndent}>
+            + (Transferability &times;{' '}
+            <span className={styles.briWeightsFormulaAccent}>{(weights.TRANSFERABILITY * 100).toFixed(0)}%</span>)
+          </p>
+          <p className={styles.briWeightsFormulaIndent}>
+            + (Operational &times;{' '}
+            <span className={styles.briWeightsFormulaAccent}>{(weights.OPERATIONAL * 100).toFixed(0)}%</span>)
+          </p>
+          <p className={styles.briWeightsFormulaIndent}>
+            + (Market &times;{' '}
+            <span className={styles.briWeightsFormulaAccent}>{(weights.MARKET * 100).toFixed(0)}%</span>)
+          </p>
+          <p className={styles.briWeightsFormulaIndent}>
+            + (Legal/Tax &times;{' '}
+            <span className={styles.briWeightsFormulaAccent}>{(weights.LEGAL_TAX * 100).toFixed(0)}%</span>)
+          </p>
+          <p className={styles.briWeightsFormulaIndent}>
+            + (Personal &times;{' '}
+            <span className={styles.briWeightsFormulaAccent}>{(weights.PERSONAL * 100).toFixed(0)}%</span>)
+          </p>
+        </div>
+      </div>
 
       {/* Weights Editor */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Category Weights</CardTitle>
-          <CardDescription>
-            Adjust the weight for each category. All weights must sum to exactly 100%.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
+      <div className={styles.briWeightsEditorCard}>
+        <p className={styles.briWeightsEditorTitle}>Category Weights</p>
+        <p className={styles.briWeightsEditorSubtitle}>
+          Adjust the weight for each category. All weights must sum to exactly 100%.
+        </p>
+
+        <div className={styles.briWeightsEditorContent}>
           {/* Weight Inputs */}
-          <div className="space-y-4">
+          <div className={styles.briWeightsRows}>
             {(Object.keys(weights) as Array<keyof BriWeights>).map((category) => (
-              <div key={category} className="flex items-center gap-4">
-                <div className="w-40">
-                  <p className="font-medium text-gray-900">{CATEGORY_LABELS[category]}</p>
-                  <p className="text-xs text-gray-500">{CATEGORY_DESCRIPTIONS[category]}</p>
+              <div key={category} className={styles.briWeightsRow}>
+                <div className={styles.briWeightsCategoryInfo}>
+                  <p className={styles.briWeightsCategoryName}>{CATEGORY_LABELS[category]}</p>
+                  <p className={styles.briWeightsCategoryDesc}>{CATEGORY_DESCRIPTIONS[category]}</p>
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      step="1"
-                      value={Math.round(weights[category] * 100)}
-                      onChange={(e) => handleWeightChange(category, e.target.value)}
-                      className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#B87333]"
-                    />
-                    <div className="w-20">
-                      <input
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="1"
-                        value={Math.round(weights[category] * 100)}
-                        onChange={(e) => handleWeightChange(category, e.target.value)}
-                        className="w-full px-2 py-1 text-right border rounded text-sm"
-                      />
-                    </div>
-                    <span className="text-gray-500 text-sm w-4">%</span>
-                  </div>
+                <div className={styles.briWeightsInputGroup}>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value={Math.round(weights[category] * 100)}
+                    onChange={(e) => handleWeightChange(category, e.target.value)}
+                    className={styles.briWeightsSlider}
+                  />
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value={Math.round(weights[category] * 100)}
+                    onChange={(e) => handleWeightChange(category, e.target.value)}
+                    className={styles.briWeightsNumberInput}
+                  />
+                  <span className={styles.briWeightsPercentSuffix}>%</span>
                 </div>
-                <div className="w-16 text-right">
-                  <span className="text-xs text-gray-400">
-                    Default: {(defaultWeights[category] * 100).toFixed(0)}%
-                  </span>
+                <div className={styles.briWeightsDefaultLabel}>
+                  Default: {(defaultWeights[category] * 100).toFixed(0)}%
                 </div>
               </div>
             ))}
           </div>
 
           {/* Total */}
-          <div className="pt-4 border-t">
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-gray-900">Total</span>
-              <span className={`text-xl font-bold ${isValidTotal() ? 'text-green-600' : 'text-red-600'}`}>
+          <div className={styles.briWeightsTotal}>
+            <div className={styles.briWeightsTotalRow}>
+              <span className={styles.briWeightsTotalLabel}>Total</span>
+              <span className={`${styles.briWeightsTotalValue} ${isValidTotal() ? styles.valid : styles.invalid}`}>
                 {totalPercent}%
               </span>
             </div>
             {!isValidTotal() && (
-              <p className="text-sm text-red-600 mt-1">
-                Weights must sum to exactly 100%. Currently {totalPercent}% ({totalPercent > 100 ? 'over' : 'under'} by {Math.abs(totalPercent - 100)}%)
+              <p className={styles.briWeightsTotalError}>
+                Weights must sum to exactly 100%. Currently {totalPercent}%{' '}
+                ({totalPercent > 100 ? 'over' : 'under'} by {Math.abs(totalPercent - 100)}%)
               </p>
             )}
           </div>
 
           {/* Messages */}
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            <div className={`${styles.briWeightsAlert} ${styles.error}`}>
               {error}
             </div>
           )}
           {success && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+            <div className={`${styles.briWeightsAlert} ${styles.success}`}>
               {success}
             </div>
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-between pt-4">
+          <div className={styles.briWeightsActions}>
             <Button
               variant="outline"
               onClick={handleRevertToGlobal}
@@ -334,20 +341,18 @@ export default function CompanyBriWeightsPage() {
             <Button
               onClick={handleSave}
               disabled={saving || !isValidTotal()}
-              className="bg-[#B87333] hover:bg-[#9A5F2A]"
             >
               {saving ? 'Saving...' : 'Save Custom Weights'}
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Impact Note */}
-      <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-        <p className="text-sm text-amber-800">
-          <strong>Note:</strong> Saving custom weights will immediately create a new valuation snapshot
-          for this company using the updated BRI calculation. The dashboard will reflect the new values.
-        </p>
+      <div className={styles.briWeightsNote}>
+        <span className={styles.briWeightsNoteStrong}>Note:</span>{' '}
+        Saving custom weights will immediately create a new valuation snapshot
+        for this company using the updated BRI calculation. The dashboard will reflect the new values.
       </div>
     </div>
   )

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useCompany } from '@/contexts/CompanyContext'
 import { PeriodSelector, FinancialPeriod } from '@/components/financials'
 import {
@@ -15,7 +14,7 @@ import {
   CheckCircle2,
   Info,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import styles from '@/components/financials/financials-pages.module.css'
 
 interface FinancialMetric {
   label: string
@@ -29,11 +28,14 @@ interface FinancialMetric {
 interface MetricCategory {
   name: string
   icon: React.ReactNode
-  color: string
+  colorKey: 'profitability' | 'liquidity' | 'leverage' | 'efficiency'
   metrics: FinancialMetric[]
 }
 
-function getHealthStatus(value: number | null, benchmark?: { low: number; high: number }): 'good' | 'warning' | 'poor' | 'unknown' {
+function getHealthStatus(
+  value: number | null,
+  benchmark?: { low: number; high: number }
+): 'good' | 'warning' | 'poor' | 'unknown' {
   if (value === null || !benchmark) return 'unknown'
   if (value >= benchmark.high) return 'good'
   if (value >= benchmark.low) return 'warning'
@@ -59,86 +61,81 @@ function formatMetricValue(value: number | null, unit: string): string {
 function MetricCard({ metric }: { metric: FinancialMetric }) {
   const status = getHealthStatus(metric.value, metric.benchmark)
 
-  const statusColors = {
-    good: 'text-emerald-600 bg-emerald-50',
-    warning: 'text-amber-600 bg-amber-50',
-    poor: 'text-red-600 bg-red-50',
-    unknown: 'text-gray-500 bg-gray-50',
-  }
+  const statusClass = {
+    good: styles.profileMetricStatusGood,
+    warning: styles.profileMetricStatusWarning,
+    poor: styles.profileMetricStatusPoor,
+    unknown: styles.profileMetricStatusUnknown,
+  }[status]
 
-  const statusIcons = {
-    good: <CheckCircle2 className="h-4 w-4" />,
-    warning: <AlertTriangle className="h-4 w-4" />,
-    poor: <AlertTriangle className="h-4 w-4" />,
-    unknown: <Info className="h-4 w-4" />,
-  }
+  const statusIcon = {
+    good: <CheckCircle2 />,
+    warning: <AlertTriangle />,
+    poor: <AlertTriangle />,
+    unknown: <Info />,
+  }[status]
 
   return (
-    <div className="bg-white rounded-lg border p-4">
-      <div className="flex items-start justify-between mb-2">
-        <span className="text-sm font-medium text-gray-700">{metric.label}</span>
-        <div className={cn('p-1 rounded-full', statusColors[status])}>
-          {statusIcons[status]}
+    <div className={styles.profileMetricCard}>
+      <div className={styles.profileMetricTop}>
+        <span className={styles.profileMetricLabel}>{metric.label}</span>
+        <div className={`${styles.profileMetricStatus} ${statusClass}`}>
+          {statusIcon}
         </div>
       </div>
-      <div className="flex items-end justify-between">
-        <span className="text-2xl font-bold text-gray-900">
+      <div className={styles.profileMetricBottom}>
+        <span className={styles.profileMetricValue}>
           {formatMetricValue(metric.value, metric.unit)}
         </span>
         {metric.trend !== undefined && metric.trend !== 0 && (
-          <div className={cn(
-            'flex items-center gap-1 text-xs font-medium',
-            metric.trend > 0 ? 'text-emerald-600' : 'text-red-600'
-          )}>
-            {metric.trend > 0 ? (
-              <TrendingUp className="h-3 w-3" />
-            ) : (
-              <TrendingDown className="h-3 w-3" />
-            )}
+          <div className={`${styles.profileMetricTrend} ${metric.trend > 0 ? styles.profileMetricTrendUp : styles.profileMetricTrendDown}`}>
+            {metric.trend > 0 ? <TrendingUp /> : <TrendingDown />}
             <span>{metric.trend > 0 ? '+' : ''}{metric.trend.toFixed(1)}%</span>
           </div>
         )}
       </div>
-      <p className="text-xs text-gray-500 mt-2">{metric.description}</p>
+      <p className={styles.profileMetricDesc}>{metric.description}</p>
       {metric.benchmark && (
-        <div className="mt-2 pt-2 border-t">
-          <span className="text-xs text-gray-400">
-            Target: {formatMetricValue(metric.benchmark.low, metric.unit)} - {formatMetricValue(metric.benchmark.high, metric.unit)}
-          </span>
+        <div className={styles.profileMetricBenchmark}>
+          Target: {formatMetricValue(metric.benchmark.low, metric.unit)} -{' '}
+          {formatMetricValue(metric.benchmark.high, metric.unit)}
         </div>
       )}
     </div>
   )
 }
 
-function HealthScoreCard({ score, label }: { score: number | null; label: string }) {
-  const getScoreColor = (s: number) => {
-    if (s >= 80) return 'from-emerald-500 to-teal-500'
-    if (s >= 60) return 'from-yellow-500 to-amber-500'
-    return 'from-red-500 to-orange-500'
-  }
+function getHealthGradientClass(score: number | null): string {
+  if (score === null) return styles.profileHealthGradientUnknown
+  if (score >= 80) return styles.profileHealthGradientGood
+  if (score >= 60) return styles.profileHealthGradientOk
+  return styles.profileHealthGradientPoor
+}
 
+function HealthScoreCard({ score, label }: { score: number | null; label: string }) {
   return (
-    <Card className="overflow-hidden">
-      <div className={cn(
-        'bg-gradient-to-r p-6',
-        score !== null ? getScoreColor(score) : 'from-gray-400 to-gray-500'
-      )}>
-        <div className="flex items-center justify-between">
-          <div className="text-white">
-            <p className="text-sm font-medium opacity-90">{label}</p>
-            <p className="text-4xl font-bold">
-              {score !== null ? `${Math.round(score)}` : '-'}
-            </p>
-            <p className="text-sm opacity-75">out of 100</p>
-          </div>
-          <div className="p-4 rounded-full bg-white/20">
-            <Activity className="h-8 w-8 text-white" />
-          </div>
+    <div className={styles.profileHealthCard}>
+      <div className={`${styles.profileHealthGradient} ${getHealthGradientClass(score)}`}>
+        <div className={styles.profileHealthText}>
+          <p className={styles.profileHealthLabel}>{label}</p>
+          <p className={styles.profileHealthScore}>
+            {score !== null ? `${Math.round(score)}` : '-'}
+          </p>
+          <p className={styles.profileHealthSub}>out of 100</p>
+        </div>
+        <div className={styles.profileHealthIcon}>
+          <Activity />
         </div>
       </div>
-    </Card>
+    </div>
   )
+}
+
+const categoryIconClass: Record<MetricCategory['colorKey'], string> = {
+  profitability: styles.profileCategoryIconProfitability,
+  liquidity: styles.profileCategoryIconLiquidity,
+  leverage: styles.profileCategoryIconLeverage,
+  efficiency: styles.profileCategoryIconEfficiency,
 }
 
 export default function FinancialProfilePage() {
@@ -162,7 +159,6 @@ export default function FinancialProfilePage() {
         const data = await response.json()
         setProfileData(data)
       } else {
-        // Set default empty state if no data
         setProfileData({
           healthScore: null,
           categories: getDefaultCategories(),
@@ -187,8 +183,8 @@ export default function FinancialProfilePage() {
     return [
       {
         name: 'Profitability',
-        icon: <TrendingUp className="h-5 w-5" />,
-        color: 'text-emerald-600',
+        icon: <TrendingUp />,
+        colorKey: 'profitability',
         metrics: [
           { label: 'Gross Margin', value: null, unit: 'percent', benchmark: { low: 30, high: 50 }, description: 'Revenue retained after direct costs' },
           { label: 'EBITDA Margin', value: null, unit: 'percent', benchmark: { low: 10, high: 25 }, description: 'Operating profitability before D&A' },
@@ -197,8 +193,8 @@ export default function FinancialProfilePage() {
       },
       {
         name: 'Liquidity',
-        icon: <Droplets className="h-5 w-5" />,
-        color: 'text-blue-600',
+        icon: <Droplets />,
+        colorKey: 'liquidity',
         metrics: [
           { label: 'Current Ratio', value: null, unit: 'ratio', benchmark: { low: 1.2, high: 2.0 }, description: 'Ability to pay short-term obligations' },
           { label: 'Quick Ratio', value: null, unit: 'ratio', benchmark: { low: 0.8, high: 1.5 }, description: 'Liquid assets vs current liabilities' },
@@ -207,8 +203,8 @@ export default function FinancialProfilePage() {
       },
       {
         name: 'Leverage',
-        icon: <Scale className="h-5 w-5" />,
-        color: 'text-purple-600',
+        icon: <Scale />,
+        colorKey: 'leverage',
         metrics: [
           { label: 'Debt-to-Equity', value: null, unit: 'ratio', benchmark: { low: 0, high: 1.5 }, description: 'Total debt relative to equity' },
           { label: 'Interest Coverage', value: null, unit: 'times', benchmark: { low: 3, high: 10 }, description: 'Ability to service debt interest' },
@@ -217,8 +213,8 @@ export default function FinancialProfilePage() {
       },
       {
         name: 'Efficiency',
-        icon: <Zap className="h-5 w-5" />,
-        color: 'text-orange-600',
+        icon: <Zap />,
+        colorKey: 'efficiency',
         metrics: [
           { label: 'DSO', value: null, unit: 'days', benchmark: { low: 30, high: 45 }, description: 'Days to collect receivables' },
           { label: 'DPO', value: null, unit: 'days', benchmark: { low: 30, high: 60 }, description: 'Days to pay suppliers' },
@@ -230,30 +226,28 @@ export default function FinancialProfilePage() {
 
   if (!selectedCompanyId) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Financial Profile</h1>
-          <p className="text-gray-600">Select a company to view financial health metrics</p>
+      <div className={styles.profilePageEmpty}>
+        <div className={styles.pageHeader}>
+          <div>
+            <h1>Financial Profile</h1>
+            <p>Select a company to view financial health metrics</p>
+          </div>
         </div>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-center text-gray-500">
-              No company selected. Please select a company from the dropdown above.
-            </p>
-          </CardContent>
-        </Card>
+        <div className={styles.dcfEmptyCard}>
+          <p>No company selected. Please select a company from the dropdown above.</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className={styles.profilePage}>
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Financial Profile</h1>
-        <p className="text-gray-600">
-          Comprehensive view of financial health metrics and trends
-        </p>
+      <div className={styles.pageHeader}>
+        <div>
+          <h1>Financial Profile</h1>
+          <p>Comprehensive view of financial health metrics and trends</p>
+        </div>
       </div>
 
       {/* Period Selector */}
@@ -264,58 +258,51 @@ export default function FinancialProfilePage() {
       />
 
       {isLoading ? (
-        <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        <div className={styles.profileLoading}>
+          <div className={styles.profileLoadingSpinner} />
         </div>
       ) : !selectedPeriod ? (
-        <Card>
-          <CardContent className="py-12">
-            <div className="text-center">
-              <Activity className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Select a Fiscal Year</h3>
-              <p className="text-gray-500">
-                Choose a fiscal year above to view your financial profile
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className={styles.profileEmptyPeriod}>
+          <Activity className={styles.profileEmptyIcon} />
+          <p className={styles.profileEmptyTitle}>Select a Fiscal Year</p>
+          <p className={styles.profileEmptyDesc}>
+            Choose a fiscal year above to view your financial profile
+          </p>
+        </div>
       ) : (
-        <div className="space-y-8">
+        <div className={styles.profileContent}>
           {/* Health Score */}
           <HealthScoreCard
-            score={profileData?.healthScore || null}
+            score={profileData?.healthScore ?? null}
             label="Financial Health Score"
           />
 
-          {/* Info Banner */}
+          {/* Info Banner — shown when no data yet */}
           {profileData?.healthScore === null && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 flex items-center gap-3">
-              <Info className="h-5 w-5 text-blue-500 flex-shrink-0" />
-              <p className="text-sm text-blue-700">
-                Enter financial data in the <strong>Statements</strong> page to see your financial profile metrics.
+            <div className={styles.profileInfoBanner}>
+              <Info />
+              <p>
+                Enter financial data in the <strong>Statements</strong> page to see your
+                financial profile metrics.
               </p>
             </div>
           )}
 
           {/* Metric Categories */}
           {(profileData?.categories || getDefaultCategories()).map((category) => (
-            <Card key={category.name}>
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-3">
-                  <div className={cn('p-2 rounded-lg bg-gray-100', category.color)}>
-                    {category.icon}
-                  </div>
-                  <span>{category.name}</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {category.metrics.map((metric) => (
-                    <MetricCard key={metric.label} metric={metric} />
-                  ))}
+            <div key={category.name} className={styles.profileCategoryCard}>
+              <div className={styles.profileCategoryHeader}>
+                <div className={`${styles.profileCategoryIcon} ${categoryIconClass[category.colorKey]}`}>
+                  {category.icon}
                 </div>
-              </CardContent>
-            </Card>
+                <span>{category.name}</span>
+              </div>
+              <div className={styles.profileMetricGrid}>
+                {category.metrics.map((metric) => (
+                  <MetricCard key={metric.label} metric={metric} />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )}

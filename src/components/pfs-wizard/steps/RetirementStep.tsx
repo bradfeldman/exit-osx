@@ -7,12 +7,21 @@ import { Plus, Trash2 } from 'lucide-react'
 import { detectTaxTreatment } from '@/lib/retirement/account-type-detector'
 import type { PFSWizardStepProps } from '../PFSWizardTypes'
 import { formatInputValue, parseInputValue } from '../pfs-wizard-utils'
+import styles from '@/components/financials/financials-pages.module.css'
 
-const TAX_BADGE_COLORS: Record<string, { bg: string; text: string; label: string }> = {
-  tax_free: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400', label: 'Tax-free' },
-  tax_deferred: { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-400', label: 'Tax-deferred' },
-  capital_gains: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-400', label: 'Capital gains' },
-  already_taxed: { bg: 'bg-gray-100 dark:bg-gray-800/50', text: 'text-gray-600 dark:text-gray-400', label: 'Already taxed' },
+// Tax treatment -> CSS module class mapping
+const TAX_BADGE_CLASS: Record<string, string> = {
+  tax_free: styles.pfsTaxBadgeFree,
+  tax_deferred: styles.pfsTaxBadgeDeferred,
+  capital_gains: styles.pfsTaxBadgeCapGains,
+  already_taxed: styles.pfsTaxBadgeTaxed,
+}
+
+const TAX_BADGE_LABEL: Record<string, string> = {
+  tax_free: 'Tax-free',
+  tax_deferred: 'Tax-deferred',
+  capital_gains: 'Capital gains',
+  already_taxed: 'Already taxed',
 }
 
 interface RetirementStepProps extends PFSWizardStepProps {
@@ -48,22 +57,18 @@ export function RetirementStep({ data, onUpdate, onNext, onBack, onSkip }: Retir
   }
 
   return (
-    <div className="space-y-8">
+    <div className={styles.pfsStep}>
       <div>
-        <h3 className="text-lg font-semibold font-display text-foreground mb-1">
-          Retirement Accounts
-        </h3>
-        <p className="text-sm text-muted-foreground">
+        <h3 className={styles.pfsStepTitle}>Retirement Accounts</h3>
+        <p className={styles.pfsStepSubtitle}>
           Many founders have most of their wealth in their business. Whatever you have is a great start.
         </p>
       </div>
 
       {/* Has retirement accounts? */}
-      <div className="space-y-3">
-        <label className="block text-sm font-medium text-foreground">
-          Do you have any retirement accounts?
-        </label>
-        <div className="flex gap-3">
+      <div className={styles.pfsFieldGroup}>
+        <label className={styles.pfsFieldLabel}>Do you have any retirement accounts?</label>
+        <div className={styles.pfsToggleGroup}>
           {([true, false] as const).map((val) => (
             <motion.button
               key={String(val)}
@@ -78,11 +83,7 @@ export function RetirementStep({ data, onUpdate, onNext, onBack, onSkip }: Retir
                   ...(!val && { retirementAccounts: [] }),
                 })
               }}
-              className={`flex-1 py-3 px-4 rounded-xl border-2 text-sm font-medium transition-all ${
-                data.hasRetirementAccounts === val
-                  ? 'border-primary bg-primary/5 text-primary'
-                  : 'border-border bg-card text-muted-foreground hover:border-primary/40'
-              }`}
+              className={`${styles.pfsToggleBtn} ${data.hasRetirementAccounts === val ? styles.pfsToggleBtnActive : ''}`}
             >
               {val ? 'Yes' : 'No'}
             </motion.button>
@@ -98,13 +99,14 @@ export function RetirementStep({ data, onUpdate, onNext, onBack, onSkip }: Retir
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="space-y-3 overflow-hidden"
+            className={styles.pfsCollapsible}
           >
             {data.retirementAccounts.map((account, index) => {
               const taxTreatment = account.name
                 ? detectTaxTreatment(account.name, 'Retirement Accounts')
                 : null
-              const badge = taxTreatment ? TAX_BADGE_COLORS[taxTreatment] : null
+              const badgeClass = taxTreatment ? TAX_BADGE_CLASS[taxTreatment] : null
+              const badgeLabel = taxTreatment ? TAX_BADGE_LABEL[taxTreatment] : null
 
               return (
                 <motion.div
@@ -113,12 +115,10 @@ export function RetirementStep({ data, onUpdate, onNext, onBack, onSkip }: Retir
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.15 }}
-                  className="p-4 rounded-xl border border-border bg-card space-y-3"
+                  className={styles.pfsWizardCard}
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground font-medium">
-                      Account {index + 1}
-                    </span>
+                  <div className={styles.pfsWizardCardHeader}>
+                    <span className={styles.pfsWizardCardLabel}>Account {index + 1}</span>
                     {data.retirementAccounts.length > 1 && (
                       <Button
                         variant="ghost"
@@ -131,8 +131,8 @@ export function RetirementStep({ data, onUpdate, onNext, onBack, onSkip }: Retir
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
+                  <div className={styles.pfsFieldGroup}>
+                    <div className={styles.pfsAccountNameRow}>
                       <Input
                         type="text"
                         value={account.name}
@@ -141,18 +141,18 @@ export function RetirementStep({ data, onUpdate, onNext, onBack, onSkip }: Retir
                         className="h-10 flex-1"
                         autoFocus={index === data.retirementAccounts.length - 1}
                       />
-                      {badge && account.name && (
+                      {badgeClass && badgeLabel && account.name && (
                         <motion.span
                           initial={{ opacity: 0, scale: 0.9 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium whitespace-nowrap ${badge.bg} ${badge.text}`}
+                          className={`${styles.pfsTaxBadge} ${badgeClass}`}
                         >
-                          {badge.label}
+                          {badgeLabel}
                         </motion.span>
                       )}
                     </div>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                    <div className={styles.pfsCurrencyWrap}>
+                      <span className={styles.pfsCurrencySymbol}>$</span>
                       <Input
                         type="text"
                         inputMode="numeric"
@@ -181,17 +181,11 @@ export function RetirementStep({ data, onUpdate, onNext, onBack, onSkip }: Retir
       </AnimatePresence>
 
       {/* Navigation */}
-      <div className="flex items-center gap-3 pt-4">
-        <Button variant="ghost" onClick={onBack}>
-          Back
-        </Button>
-        <div className="flex-1" />
-        <Button variant="ghost" onClick={onSkip} className="text-muted-foreground">
-          Skip
-        </Button>
-        <Button onClick={onNext} disabled={!canProceed}>
-          Continue
-        </Button>
+      <div className={styles.pfsNavRow}>
+        <Button variant="ghost" onClick={onBack}>Back</Button>
+        <div className={styles.pfsNavSpacer} />
+        <Button variant="ghost" onClick={onSkip} className="text-muted-foreground">Skip</Button>
+        <Button onClick={onNext} disabled={!canProceed}>Continue</Button>
       </div>
     </div>
   )

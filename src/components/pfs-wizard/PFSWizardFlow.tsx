@@ -15,6 +15,7 @@ import { INITIAL_WIZARD_DATA, type PFSWizardData, type BusinessInfo } from './PF
 import { wizardToApiPayload } from './pfs-wizard-utils'
 import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import styles from '@/components/financials/financials-pages.module.css'
 
 const STEPS = [
   { id: 1, key: 'age', title: 'About You' },
@@ -36,7 +37,7 @@ export function PFSWizardFlow({ onComplete, onSkip }: PFSWizardFlowProps) {
 
   const [currentStep, setCurrentStep] = useState(1)
   const [data, setData] = useState<PFSWizardData>(INITIAL_WIZARD_DATA)
-  const [direction, setDirection] = useState(1) // 1 = forward, -1 = back
+  const [direction, setDirection] = useState(1)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [businessInfo, setBusinessInfo] = useState<BusinessInfo | null>(null)
@@ -45,12 +46,10 @@ export function PFSWizardFlow({ onComplete, onSkip }: PFSWizardFlowProps) {
   const startTimeRef = useRef(Date.now())
   const stepStartRef = useRef(Date.now())
 
-  // Fetch business info on mount
   useEffect(() => {
     async function fetchBusinessInfo() {
       if (!selectedCompanyId) return
       try {
-        // Get company name
         const companyRes = await fetch('/api/companies')
         if (!companyRes.ok) return
         const companyData = await companyRes.json()
@@ -59,7 +58,6 @@ export function PFSWizardFlow({ onComplete, onSkip }: PFSWizardFlowProps) {
         )
         if (!company) return
 
-        // Get current valuation
         const dashRes = await fetch(`/api/companies/${selectedCompanyId}/dashboard`)
         if (!dashRes.ok) return
         const dashData = await dashRes.json()
@@ -72,13 +70,12 @@ export function PFSWizardFlow({ onComplete, onSkip }: PFSWizardFlowProps) {
           ownershipPercent: 100,
         })
       } catch {
-        // Non-fatal — wizard works without business info
+        // Non-fatal
       }
     }
     fetchBusinessInfo()
   }, [selectedCompanyId])
 
-  // Track wizard start
   useEffect(() => {
     track('pfs_wizard_started', {
       entryPoint: 'pfs_page',
@@ -94,13 +91,12 @@ export function PFSWizardFlow({ onComplete, onSkip }: PFSWizardFlowProps) {
     const stepTime = Date.now() - stepStartRef.current
     const currentStepDef = STEPS.find(s => s.id === currentStep)
 
-    // Track step completion if going forward
     if (step > currentStep && currentStepDef) {
       track('pfs_wizard_step_completed', {
         stepNumber: currentStep,
         stepName: currentStepDef.key,
         timeSpentMs: stepTime,
-        fieldsCompleted: 0, // Simplified for MVP
+        fieldsCompleted: 0,
       })
     }
 
@@ -153,7 +149,6 @@ export function PFSWizardFlow({ onComplete, onSkip }: PFSWizardFlowProps) {
         throw new Error(errorData.error || 'Failed to save')
       }
 
-      // Track completion
       const totalTime = Date.now() - startTimeRef.current
       track('pfs_wizard_completed', {
         totalTimeMs: totalTime,
@@ -165,9 +160,7 @@ export function PFSWizardFlow({ onComplete, onSkip }: PFSWizardFlowProps) {
           : 0,
       })
 
-      // Unlock Retirement Calculator
       await refetchProgression()
-
       onComplete()
     } catch (error) {
       console.error('PFS wizard save failed:', error)
@@ -226,14 +219,12 @@ export function PFSWizardFlow({ onComplete, onSkip }: PFSWizardFlowProps) {
   }
 
   return (
-    <div className="min-h-[600px] flex flex-col">
+    <div className={styles.pfsWizard}>
       {/* Header with progress */}
-      <div className="flex items-center justify-between mb-8">
+      <div className={styles.pfsWizardHeader}>
         <div>
-          <h2 className="text-2xl font-bold font-display text-foreground">
-            Your Financial Snapshot
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h2 className={styles.pfsWizardTitle}>Your Financial Snapshot</h2>
+          <p className={styles.pfsWizardSubtitle}>
             {currentStep <= 5
               ? "Let's build your financial picture in under 4 minutes."
               : 'Here is your financial snapshot.'}
@@ -255,16 +246,16 @@ export function PFSWizardFlow({ onComplete, onSkip }: PFSWizardFlowProps) {
 
       {/* Progress dots */}
       {currentStep <= 5 && (
-        <div className="flex items-center gap-2 mb-8">
+        <div className={styles.pfsProgress}>
           {STEPS.slice(0, 5).map((step) => (
             <div
               key={step.id}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
+              className={`${styles.pfsProgressDot} ${
                 step.id === currentStep
-                  ? 'w-8 bg-primary'
+                  ? styles.pfsProgressDotActive
                   : step.id < currentStep
-                    ? 'w-4 bg-primary/60'
-                    : 'w-4 bg-muted-foreground/20'
+                    ? styles.pfsProgressDotDone
+                    : styles.pfsProgressDotPending
               }`}
             />
           ))}
@@ -272,7 +263,7 @@ export function PFSWizardFlow({ onComplete, onSkip }: PFSWizardFlowProps) {
       )}
 
       {/* Step content with slide animation */}
-      <div className="flex-1">
+      <div className={styles.pfsStepContent}>
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={currentStep}

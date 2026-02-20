@@ -4,26 +4,21 @@ import { motion } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { PFSWizardStepProps } from '../PFSWizardTypes'
+import styles from '@/components/financials/financials-pages.module.css'
 
 export function AgeStep({ data, onUpdate, onNext }: PFSWizardStepProps) {
   const canProceed = data.currentAge !== null && data.currentAge >= 18 && data.maritalStatus !== null
 
   return (
-    <div className="space-y-8">
+    <div className={styles.pfsStep}>
       <div>
-        <h3 className="text-lg font-semibold font-display text-foreground mb-1">
-          About You
-        </h3>
-        <p className="text-sm text-muted-foreground">
-          Just two quick questions to get started.
-        </p>
+        <h3 className={styles.pfsStepTitle}>About You</h3>
+        <p className={styles.pfsStepSubtitle}>Just two quick questions to get started.</p>
       </div>
 
       {/* Age */}
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-foreground">
-          How old are you?
-        </label>
+      <div className={styles.pfsFieldGroup}>
+        <label className={styles.pfsFieldLabel}>How old are you?</label>
         <Input
           type="text"
           inputMode="numeric"
@@ -42,27 +37,21 @@ export function AgeStep({ data, onUpdate, onNext }: PFSWizardStepProps) {
           className="w-24 h-11 text-lg font-semibold"
         />
         {data.currentAge !== null && (data.currentAge < 18 || data.currentAge > 100) && (
-          <p className="text-xs text-destructive">Please enter your age (18-100)</p>
+          <p className={styles.pfsFieldError}>Please enter your age (18-100)</p>
         )}
       </div>
 
       {/* Marital Status */}
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-foreground">
-          Marital status
-        </label>
-        <div className="flex gap-3">
+      <div className={styles.pfsFieldGroup}>
+        <label className={styles.pfsFieldLabel}>Marital status</label>
+        <div className={styles.pfsToggleGroup}>
           {(['single', 'married'] as const).map((status) => (
             <motion.button
               key={status}
               type="button"
               whileTap={{ scale: 0.97 }}
               onClick={() => onUpdate({ maritalStatus: status })}
-              className={`flex-1 py-3 px-4 rounded-xl border-2 text-sm font-medium transition-all ${
-                data.maritalStatus === status
-                  ? 'border-primary bg-primary/5 text-primary'
-                  : 'border-border bg-card text-muted-foreground hover:border-primary/40'
-              }`}
+              className={`${styles.pfsToggleBtn} ${data.maritalStatus === status ? styles.pfsToggleBtnActive : ''}`}
             >
               {status === 'single' ? 'Single' : 'Married'}
             </motion.button>
@@ -71,7 +60,7 @@ export function AgeStep({ data, onUpdate, onNext }: PFSWizardStepProps) {
       </div>
 
       {/* Continue button */}
-      <div className="pt-4">
+      <div className={styles.pfsContinueWrap}>
         <Button
           onClick={onNext}
           disabled={!canProceed}

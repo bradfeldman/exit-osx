@@ -653,3 +653,627 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================ */
+/* ===== DCF VALUATION PAGE (prefix: dcfVal) ===== */
+/* ============================================================ */
+
+.dcfValPage {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.dcfValHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dcfValHeaderText h1 {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+}
+
+.dcfValHeaderText p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* Three-column grid: 3 / 5 / 4 out of 12 */
+.dcfValGrid {
+  display: grid;
+  grid-template-columns: 3fr 5fr 4fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.dcfValCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Loading / empty states */
+.dcfValEmpty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.dcfValEmptyInner {
+  text-align: center;
+}
+
+.dcfValEmptyIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--surface-secondary);
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dcfValEmptyIcon svg {
+  width: 32px;
+  height: 32px;
+  color: var(--text-tertiary);
+}
+
+.dcfValEmptyText {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.dcfValLoadingSpinner {
+  width: 40px;
+  height: 40px;
+  color: var(--accent);
+  margin: 0 auto 16px;
+}
+
+.dcfValLoadingText {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 1200px) {
+  .dcfValGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dcfValGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .dcfValHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
+
+/* ============================================================ */
+/* ===== DCF VALUATION SECTION component (prefix: dcfVal) ===== */
+/* ============================================================ */
+
+.dcfValSection {
+  /* wrapper — no extra styles, just structure */
+}
+
+.dcfValSectionCard {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+}
+
+.dcfValSectionHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.dcfValSectionTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.dcfValSectionTitleRow svg {
+  width: 20px;
+  height: 20px;
+}
+
+.dcfValSectionDesc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.dcfValSectionContent {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Summary metric tiles */
+.dcfValMetricGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.dcfValMetric {
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-light);
+  background: var(--surface-secondary);
+}
+
+.dcfValMetric.blue {
+  background: var(--accent-light);
+  border-color: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.dcfValMetric.green {
+  background: var(--green-light);
+  border-color: color-mix(in srgb, var(--green) 20%, transparent);
+}
+
+.dcfValMetricLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.dcfValMetric.blue .dcfValMetricLabel { color: var(--accent); }
+.dcfValMetric.green .dcfValMetricLabel { color: var(--green); }
+
+.dcfValMetricValue {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.dcfValMetric.blue .dcfValMetricValue { color: var(--accent); }
+.dcfValMetric.green .dcfValMetricValue { color: var(--green); }
+
+/* Cash flow table wrapper */
+.dcfValTableTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.dcfValTableWrap {
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+/* Loading card */
+.dcfValLoadCard {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  padding: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dcfValLoadCardSpinner {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  border-bottom-color: var(--accent);
+  animation: dcfSpin 0.7s linear infinite;
+}
+
+@keyframes dcfSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Empty/configure state */
+.dcfValConfigureState {
+  text-align: center;
+  padding: 32px 0;
+}
+
+.dcfValConfigureIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--accent-light);
+  margin-bottom: 16px;
+}
+
+.dcfValConfigureIcon svg {
+  width: 24px;
+  height: 24px;
+  color: var(--accent);
+}
+
+.dcfValConfigureTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.dcfValConfigureDesc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  max-width: 360px;
+  margin: 0 auto 16px;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .dcfValMetricGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================ */
+/* ===== BRI WEIGHTS PAGE (prefix: briWeights) ===== */
+/* ============================================================ */
+
+.briWeightsPage {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.briWeightsHeader h1 {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--text-primary);
+}
+
+.briWeightsHeader p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* Status card */
+.briWeightsStatusCard {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+}
+
+.briWeightsStatusTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.briWeightsStatusRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.briWeightsBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.briWeightsBadge.global {
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+
+.briWeightsBadge.custom {
+  background: var(--orange-light);
+  color: var(--orange);
+  border: 1px solid color-mix(in srgb, var(--orange) 25%, transparent);
+}
+
+.briWeightsStatusNote {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Formula card */
+.briWeightsFormulaCard {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+}
+
+.briWeightsFormulaTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.briWeightsFormulaSubtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.briWeightsFormulaBlock {
+  padding: 16px;
+  background: var(--surface-secondary);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-light);
+  font-family: ui-monospace, 'SF Mono', 'Menlo', monospace;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--text-secondary);
+}
+
+.briWeightsFormulaComment {
+  color: var(--text-tertiary);
+  margin-bottom: 4px;
+  font-style: italic;
+}
+
+.briWeightsFormulaAccent {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.briWeightsFormulaIndent {
+  padding-left: 24px;
+}
+
+/* Editor card */
+.briWeightsEditorCard {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+}
+
+.briWeightsEditorTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.briWeightsEditorSubtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.briWeightsEditorContent {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Weight row */
+.briWeightsRows {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.briWeightsRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.briWeightsCategoryInfo {
+  width: 160px;
+  flex-shrink: 0;
+}
+
+.briWeightsCategoryName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.briWeightsCategoryDesc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  line-height: 1.3;
+}
+
+.briWeightsInputGroup {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.briWeightsSlider {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  appearance: none;
+  background: var(--border);
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.briWeightsNumberInput {
+  width: 72px;
+  padding: 6px 8px;
+  text-align: right;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  background: var(--surface);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.briWeightsNumberInput:focus {
+  border-color: var(--accent);
+}
+
+.briWeightsPercentSuffix {
+  font-size: 14px;
+  color: var(--text-secondary);
+  width: 16px;
+  flex-shrink: 0;
+}
+
+.briWeightsDefaultLabel {
+  width: 80px;
+  text-align: right;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+/* Total row */
+.briWeightsTotal {
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.briWeightsTotalRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.briWeightsTotalLabel {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.briWeightsTotalValue {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.briWeightsTotalValue.valid { color: var(--green); }
+.briWeightsTotalValue.invalid { color: var(--red); }
+
+.briWeightsTotalError {
+  font-size: 13px;
+  color: var(--red);
+  margin-top: 6px;
+}
+
+/* Alert messages */
+.briWeightsAlert {
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  border: 1px solid;
+}
+
+.briWeightsAlert.error {
+  background: var(--red-light);
+  border-color: color-mix(in srgb, var(--red) 25%, transparent);
+  color: var(--red);
+}
+
+.briWeightsAlert.success {
+  background: var(--green-light);
+  border-color: color-mix(in srgb, var(--green) 25%, transparent);
+  color: var(--green);
+}
+
+/* Actions row */
+.briWeightsActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 16px;
+}
+
+/* Note banner */
+.briWeightsNote {
+  padding: 16px;
+  background: var(--orange-light);
+  border: 1px solid color-mix(in srgb, var(--orange) 30%, transparent);
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.briWeightsNoteStrong {
+  font-weight: 700;
+}
+
+/* Loading / empty */
+.briWeightsLoading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.briWeightsSpinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  border-bottom-color: var(--accent);
+  animation: dcfSpin 0.7s linear infinite;
+}
+
+.briWeightsEmpty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+  .briWeightsRow {
+    flex-wrap: wrap;
+  }
+
+  .briWeightsCategoryInfo {
+    width: 100%;
+  }
+
+  .briWeightsDefaultLabel {
+    display: none;
+  }
+}

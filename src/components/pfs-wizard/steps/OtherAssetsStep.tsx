@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { PFSWizardStepProps } from '../PFSWizardTypes'
 import { formatInputValue, parseInputValue } from '../pfs-wizard-utils'
+import styles from '@/components/financials/financials-pages.module.css'
 
 interface OtherAssetsStepProps extends PFSWizardStepProps {
   onSkip: () => void
@@ -18,24 +19,18 @@ const FIELDS = [
 
 export function OtherAssetsStep({ data, onUpdate, onNext, onBack, onSkip }: OtherAssetsStepProps) {
   return (
-    <div className="space-y-8">
+    <div className={styles.pfsStep}>
       <div>
-        <h3 className="text-lg font-semibold font-display text-foreground mb-1">
-          Other Assets
-        </h3>
-        <p className="text-sm text-muted-foreground">
-          Approximate values are fine. All fields are optional.
-        </p>
+        <h3 className={styles.pfsStepTitle}>Other Assets</h3>
+        <p className={styles.pfsStepSubtitle}>Approximate values are fine. All fields are optional.</p>
       </div>
 
-      <div className="space-y-4">
+      <div className={styles.pfsFieldGroupGap}>
         {FIELDS.map((field) => (
-          <div key={field.key} className="space-y-1.5">
-            <label className="block text-sm font-medium text-foreground">
-              {field.label}
-            </label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+          <div key={field.key} className={styles.pfsFieldGroupSm}>
+            <label className={styles.pfsFieldLabel}>{field.label}</label>
+            <div className={styles.pfsCurrencyWrap}>
+              <span className={styles.pfsCurrencySymbol}>$</span>
               <Input
                 type="text"
                 inputMode="numeric"
@@ -50,17 +45,11 @@ export function OtherAssetsStep({ data, onUpdate, onNext, onBack, onSkip }: Othe
       </div>
 
       {/* Navigation */}
-      <div className="flex items-center gap-3 pt-4">
-        <Button variant="ghost" onClick={onBack}>
-          Back
-        </Button>
-        <div className="flex-1" />
-        <Button variant="ghost" onClick={onSkip} className="text-muted-foreground">
-          Skip
-        </Button>
-        <Button onClick={onNext}>
-          Continue
-        </Button>
+      <div className={styles.pfsNavRow}>
+        <Button variant="ghost" onClick={onBack}>Back</Button>
+        <div className={styles.pfsNavSpacer} />
+        <Button variant="ghost" onClick={onSkip} className="text-muted-foreground">Skip</Button>
+        <Button onClick={onNext}>Continue</Button>
       </div>
     </div>
   )

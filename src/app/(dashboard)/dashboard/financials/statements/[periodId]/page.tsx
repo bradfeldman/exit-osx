@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useCompany } from '@/contexts/CompanyContext'
@@ -22,6 +21,7 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import { use } from 'react'
+import styles from '@/components/financials/financials-pages.module.css'
 
 interface FinancialPeriod {
   id: string
@@ -146,7 +146,6 @@ function StatementsEditContent({ periodId, initialTab }: { periodId: string; ini
         const data = await response.json()
         const adjustments = data.adjustments || []
 
-        // Calculate totals
         const totalAddBacks = adjustments
           .filter((a: { type: string; amount: number; frequency: string }) => a.type === 'ADD_BACK')
           .reduce((sum: number, a: { amount: number; frequency: string }) => {
@@ -154,7 +153,6 @@ function StatementsEditContent({ periodId, initialTab }: { periodId: string; ini
             return sum + (a.frequency === 'MONTHLY' ? amount * 12 : amount)
           }, 0)
 
-        // Find owner-specific add-backs
         const ownerSalaryAddBack = adjustments
           .filter((a: { description: string; type: string }) =>
             a.type === 'ADD_BACK' &&
@@ -226,7 +224,7 @@ function StatementsEditContent({ periodId, initialTab }: { periodId: string; ini
           setPlData({
             grossRevenue: is.grossRevenue,
             cogs: is.cogs,
-            totalExpenses: is.operatingExpenses,  // API uses operatingExpenses, UI uses totalExpenses
+            totalExpenses: is.operatingExpenses,
             grossProfit: is.grossProfit,
             grossMarginPct: is.grossMarginPct,
             ebitda: is.ebitda,
@@ -235,7 +233,7 @@ function StatementsEditContent({ periodId, initialTab }: { periodId: string; ini
             amortization: is.amortization ?? 0,
             interestExpense: is.interestExpense ?? 0,
             taxExpense: is.taxExpense ?? 0,
-            netOperatingIncome: 0,  // Calculated on frontend, not stored in API
+            netOperatingIncome: 0,
           })
         }
       }
@@ -257,125 +255,108 @@ function StatementsEditContent({ periodId, initialTab }: { periodId: string; ini
     }
   }, [period, fetchPLData, fetchAddBacksData, fetchCashFlowData])
 
-  // Handle P&L data updates from the PLTab
   const handlePLDataChange = (data: PLData) => {
     setPlData(data)
   }
 
-  // Handle dirty state
   const handleDirty = () => {
     setHasChanges(true)
   }
 
-  // Handle save
   const handleSave = async () => {
     setIsSaving(true)
-    // The actual saving is handled by the individual tab components with auto-save
-    // This manual save is for user confirmation
     await new Promise(resolve => setTimeout(resolve, 500))
     setHasChanges(false)
     setIsSaving(false)
   }
 
+  // — No company selected —
   if (!selectedCompanyId) {
     return (
-      <div className="space-y-6">
+      <div className={styles.stmtWrapper}>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Financial Statements</h1>
-          <p className="text-gray-600">Select a company to view and manage financial data</p>
+          <p className={styles.stmtNoCompanyHeading}>Financial Statements</p>
+          <p className={styles.stmtNoCompanySubtitle}>Select a company to view and manage financial data</p>
         </div>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-center text-gray-500">
-              No company selected. Please select a company from the dropdown above.
-            </p>
-          </CardContent>
-        </Card>
+        <div className={styles.stmtEmptyCard}>
+          <p className={styles.stmtEmptyBody}>
+            No company selected. Please select a company from the dropdown above.
+          </p>
+        </div>
       </div>
     )
   }
 
+  // — Loading —
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className={styles.stmtLoadingCenter}>
+        <div className={styles.stmtSpinner} />
+      </div>
+    )
+  }
+
+  // — Period not found —
+  if (!period) {
+    return (
+      <div className={styles.stmtWrapper}>
+        <Link href="/dashboard/financials" className={styles.stmtBreadcrumb}>
+          <ArrowLeft />
+          Back to Financials
+        </Link>
+        <div className={styles.stmtEmptyCard}>
+          <p className={styles.stmtEmptyBody}>Period not found</p>
         </div>
       </div>
     )
   }
 
-  if (!period) {
-    return (
-      <div className="space-y-6">
-        <Link
-          href="/dashboard/financials"
-          className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Financials
-        </Link>
-        <Card>
-          <CardContent className="py-12">
-            <div className="text-center">
-              <p className="text-gray-500">Period not found</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
+  const currentIndex = allPeriods.findIndex(p => p.id === periodId)
+  const prevPeriod = currentIndex > 0 ? allPeriods[currentIndex - 1] : null
+  const nextPeriod = currentIndex >= 0 && currentIndex < allPeriods.length - 1 ? allPeriods[currentIndex + 1] : null
 
   return (
-    <div className="space-y-6">
+    <div className={styles.stmtWrapper}>
       {/* Breadcrumb */}
-      <Link
-        href="/dashboard/financials"
-        className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
-      >
-        <ArrowLeft className="h-4 w-4" />
+      <Link href="/dashboard/financials" className={styles.stmtBreadcrumb}>
+        <ArrowLeft />
         Back to Financials
       </Link>
 
-      {/* Header with Year Navigation */}
-      <div className="flex items-start justify-between">
+      {/* Page header */}
+      <div className={styles.stmtPageHeader}>
         <div>
-          <div className="flex items-center gap-2">
-            {(() => {
-              const currentIndex = allPeriods.findIndex(p => p.id === periodId)
-              const prevPeriod = currentIndex > 0 ? allPeriods[currentIndex - 1] : null
-              return prevPeriod ? (
-                <button
-                  onClick={() => router.push(`/dashboard/financials/statements/${prevPeriod.id}?tab=${activeTab}`)}
-                  className="p-1.5 rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-900"
-                  title={`Previous: ${prevPeriod.label}`}
-                >
-                  <ChevronLeft className="h-6 w-6" />
-                </button>
-              ) : (
-                <div className="w-9" />
-              )
-            })()}
-            <h1 className="text-2xl font-bold text-gray-900">{period.label}</h1>
-            {(() => {
-              const currentIndex = allPeriods.findIndex(p => p.id === periodId)
-              const nextPeriod = currentIndex >= 0 && currentIndex < allPeriods.length - 1 ? allPeriods[currentIndex + 1] : null
-              return nextPeriod ? (
-                <button
-                  onClick={() => router.push(`/dashboard/financials/statements/${nextPeriod.id}?tab=${activeTab}`)}
-                  className="p-1.5 rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-900"
-                  title={`Next: ${nextPeriod.label}`}
-                >
-                  <ChevronRight className="h-6 w-6" />
-                </button>
-              ) : (
-                <div className="w-9" />
-              )
-            })()}
+          <div className={styles.stmtHeadingRow}>
+            {prevPeriod ? (
+              <button
+                onClick={() => router.push(`/dashboard/financials/statements/${prevPeriod.id}?tab=${activeTab}`)}
+                className={styles.stmtNavBtn}
+                title={`Previous: ${prevPeriod.label}`}
+              >
+                <ChevronLeft />
+              </button>
+            ) : (
+              <div className={styles.stmtNavPlaceholder} />
+            )}
+
+            <h1 className={styles.stmtHeading}>{period.label}</h1>
+
+            {nextPeriod ? (
+              <button
+                onClick={() => router.push(`/dashboard/financials/statements/${nextPeriod.id}?tab=${activeTab}`)}
+                className={styles.stmtNavBtn}
+                title={`Next: ${nextPeriod.label}`}
+              >
+                <ChevronRight />
+              </button>
+            ) : (
+              <div className={styles.stmtNavPlaceholder} />
+            )}
           </div>
-          <p className="text-gray-600">Edit financial statements for this fiscal year</p>
+          <p className={styles.stmtSubtitle}>Edit financial statements for this fiscal year</p>
         </div>
-        <div className="flex items-center gap-4">
+
+        <div className={styles.stmtHeaderRight}>
           <QuickBooksStatus
             isConnected={integrationData?.hasQuickBooks || false}
             lastSyncedAt={integrationData?.lastSyncedAt}
@@ -398,12 +379,12 @@ function StatementsEditContent({ periodId, initialTab }: { periodId: string; ini
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Tabs Content */}
-        <div className="lg:col-span-3">
+      {/* Main two-column grid */}
+      <div className={styles.stmtGrid}>
+        {/* Tabs pane */}
+        <div>
           <Tabs value={activeTab} onValueChange={handleTabChange}>
-            <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsList className="grid w-full grid-cols-4 mb-0">
               <TabsTrigger value="pnl" className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 <span className="hidden sm:inline">P&L</span>
@@ -422,52 +403,58 @@ function StatementsEditContent({ periodId, initialTab }: { periodId: string; ini
               </TabsTrigger>
             </TabsList>
 
-            <Card>
-              <CardContent className="p-6">
-                <TabsContent value="pnl" className="mt-0">
+            <div className={styles.stmtTabsCard}>
+              <TabsContent value="pnl" className="mt-0">
+                <div className={styles.stmtTabContent}>
                   <PLTab
                     companyId={selectedCompanyId}
                     periodId={periodId}
                     onDataChange={handlePLDataChange}
                     onDirty={handleDirty}
                   />
-                </TabsContent>
+                </div>
+              </TabsContent>
 
-                <TabsContent value="balance-sheet" className="mt-0">
+              <TabsContent value="balance-sheet" className="mt-0">
+                <div className={styles.stmtTabContent}>
                   <BalanceSheetTab
                     companyId={selectedCompanyId}
                     periodId={periodId}
                     onDirty={handleDirty}
                   />
-                </TabsContent>
+                </div>
+              </TabsContent>
 
-                <TabsContent value="add-backs" className="mt-0">
+              <TabsContent value="add-backs" className="mt-0">
+                <div className={styles.stmtTabContent}>
                   <AddBacksTab
                     companyId={selectedCompanyId}
                     periodId={periodId}
                     onDirty={handleDirty}
                   />
-                </TabsContent>
+                </div>
+              </TabsContent>
 
-                <TabsContent value="cash-flow" className="mt-0">
+              <TabsContent value="cash-flow" className="mt-0">
+                <div className={styles.stmtTabContent}>
                   <CashFlowTab
                     companyId={selectedCompanyId}
                     periodId={periodId}
                     onDirty={handleDirty}
                   />
-                </TabsContent>
-              </CardContent>
-            </Card>
+                </div>
+              </TabsContent>
+            </div>
           </Tabs>
         </div>
 
         {/* Financial Summary Panel */}
-        <div className="lg:col-span-1">
+        <div>
           <FinancialSummaryPanel
             currentData={{
               grossRevenue: plData?.grossRevenue,
               cogs: plData?.cogs,
-              operatingExpenses: plData?.totalExpenses,  // PLData uses totalExpenses, prop uses operatingExpenses
+              operatingExpenses: plData?.totalExpenses,
               depreciation: plData?.depreciation,
               amortization: plData?.amortization,
               interestExpense: plData?.interestExpense,
@@ -483,10 +470,10 @@ function StatementsEditContent({ periodId, initialTab }: { periodId: string; ini
         </div>
       </div>
 
-      {/* Prior Year Info */}
+      {/* Prior year note */}
       {priorPeriod && (
-        <p className="text-sm text-gray-500">
-          Prior year reference: <span className="font-medium">{priorPeriod.label}</span>
+        <p className={styles.stmtPriorYear}>
+          Prior year reference: <strong>{priorPeriod.label}</strong>
         </p>
       )}
     </div>
@@ -499,8 +486,8 @@ export default function StatementsEditPage({ params, searchParams }: StatementsE
 
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className={styles.stmtLoadingCenter}>
+        <div className={styles.stmtSpinner} />
       </div>
     }>
       <StatementsEditContent periodId={periodId} initialTab={tab} />

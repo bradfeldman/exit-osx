@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from '@/lib/motion'
-import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useCompany } from '@/contexts/CompanyContext'
 import { useProgression } from '@/contexts/ProgressionContext'
@@ -33,6 +32,7 @@ import {
 } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { PFSWizardFlow } from '@/components/pfs-wizard/PFSWizardFlow'
+import styles from '@/components/financials/financials-pages.module.css'
 
 // Animation variants for row animations
 const rowVariants = {
@@ -117,17 +117,14 @@ function parseInputValue(value: string): number {
   return parseFloat(cleaned) || 0
 }
 
-// Parse percentage with 2 decimal places
 function parsePercentage(value: string): number {
   const cleaned = value.replace(/[^0-9.]/g, '')
   const num = parseFloat(cleaned) || 0
   return Math.min(100, Math.max(0, num))
 }
 
-// Format percentage for display in input
 function formatPercentage(value: number): string {
   if (value === 0) return ''
-  // Round to 2 decimal places
   return (Math.round(value * 100) / 100).toString()
 }
 
@@ -150,45 +147,51 @@ function CollapsibleSection({
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
   return (
-    <Card className="overflow-hidden border-border/50">
-      {/* Custom header - not using CardHeader to avoid grid layout conflicts */}
-      <div className="flex items-center justify-between px-6 py-4 cursor-pointer hover:bg-muted/30 transition-colors">
+    <div className={styles.pfsSection}>
+      <div className={styles.pfsSectionHeader}>
         <div
           role="button"
           tabIndex={0}
           onClick={() => setIsOpen(!isOpen)}
           onKeyDown={(e) => e.key === 'Enter' && setIsOpen(!isOpen)}
-          className="flex items-center gap-3 flex-1"
+          className={styles.pfsSectionHeaderLeft}
         >
-          <div className="p-2 rounded-lg bg-primary/10">
-            <Icon className="h-5 w-5 text-primary" />
+          <div className={styles.pfsSectionIconWrap}>
+            <Icon />
           </div>
-          <div className="text-left">
-            <h3 className="text-lg font-semibold font-display leading-none">{title}</h3>
+          <div className={styles.pfsSectionTitleWrap}>
+            <h3 className={styles.pfsSectionTitle}>{title}</h3>
             {description && (
-              <p className="text-sm text-muted-foreground mt-1">{description}</p>
+              <p className={styles.pfsSectionSubtitle}>{description}</p>
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className={styles.pfsSectionHeaderRight}>
           {action}
-          <div
-            role="button"
-            tabIndex={0}
+          <button
+            type="button"
             onClick={() => setIsOpen(!isOpen)}
-            onKeyDown={(e) => e.key === 'Enter' && setIsOpen(!isOpen)}
-            className="p-1 hover:bg-muted rounded-md transition-colors"
+            className={styles.pfsSectionChevronBtn}
+            aria-label={isOpen ? 'Collapse section' : 'Expand section'}
           >
-            <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
-          </div>
+            <ChevronDown
+              style={{
+                width: 20,
+                height: 20,
+                color: 'var(--text-secondary)',
+                transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.2s',
+              }}
+            />
+          </button>
         </div>
       </div>
       {isOpen && (
-        <CardContent className="pt-0">
+        <div className={styles.pfsSectionBody}>
           {children}
-        </CardContent>
+        </div>
       )}
-    </Card>
+    </div>
   )
 }
 
@@ -208,9 +211,8 @@ export default function PersonalFinancialStatementPage() {
   const [currentAge, setCurrentAge] = useState<number | null>(null)
   const [retirementAge, setRetirementAge] = useState<number | null>(null)
   const [exitGoalAmount, setExitGoalAmount] = useState<number>(0)
-  const [showWizard, setShowWizard] = useState<boolean | null>(null) // null = not yet determined
+  const [showWizard, setShowWizard] = useState<boolean | null>(null)
 
-  // Track original state for dirty checking
   const [originalState, setOriginalState] = useState<{
     personalAssets: PersonalAsset[]
     personalLiabilities: PersonalLiability[]
@@ -220,57 +222,32 @@ export default function PersonalFinancialStatementPage() {
     exitGoalAmount: number
   } | null>(null)
 
-  // Check permissions
   const canViewPersonal = hasPermission('personal.retirement:view') || hasPermission('personal.net_worth:view')
   const canEditPersonal = hasPermission('personal.retirement:edit') || hasPermission('personal.net_worth:edit')
 
-  // Check if there are unsaved changes
   const hasUnsavedChanges = useMemo(() => {
     if (!originalState) return false
-
-    // Check personal assets
-    if (JSON.stringify(personalAssets) !== JSON.stringify(originalState.personalAssets)) {
-      return true
-    }
-
-    // Check personal liabilities
-    if (JSON.stringify(personalLiabilities) !== JSON.stringify(originalState.personalLiabilities)) {
-      return true
-    }
-
-    // Check business ownership
+    if (JSON.stringify(personalAssets) !== JSON.stringify(originalState.personalAssets)) return true
+    if (JSON.stringify(personalLiabilities) !== JSON.stringify(originalState.personalLiabilities)) return true
     const currentOwnership: Record<string, number> = {}
-    businessAssets.forEach(a => {
-      currentOwnership[a.companyId] = a.ownershipPercent
-    })
-    if (JSON.stringify(currentOwnership) !== JSON.stringify(originalState.businessOwnership)) {
-      return true
-    }
-
-    // Check owner profile fields
+    businessAssets.forEach(a => { currentOwnership[a.companyId] = a.ownershipPercent })
+    if (JSON.stringify(currentOwnership) !== JSON.stringify(originalState.businessOwnership)) return true
     if (currentAge !== originalState.currentAge) return true
     if (retirementAge !== originalState.retirementAge) return true
     if (exitGoalAmount !== originalState.exitGoalAmount) return true
-
     return false
   }, [personalAssets, personalLiabilities, businessAssets, originalState, currentAge, retirementAge, exitGoalAmount])
 
-  // Load companies and saved data on mount
   useEffect(() => {
     async function loadAllData() {
       if (!permissionsLoading && canViewPersonal) {
-        // Load personal financials first (if company selected)
         let loadedPersonalData = { assets: [] as PersonalAsset[], liabilities: [] as PersonalLiability[], currentAge: null as number | null, retirementAge: null as number | null, exitGoalAmount: 0, businessOwnership: null as Record<string, number> | null, hasData: false }
         if (selectedCompanyId) {
           loadedPersonalData = await loadPersonalFinancials(selectedCompanyId)
         }
-
-        // Show wizard if no existing PFS data
         if (showWizard === null) {
           setShowWizard(!loadedPersonalData.hasData)
         }
-
-        // Then load companies (which will set the complete original state)
         await loadCompaniesWithOriginalState(loadedPersonalData)
       }
     }
@@ -278,19 +255,14 @@ export default function PersonalFinancialStatementPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [permissionsLoading, canViewPersonal, selectedCompanyId])
 
-  // Save to database when data changes
   async function savePersonalFinancials() {
     if (!selectedCompanyId || !canEditPersonal) return
-
     setSaving(true)
     setSavedSuccessfully(false)
     setSaveError(null)
     try {
-      // Save ownership percentages to localStorage
       const ownership: Record<string, number> = {}
-      businessAssets.forEach(a => {
-        ownership[a.companyId] = a.ownershipPercent
-      })
+      businessAssets.forEach(a => { ownership[a.companyId] = a.ownershipPercent })
       localStorage.setItem('pfs_businessOwnership', JSON.stringify(ownership))
 
       const response = await fetch(`/api/companies/${selectedCompanyId}/personal-financials`, {
@@ -316,7 +288,6 @@ export default function PersonalFinancialStatementPage() {
         throw new Error(errorData.error || `Save failed with status ${response.status}`)
       }
 
-      // Update original state to current state
       setOriginalState({
         personalAssets: JSON.parse(JSON.stringify(personalAssets)),
         personalLiabilities: JSON.parse(JSON.stringify(personalLiabilities)),
@@ -329,8 +300,6 @@ export default function PersonalFinancialStatementPage() {
       setLastSaved(new Date())
       setSavedSuccessfully(true)
       setTimeout(() => setSavedSuccessfully(false), 3000)
-
-      // Refetch progression data to unlock features (e.g., Retirement Calculator)
       refetchProgression()
     } catch (error) {
       console.error('Failed to save personal financials:', error)
@@ -352,7 +321,6 @@ export default function PersonalFinancialStatementPage() {
           const loadedRetirementAge = data.personalFinancials.retirementAge ?? null
           const loadedExitGoal = data.personalFinancials.exitGoalAmount ? Number(data.personalFinancials.exitGoalAmount) : 0
           const loadedOwnership = data.personalFinancials.businessOwnership ?? null
-          // Check if there's real data (not just an empty record)
           const hasData = data.personalFinancials.id !== null && (
             loadedAssets.length > 0 || loadedLiabilities.length > 0 || loadedCurrentAge !== null
           )
@@ -390,7 +358,6 @@ export default function PersonalFinancialStatementPage() {
         const data = await response.json()
         setCompanies(data.companies || [])
 
-        // Load ownership: DB first, localStorage fallback
         let savedOwnership: Record<string, number> = {}
         if (personalData.businessOwnership && Object.keys(personalData.businessOwnership).length > 0) {
           savedOwnership = personalData.businessOwnership
@@ -398,16 +365,12 @@ export default function PersonalFinancialStatementPage() {
           try {
             const saved = localStorage.getItem('pfs_businessOwnership')
             if (saved) savedOwnership = JSON.parse(saved)
-          } catch {
-            // Ignore parse errors
-          }
+          } catch { /* Ignore parse errors */ }
         }
 
-        // Fetch current calculated value from dashboard API for each company
         const assets: BusinessAsset[] = await Promise.all(
           (data.companies || []).map(async (company: Company) => {
             let marketValue = 0
-
             try {
               const dashboardRes = await fetch(`/api/companies/${company.id}/dashboard`)
               if (dashboardRes.ok) {
@@ -418,7 +381,6 @@ export default function PersonalFinancialStatementPage() {
               const latestSnapshot = company.valuationSnapshots?.[0]
               marketValue = latestSnapshot ? Number(latestSnapshot.currentValue) : 0
             }
-
             const ownershipPercent = savedOwnership[company.id] ?? 100
             return {
               companyId: company.id,
@@ -431,11 +393,8 @@ export default function PersonalFinancialStatementPage() {
         )
         setBusinessAssets(assets)
 
-        // Set original state with ALL data at once
         const ownership: Record<string, number> = {}
-        assets.forEach(a => {
-          ownership[a.companyId] = a.ownershipPercent
-        })
+        assets.forEach(a => { ownership[a.companyId] = a.ownershipPercent })
         setOriginalState({
           personalAssets: JSON.parse(JSON.stringify(personalData.assets)),
           personalLiabilities: JSON.parse(JSON.stringify(personalData.liabilities)),
@@ -457,11 +416,7 @@ export default function PersonalFinancialStatementPage() {
     setBusinessAssets(prev =>
       prev.map(asset => {
         if (asset.companyId === companyId) {
-          return {
-            ...asset,
-            ownershipPercent: percent,
-            netValue: asset.marketValue * (percent / 100),
-          }
+          return { ...asset, ownershipPercent: percent, netValue: asset.marketValue * (percent / 100) }
         }
         return asset
       })
@@ -469,23 +424,11 @@ export default function PersonalFinancialStatementPage() {
   }
 
   function addPersonalAsset() {
-    setPersonalAssets(prev => [
-      ...prev,
-      {
-        id: `asset-${Date.now()}`,
-        category: ASSET_CATEGORIES[0],
-        description: '',
-        value: 0,
-      },
-    ])
+    setPersonalAssets(prev => [...prev, { id: `asset-${Date.now()}`, category: ASSET_CATEGORIES[0], description: '', value: 0 }])
   }
 
   function updatePersonalAsset(id: string, field: keyof PersonalAsset, value: string | number) {
-    setPersonalAssets(prev =>
-      prev.map(asset =>
-        asset.id === id ? { ...asset, [field]: value } : asset
-      )
-    )
+    setPersonalAssets(prev => prev.map(asset => asset.id === id ? { ...asset, [field]: value } : asset))
   }
 
   function removePersonalAsset(id: string) {
@@ -493,30 +436,17 @@ export default function PersonalFinancialStatementPage() {
   }
 
   function addPersonalLiability() {
-    setPersonalLiabilities(prev => [
-      ...prev,
-      {
-        id: `liability-${Date.now()}`,
-        category: LIABILITY_CATEGORIES[0],
-        description: '',
-        amount: 0,
-      },
-    ])
+    setPersonalLiabilities(prev => [...prev, { id: `liability-${Date.now()}`, category: LIABILITY_CATEGORIES[0], description: '', amount: 0 }])
   }
 
   function updatePersonalLiability(id: string, field: keyof PersonalLiability, value: string | number) {
-    setPersonalLiabilities(prev =>
-      prev.map(liability =>
-        liability.id === id ? { ...liability, [field]: value } : liability
-      )
-    )
+    setPersonalLiabilities(prev => prev.map(liability => liability.id === id ? { ...liability, [field]: value } : liability))
   }
 
   function removePersonalLiability(id: string) {
     setPersonalLiabilities(prev => prev.filter(liability => liability.id !== id))
   }
 
-  // Calculate totals
   const totalBusinessAssets = businessAssets.reduce((sum, asset) => sum + asset.netValue, 0)
   const totalPersonalAssets = personalAssets.reduce((sum, asset) => sum + asset.value, 0)
   const totalAssets = totalBusinessAssets + totalPersonalAssets
@@ -529,17 +459,17 @@ export default function PersonalFinancialStatementPage() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="flex items-center justify-center min-h-[400px]"
+        className={styles.loading}
       >
-        <div className="text-center">
+        <div style={{ textAlign: 'center' }}>
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            className="mx-auto mb-4"
+            style={{ marginBottom: 16 }}
           >
-            <Loader2 className="h-10 w-10 text-primary" />
+            <Loader2 style={{ width: 40, height: 40, color: 'var(--accent)', margin: '0 auto' }} />
           </motion.div>
-          <p className="text-muted-foreground font-medium">Loading...</p>
+          <p style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>Loading...</p>
         </div>
       </motion.div>
     )
@@ -551,73 +481,62 @@ export default function PersonalFinancialStatementPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="space-y-6 max-w-4xl mx-auto"
+        className={styles.pfsPermissionDenied}
       >
-        <div>
-          <h1 className="text-3xl font-bold font-display text-foreground tracking-tight">Personal Financial Statement</h1>
-          <p className="text-muted-foreground mt-1">Track your personal assets, liabilities, and net worth</p>
+        <div className={styles.pfsHeaderLeft}>
+          <h1>Personal Financial Statement</h1>
+          <p>Track your personal assets, liabilities, and net worth</p>
         </div>
-        <Card className="border-border/50">
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <div className="w-16 h-16 rounded-full bg-muted mb-4 flex items-center justify-center">
-              <Lock className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">Access Restricted</h3>
-            <p className="text-muted-foreground text-center max-w-md">
-              You don&apos;t have permission to view personal financial information.
-              Contact your organization administrator if you need access.
-            </p>
-          </CardContent>
-        </Card>
+        <div className={styles.pfsPermissionCard}>
+          <div className={styles.pfsPermissionIcon}>
+            <Lock />
+          </div>
+          <p className={styles.pfsPermissionTitle}>Access Restricted</p>
+          <p className={styles.pfsPermissionText}>
+            You don&apos;t have permission to view personal financial information.
+            Contact your organization administrator if you need access.
+          </p>
+        </div>
       </motion.div>
     )
   }
 
-  // Data loading state - skeleton UI
+  // Data loading state - skeleton
   if (loading) {
     return (
-      <div className="space-y-6 max-w-4xl mx-auto animate-pulse">
-        {/* Header skeleton */}
-        <div className="flex items-center justify-between">
+      <div className={styles.pfsSkeleton}>
+        <div className={styles.pfsSkeletonHeader}>
           <div>
-            <div className="h-9 w-80 bg-muted rounded-lg" />
-            <div className="h-5 w-64 bg-muted rounded mt-2" />
+            <div className={styles.pfsSkeletonBlock} style={{ width: 320, height: 36 }} />
+            <div className={styles.pfsSkeletonBlock} style={{ width: 260, height: 20, marginTop: 8 }} />
           </div>
-          <div className="h-10 w-32 bg-muted rounded-lg" />
+          <div className={styles.pfsSkeletonBlock} style={{ width: 128, height: 40, borderRadius: 8 }} />
         </div>
-
-        {/* Net Worth Summary skeleton */}
-        <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="text-center p-4 rounded-xl bg-background/50">
-                  <div className="h-4 w-24 bg-muted rounded mx-auto mb-3" />
-                  <div className="h-10 w-32 bg-muted rounded mx-auto" />
-                </div>
+        <div className={styles.pfsSkeletonCard}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
+            {[1, 2, 3].map((i) => (
+              <div key={i} style={{ textAlign: 'center', padding: 16, borderRadius: 12, background: 'rgba(0,0,0,0.04)' }}>
+                <div className={styles.pfsSkeletonBlock} style={{ width: 96, height: 16, margin: '0 auto 12px' }} />
+                <div className={styles.pfsSkeletonBlock} style={{ width: 128, height: 40, margin: '0 auto' }} />
+              </div>
+            ))}
+          </div>
+        </div>
+        {[1, 2, 3].map((i) => (
+          <div key={i} className={styles.pfsSection}>
+            <div className={styles.pfsSkeletonRow}>
+              <div className={styles.pfsSkeletonBlock} style={{ width: 40, height: 40, borderRadius: 8 }} />
+              <div>
+                <div className={styles.pfsSkeletonBlock} style={{ width: 160, height: 20 }} />
+                <div className={styles.pfsSkeletonBlock} style={{ width: 256, height: 16, marginTop: 8 }} />
+              </div>
+            </div>
+            <div className={styles.pfsSkeletonInner}>
+              {[1, 2].map((j) => (
+                <div key={j} className={styles.pfsSkeletonBlock} style={{ height: 48, borderRadius: 8 }} />
               ))}
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Section skeletons */}
-        {[1, 2, 3].map((i) => (
-          <Card key={i} className="border-border/50">
-            <div className="flex items-center gap-3 p-6">
-              <div className="h-10 w-10 bg-muted rounded-lg" />
-              <div>
-                <div className="h-5 w-40 bg-muted rounded" />
-                <div className="h-4 w-64 bg-muted rounded mt-2" />
-              </div>
-            </div>
-            <CardContent className="pt-0">
-              <div className="space-y-3">
-                {[1, 2].map((j) => (
-                  <div key={j} className="h-12 bg-muted/50 rounded-lg" />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          </div>
         ))}
       </div>
     )
@@ -626,10 +545,9 @@ export default function PersonalFinancialStatementPage() {
   // PFS Wizard for first-time users
   if (showWizard) {
     return (
-      <div className="max-w-2xl mx-auto">
+      <div style={{ maxWidth: 640, margin: '0 auto' }}>
         <PFSWizardFlow
           onComplete={() => {
-            // Wizard saved data — reload the page data and show the full form
             setShowWizard(false)
             setLoading(true)
             async function reloadAfterWizard() {
@@ -647,28 +565,24 @@ export default function PersonalFinancialStatementPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className={styles.pfsPage}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold font-display text-foreground tracking-tight">
-            Personal Financial Statement
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Track your personal assets, liabilities, and net worth
-          </p>
+      <div className={styles.pfsHeader}>
+        <div className={styles.pfsHeaderLeft}>
+          <h1>Personal Financial Statement</h1>
+          <p>Track your personal assets, liabilities, and net worth</p>
         </div>
         {canEditPersonal && (
-          <div className="flex items-center gap-3">
+          <div className={styles.pfsHeaderRight}>
             {saveError && (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0 }}
-                className="flex items-center gap-1 text-sm text-red-600 max-w-xs"
+                className={`${styles.pfsSaveMsg} ${styles.pfsSaveMsgError}`}
               >
-                <AlertTriangle className="h-4 w-4 flex-shrink-0" />
-                <span className="truncate">{saveError}</span>
+                <AlertTriangle style={{ width: 16, height: 16, flexShrink: 0 }} />
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{saveError}</span>
               </motion.div>
             )}
             {savedSuccessfully && (
@@ -676,21 +590,20 @@ export default function PersonalFinancialStatementPage() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0 }}
-                className="flex items-center gap-1 text-sm text-green-600"
+                className={`${styles.pfsSaveMsg} ${styles.pfsSaveMsgSuccess}`}
               >
-                <CheckCircle2 className="h-4 w-4" />
+                <CheckCircle2 style={{ width: 16, height: 16 }} />
                 Saved
               </motion.div>
             )}
             {lastSaved && !savedSuccessfully && !saveError && (
-              <span className="text-xs text-muted-foreground">
+              <span className={styles.pfsSaveTimestamp}>
                 Last saved: {lastSaved.toLocaleTimeString()}
               </span>
             )}
             <Button
               onClick={savePersonalFinancials}
               disabled={saving || !hasUnsavedChanges}
-              className={hasUnsavedChanges ? 'shadow-lg shadow-primary/20' : ''}
             >
               {saving ? (
                 <>
@@ -710,459 +623,413 @@ export default function PersonalFinancialStatementPage() {
 
       {/* Read-only warning */}
       {!canEditPersonal && (
-        <div>
-          <Card className="border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800">
-            <CardContent className="flex items-center gap-3 py-3">
-              <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-              <span className="text-sm text-amber-800 dark:text-amber-200">
-                You have view-only access to this page. Contact your administrator to request edit permissions.
-              </span>
-            </CardContent>
-          </Card>
+        <div className={styles.pfsReadOnlyBar}>
+          <AlertTriangle style={{ width: 18, height: 18, color: '#d97706', flexShrink: 0 }} />
+          <span>
+            You have view-only access to this page. Contact your administrator to request edit permissions.
+          </span>
         </div>
       )}
 
       {/* Net Worth Summary */}
-      <div>
-        <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center p-4 rounded-xl bg-background/50">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <TrendingUp className="h-5 w-5 text-green-600" />
-                  <p className="text-sm font-medium text-muted-foreground">Total Assets</p>
-                </div>
-                <p className="text-3xl font-bold font-display text-green-600">
-                  {formatCurrency(totalAssets)}
-                </p>
-              </div>
-              <div className="text-center p-4 rounded-xl bg-background/50">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <TrendingDown className="h-5 w-5 text-red-500" />
-                  <p className="text-sm font-medium text-muted-foreground">Total Liabilities</p>
-                </div>
-                <p className="text-3xl font-bold font-display text-red-500">
-                  {formatCurrency(totalLiabilities)}
-                </p>
-              </div>
-              <div className="text-center p-4 rounded-xl bg-background/50">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <DollarSign className="h-5 w-5 text-primary" />
-                  <p className="text-sm font-medium text-muted-foreground">Net Worth</p>
-                </div>
-                <p className={`text-3xl font-bold font-display ${netWorth >= 0 ? 'text-primary' : 'text-red-500'}`}>
-                  {formatCurrency(netWorth)}
-                </p>
-              </div>
+      <div className={styles.pfsNetWorthCard}>
+        <div className={styles.pfsNetWorthGrid}>
+          <div className={styles.pfsNetWorthItem}>
+            <div className={styles.pfsNetWorthItemLabel}>
+              <TrendingUp style={{ width: 20, height: 20, color: '#16a34a' }} />
+              <p>Total Assets</p>
             </div>
-          </CardContent>
-        </Card>
+            <p className={`${styles.pfsNetWorthValue} ${styles.pfsNetWorthValueGreen}`}>
+              {formatCurrency(totalAssets)}
+            </p>
+          </div>
+          <div className={styles.pfsNetWorthItem}>
+            <div className={styles.pfsNetWorthItemLabel}>
+              <TrendingDown style={{ width: 20, height: 20, color: '#ef4444' }} />
+              <p>Total Liabilities</p>
+            </div>
+            <p className={`${styles.pfsNetWorthValue} ${styles.pfsNetWorthValueRed}`}>
+              {formatCurrency(totalLiabilities)}
+            </p>
+          </div>
+          <div className={styles.pfsNetWorthItem}>
+            <div className={styles.pfsNetWorthItemLabel}>
+              <DollarSign style={{ width: 20, height: 20, color: 'var(--accent)' }} />
+              <p>Net Worth</p>
+            </div>
+            <p className={`${styles.pfsNetWorthValue} ${netWorth >= 0 ? styles.pfsNetWorthValuePrimary : styles.pfsNetWorthValueRed}`}>
+              {formatCurrency(netWorth)}
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Owner Profile */}
-      <div>
-        <CollapsibleSection
-          title="Owner Profile"
-          description="Your age for retirement planning"
-          icon={User}
-          defaultOpen={!!currentAge}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1.5">Current Age</label>
-              <Input
-                type="text"
-                inputMode="numeric"
-                value={currentAge !== null ? String(currentAge) : ''}
-                onChange={(e) => {
-                  const v = e.target.value.replace(/[^0-9]/g, '')
-                  if (!v) { setCurrentAge(null); return }
-                  setCurrentAge(parseInt(v))
-                }}
-                onBlur={() => {
-                  if (currentAge !== null) {
-                    setCurrentAge(Math.min(125, Math.max(0, currentAge)))
-                  }
-                }}
-                placeholder="52"
-                className="h-9 w-24"
-                disabled={!canEditPersonal}
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Used for retirement planning calculations
-              </p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1.5">Retirement Age</label>
-              <Input
-                type="text"
-                inputMode="numeric"
-                value={retirementAge !== null ? String(retirementAge) : ''}
-                onChange={(e) => {
-                  const v = e.target.value.replace(/[^0-9]/g, '')
-                  if (!v) { setRetirementAge(null); return }
-                  setRetirementAge(parseInt(v))
-                }}
-                onBlur={() => {
-                  if (retirementAge !== null) {
-                    setRetirementAge(Math.min(125, Math.max(0, retirementAge)))
-                  }
-                }}
-                placeholder="65"
-                className="h-9 w-24"
-                disabled={!canEditPersonal}
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Target age for retirement planning
-              </p>
-            </div>
+      <CollapsibleSection
+        title="Owner Profile"
+        description="Your age for retirement planning"
+        icon={User}
+        defaultOpen={!!currentAge}
+      >
+        <div className={styles.pfsOwnerGrid}>
+          <div>
+            <label className={styles.pfsFieldLabel}>Current Age</label>
+            <Input
+              type="text"
+              inputMode="numeric"
+              value={currentAge !== null ? String(currentAge) : ''}
+              onChange={(e) => {
+                const v = e.target.value.replace(/[^0-9]/g, '')
+                if (!v) { setCurrentAge(null); return }
+                setCurrentAge(parseInt(v))
+              }}
+              onBlur={() => {
+                if (currentAge !== null) {
+                  setCurrentAge(Math.min(125, Math.max(0, currentAge)))
+                }
+              }}
+              placeholder="52"
+              className="h-9 w-24"
+              disabled={!canEditPersonal}
+            />
+            <p className={styles.pfsFieldHint}>Used for retirement planning calculations</p>
           </div>
-        </CollapsibleSection>
-      </div>
+          <div>
+            <label className={styles.pfsFieldLabel}>Retirement Age</label>
+            <Input
+              type="text"
+              inputMode="numeric"
+              value={retirementAge !== null ? String(retirementAge) : ''}
+              onChange={(e) => {
+                const v = e.target.value.replace(/[^0-9]/g, '')
+                if (!v) { setRetirementAge(null); return }
+                setRetirementAge(parseInt(v))
+              }}
+              onBlur={() => {
+                if (retirementAge !== null) {
+                  setRetirementAge(Math.min(125, Math.max(0, retirementAge)))
+                }
+              }}
+              placeholder="65"
+              className="h-9 w-24"
+              disabled={!canEditPersonal}
+            />
+            <p className={styles.pfsFieldHint}>Target age for retirement planning</p>
+          </div>
+        </div>
+      </CollapsibleSection>
 
       {/* Business Assets */}
-      <div>
-        <CollapsibleSection
-          title="Business Interests"
-          description="Your ownership stake in businesses (values from Scorecard)"
-          icon={Building2}
-        >
-          {businessAssets.length === 0 ? (
-            <div className="text-center py-8">
-              <Building2 className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
-              <p className="text-muted-foreground">No businesses found in your account.</p>
+      <CollapsibleSection
+        title="Business Interests"
+        description="Your ownership stake in businesses (values from Scorecard)"
+        icon={Building2}
+      >
+        {businessAssets.length === 0 ? (
+          <div className={styles.pfsSectionEmpty}>
+            <Building2 style={{ width: 48, height: 48, margin: '0 auto 12px', display: 'block', color: 'rgba(0,0,0,0.15)' }} />
+            <p>No businesses found in your account.</p>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div className={`${styles.pfsTableHeader} ${styles.pfsTableHeaderBiz}`}>
+              <div>Business Name</div>
+              <div className={styles.pfsTableColRight}>Market Value</div>
+              <div style={{ textAlign: 'center' }}>Ownership %</div>
+              <div className={styles.pfsTableColRight}>Your Value</div>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {/* Header */}
-              <div className="grid grid-cols-12 gap-4 text-sm font-medium text-muted-foreground pb-2 border-b border-border">
-                <div className="col-span-4">Business Name</div>
-                <div className="col-span-3 text-right">Market Value</div>
-                <div className="col-span-2 text-center">Ownership %</div>
-                <div className="col-span-3 text-right">Your Value</div>
-              </div>
 
-              {/* Business rows */}
-              <AnimatePresence>
-                {businessAssets.map(asset => (
-                  <motion.div
-                    key={asset.companyId}
-                    variants={rowVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    className="grid grid-cols-12 gap-4 items-center py-3 border-b border-border/50 hover:bg-muted/30 transition-colors rounded-lg px-2 -mx-2"
-                  >
-                    <div className="col-span-4">
-                      <p className="font-medium text-foreground">{asset.companyName}</p>
-                    </div>
-                    <div className="col-span-3 text-right text-muted-foreground">
-                      {formatCurrency(asset.marketValue)}
-                    </div>
-                    <div className="col-span-2">
-                      <div className="flex items-center justify-center gap-1">
-                        <Input
-                          type="text"
-                          inputMode="decimal"
-                          value={formatPercentage(asset.ownershipPercent)}
-                          onChange={(e) => handleOwnershipChange(asset.companyId, e.target.value)}
-                          placeholder="100"
-                          className="w-20 text-center h-9"
-                          disabled={!canEditPersonal}
-                        />
-                        <span className="text-muted-foreground">%</span>
-                      </div>
-                    </div>
-                    <div className="col-span-3 text-right font-semibold text-foreground">
-                      {formatCurrency(asset.netValue)}
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+            <AnimatePresence>
+              {businessAssets.map(asset => (
+                <motion.div
+                  key={asset.companyId}
+                  variants={rowVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  className={styles.pfsTableRowBiz}
+                >
+                  <div className={styles.pfsBizName}>{asset.companyName}</div>
+                  <div className={styles.pfsBizMarket}>{formatCurrency(asset.marketValue)}</div>
+                  <div className={styles.pfsTableColCenter}>
+                    <Input
+                      type="text"
+                      inputMode="decimal"
+                      value={formatPercentage(asset.ownershipPercent)}
+                      onChange={(e) => handleOwnershipChange(asset.companyId, e.target.value)}
+                      placeholder="100"
+                      className="w-20 text-center h-9"
+                      disabled={!canEditPersonal}
+                    />
+                    <span style={{ color: 'var(--text-secondary)' }}>%</span>
+                  </div>
+                  <div className={styles.pfsBizValue}>{formatCurrency(asset.netValue)}</div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
 
-              {/* Total */}
-              <div className="grid grid-cols-12 gap-4 items-center pt-4 border-t-2 border-border">
-                <div className="col-span-9 text-right font-semibold text-foreground">
-                  Total Business Interests:
-                </div>
-                <div className="col-span-3 text-right font-bold text-lg text-primary">
-                  {formatCurrency(totalBusinessAssets)}
-                </div>
+            <div className={`${styles.pfsTableTotal} ${styles.pfsTableTotalBiz}`}>
+              <div className={styles.pfsTableTotalLabel}>Total Business Interests:</div>
+              <div className={`${styles.pfsTableTotalValue} ${styles.pfsTableTotalValuePrimary}`}>
+                {formatCurrency(totalBusinessAssets)}
               </div>
             </div>
-          )}
-        </CollapsibleSection>
-      </div>
+          </div>
+        )}
+      </CollapsibleSection>
 
       {/* Personal Assets */}
-      <div>
-        <CollapsibleSection
-          title="Personal Assets"
-          description="Real estate, vehicles, investments, and other personal assets"
-          icon={Wallet}
-          action={
-            canEditPersonal && (
+      <CollapsibleSection
+        title="Personal Assets"
+        description="Real estate, vehicles, investments, and other personal assets"
+        icon={Wallet}
+        action={
+          canEditPersonal && (
+            <Button onClick={addPersonalAsset} variant="outline" size="sm">
+              <Plus className="h-4 w-4 mr-1" />
+              Add Asset
+            </Button>
+          )
+        }
+      >
+        {personalAssets.length === 0 ? (
+          <div className={styles.pfsSectionEmpty}>
+            <Wallet style={{ width: 48, height: 48, margin: '0 auto 12px', display: 'block', color: 'rgba(0,0,0,0.15)' }} />
+            <p>No personal assets added yet.</p>
+            {canEditPersonal && (
               <Button onClick={addPersonalAsset} variant="outline" size="sm">
                 <Plus className="h-4 w-4 mr-1" />
-                Add Asset
+                Add Your First Asset
               </Button>
-            )
-          }
-        >
-          {personalAssets.length === 0 ? (
-            <div className="text-center py-8">
-              <Wallet className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
-              <p className="text-muted-foreground mb-3">No personal assets added yet.</p>
-              {canEditPersonal && (
-                <Button onClick={addPersonalAsset} variant="outline" size="sm">
-                  <Plus className="h-4 w-4 mr-1" />
-                  Add Your First Asset
-                </Button>
-              )}
+            )}
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div className={`${styles.pfsTableHeader} ${styles.pfsTableHeaderAsset}`}>
+              <div>Category</div>
+              <div>Description</div>
+              <div className={styles.pfsTableColRight}>Value</div>
+              <div />
             </div>
-          ) : (
-            <div className="space-y-3">
-              {/* Header */}
-              <div className="grid grid-cols-12 gap-3 text-sm font-medium text-muted-foreground pb-2 border-b border-border">
-                <div className="col-span-3">Category</div>
-                <div className="col-span-5">Description</div>
-                <div className="col-span-3 text-right">Value</div>
-                <div className="col-span-1"></div>
-              </div>
 
-              <AnimatePresence>
-                {personalAssets.map(asset => (
-                  <motion.div
-                    key={asset.id}
-                    variants={rowVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    className="grid grid-cols-12 gap-3 items-center"
-                  >
-                    <div className="col-span-3">
-                      <Select
-                        value={asset.category}
-                        onValueChange={(value) => updatePersonalAsset(asset.id, 'category', value)}
-                        disabled={!canEditPersonal}
-                      >
-                        <SelectTrigger className="h-9">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {ASSET_CATEGORIES.map(cat => (
-                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="col-span-5">
+            <AnimatePresence>
+              {personalAssets.map(asset => (
+                <motion.div
+                  key={asset.id}
+                  variants={rowVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  className={styles.pfsTableRowAsset}
+                >
+                  <div>
+                    <Select
+                      value={asset.category}
+                      onValueChange={(value) => updatePersonalAsset(asset.id, 'category', value)}
+                      disabled={!canEditPersonal}
+                    >
+                      <SelectTrigger className="h-9">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ASSET_CATEGORIES.map(cat => (
+                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Input
+                      type="text"
+                      value={asset.description}
+                      onChange={(e) => updatePersonalAsset(asset.id, 'description', e.target.value)}
+                      placeholder="Description"
+                      className="h-9"
+                      disabled={!canEditPersonal}
+                    />
+                  </div>
+                  <div>
+                    <div className={styles.pfsCurrencyWrap}>
+                      <span className={styles.pfsCurrencySymbol}>$</span>
                       <Input
                         type="text"
-                        value={asset.description}
-                        onChange={(e) => updatePersonalAsset(asset.id, 'description', e.target.value)}
-                        placeholder="Description"
-                        className="h-9"
+                        inputMode="numeric"
+                        value={formatInputValue(asset.value)}
+                        onChange={(e) => updatePersonalAsset(asset.id, 'value', parseInputValue(e.target.value))}
+                        placeholder="0"
+                        className="pl-7 text-right h-9"
                         disabled={!canEditPersonal}
                       />
                     </div>
-                    <div className="col-span-3">
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
-                        <Input
-                          type="text"
-                          inputMode="numeric"
-                          value={formatInputValue(asset.value)}
-                          onChange={(e) => updatePersonalAsset(asset.id, 'value', parseInputValue(e.target.value))}
-                          placeholder="0"
-                          className="pl-7 text-right h-9"
-                          disabled={!canEditPersonal}
-                        />
-                      </div>
-                    </div>
-                    <div className="col-span-1 text-center">
-                      {canEditPersonal && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removePersonalAsset(asset.id)}
-                          className="h-9 w-9 p-0 text-muted-foreground hover:text-red-500"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    {canEditPersonal && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removePersonalAsset(asset.id)}
+                        className="h-9 w-9 p-0 text-muted-foreground hover:text-red-500"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
 
-              {/* Total */}
-              <div className="grid grid-cols-12 gap-3 items-center pt-4 border-t-2 border-border">
-                <div className="col-span-8 text-right font-semibold text-foreground">
-                  Total Personal Assets:
-                </div>
-                <div className="col-span-3 text-right font-bold text-lg text-green-600">
-                  {formatCurrency(totalPersonalAssets)}
-                </div>
-                <div className="col-span-1"></div>
+            <div className={`${styles.pfsTableTotal} ${styles.pfsTableTotalAsset}`}>
+              <div className={styles.pfsTableTotalLabel}>Total Personal Assets:</div>
+              <div className={`${styles.pfsTableTotalValue} ${styles.pfsTableTotalValueGreen}`}>
+                {formatCurrency(totalPersonalAssets)}
               </div>
+              <div />
             </div>
-          )}
-        </CollapsibleSection>
-      </div>
+          </div>
+        )}
+      </CollapsibleSection>
 
       {/* Personal Liabilities */}
-      <div>
-        <CollapsibleSection
-          title="Personal Liabilities"
-          description="Mortgages, loans, credit cards, and other debts"
-          icon={CreditCard}
-          action={
-            canEditPersonal && (
+      <CollapsibleSection
+        title="Personal Liabilities"
+        description="Mortgages, loans, credit cards, and other debts"
+        icon={CreditCard}
+        action={
+          canEditPersonal && (
+            <Button onClick={addPersonalLiability} variant="outline" size="sm">
+              <Plus className="h-4 w-4 mr-1" />
+              Add Liability
+            </Button>
+          )
+        }
+      >
+        {personalLiabilities.length === 0 ? (
+          <div className={styles.pfsSectionEmpty}>
+            <CreditCard style={{ width: 48, height: 48, margin: '0 auto 12px', display: 'block', color: 'rgba(0,0,0,0.15)' }} />
+            <p>No personal liabilities added yet.</p>
+            {canEditPersonal && (
               <Button onClick={addPersonalLiability} variant="outline" size="sm">
                 <Plus className="h-4 w-4 mr-1" />
-                Add Liability
+                Add Your First Liability
               </Button>
-            )
-          }
-        >
-          {personalLiabilities.length === 0 ? (
-            <div className="text-center py-8">
-              <CreditCard className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
-              <p className="text-muted-foreground mb-3">No personal liabilities added yet.</p>
-              {canEditPersonal && (
-                <Button onClick={addPersonalLiability} variant="outline" size="sm">
-                  <Plus className="h-4 w-4 mr-1" />
-                  Add Your First Liability
-                </Button>
-              )}
+            )}
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div className={`${styles.pfsTableHeader} ${styles.pfsTableHeaderAsset}`}>
+              <div>Category</div>
+              <div>Description</div>
+              <div className={styles.pfsTableColRight}>Amount Owed</div>
+              <div />
             </div>
-          ) : (
-            <div className="space-y-3">
-              {/* Header */}
-              <div className="grid grid-cols-12 gap-3 text-sm font-medium text-muted-foreground pb-2 border-b border-border">
-                <div className="col-span-3">Category</div>
-                <div className="col-span-5">Description</div>
-                <div className="col-span-3 text-right">Amount Owed</div>
-                <div className="col-span-1"></div>
-              </div>
 
-              <AnimatePresence>
-                {personalLiabilities.map(liability => (
-                  <motion.div
-                    key={liability.id}
-                    variants={rowVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    className="grid grid-cols-12 gap-3 items-center"
-                  >
-                    <div className="col-span-3">
-                      <Select
-                        value={liability.category}
-                        onValueChange={(value) => updatePersonalLiability(liability.id, 'category', value)}
-                        disabled={!canEditPersonal}
-                      >
-                        <SelectTrigger className="h-9">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {LIABILITY_CATEGORIES.map(cat => (
-                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="col-span-5">
+            <AnimatePresence>
+              {personalLiabilities.map(liability => (
+                <motion.div
+                  key={liability.id}
+                  variants={rowVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  className={styles.pfsTableRowAsset}
+                >
+                  <div>
+                    <Select
+                      value={liability.category}
+                      onValueChange={(value) => updatePersonalLiability(liability.id, 'category', value)}
+                      disabled={!canEditPersonal}
+                    >
+                      <SelectTrigger className="h-9">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {LIABILITY_CATEGORIES.map(cat => (
+                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Input
+                      type="text"
+                      value={liability.description}
+                      onChange={(e) => updatePersonalLiability(liability.id, 'description', e.target.value)}
+                      placeholder="Description"
+                      className="h-9"
+                      disabled={!canEditPersonal}
+                    />
+                  </div>
+                  <div>
+                    <div className={styles.pfsCurrencyWrap}>
+                      <span className={styles.pfsCurrencySymbol}>$</span>
                       <Input
                         type="text"
-                        value={liability.description}
-                        onChange={(e) => updatePersonalLiability(liability.id, 'description', e.target.value)}
-                        placeholder="Description"
-                        className="h-9"
+                        inputMode="numeric"
+                        value={formatInputValue(liability.amount)}
+                        onChange={(e) => updatePersonalLiability(liability.id, 'amount', parseInputValue(e.target.value))}
+                        placeholder="0"
+                        className="pl-7 text-right h-9"
                         disabled={!canEditPersonal}
                       />
                     </div>
-                    <div className="col-span-3">
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
-                        <Input
-                          type="text"
-                          inputMode="numeric"
-                          value={formatInputValue(liability.amount)}
-                          onChange={(e) => updatePersonalLiability(liability.id, 'amount', parseInputValue(e.target.value))}
-                          placeholder="0"
-                          className="pl-7 text-right h-9"
-                          disabled={!canEditPersonal}
-                        />
-                      </div>
-                    </div>
-                    <div className="col-span-1 text-center">
-                      {canEditPersonal && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removePersonalLiability(liability.id)}
-                          className="h-9 w-9 p-0 text-muted-foreground hover:text-red-500"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    {canEditPersonal && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removePersonalLiability(liability.id)}
+                        className="h-9 w-9 p-0 text-muted-foreground hover:text-red-500"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
 
-              {/* Total */}
-              <div className="grid grid-cols-12 gap-3 items-center pt-4 border-t-2 border-border">
-                <div className="col-span-8 text-right font-semibold text-foreground">
-                  Total Liabilities:
-                </div>
-                <div className="col-span-3 text-right font-bold text-lg text-red-500">
-                  {formatCurrency(totalLiabilities)}
-                </div>
-                <div className="col-span-1"></div>
+            <div className={`${styles.pfsTableTotal} ${styles.pfsTableTotalAsset}`}>
+              <div className={styles.pfsTableTotalLabel}>Total Liabilities:</div>
+              <div className={`${styles.pfsTableTotalValue} ${styles.pfsTableTotalValueRed}`}>
+                {formatCurrency(totalLiabilities)}
               </div>
+              <div />
             </div>
-          )}
-        </CollapsibleSection>
-      </div>
+          </div>
+        )}
+      </CollapsibleSection>
 
       {/* Summary Footer */}
-      <div>
-        <Card className="bg-muted/30 border-border/50">
-          <CardContent className="pt-6">
-            <div className="space-y-3">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Business Interests</span>
-                <span className="font-medium text-foreground">{formatCurrency(totalBusinessAssets)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Personal Assets</span>
-                <span className="font-medium text-foreground">{formatCurrency(totalPersonalAssets)}</span>
-              </div>
-              <div className="flex justify-between text-sm pb-3 border-b border-border">
-                <span className="text-muted-foreground font-semibold">Total Assets</span>
-                <span className="font-semibold text-green-600">{formatCurrency(totalAssets)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Total Liabilities</span>
-                <span className="font-medium text-red-500">({formatCurrency(totalLiabilities)})</span>
-              </div>
-              <div className="flex justify-between text-xl pt-3 border-t border-border">
-                <span className="font-bold text-foreground">Net Worth</span>
-                <span className={`font-bold ${netWorth >= 0 ? 'text-primary' : 'text-red-500'}`}>
-                  {formatCurrency(netWorth)}
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <div className={styles.pfsSummaryCard}>
+        <div className={styles.pfsSummaryRows}>
+          <div className={styles.pfsSummaryRow}>
+            <span className={styles.pfsSummaryRowLabel}>Business Interests</span>
+            <span className={styles.pfsSummaryRowValue}>{formatCurrency(totalBusinessAssets)}</span>
+          </div>
+          <div className={styles.pfsSummaryRow}>
+            <span className={styles.pfsSummaryRowLabel}>Personal Assets</span>
+            <span className={styles.pfsSummaryRowValue}>{formatCurrency(totalPersonalAssets)}</span>
+          </div>
+          <div className={`${styles.pfsSummaryRow} ${styles.pfsSummaryDivider}`}>
+            <span className={styles.pfsSummaryRowLabel} style={{ fontWeight: 600 }}>Total Assets</span>
+            <span className={styles.pfsSummaryRowValueGreen}>{formatCurrency(totalAssets)}</span>
+          </div>
+          <div className={styles.pfsSummaryRow}>
+            <span className={styles.pfsSummaryRowLabel}>Total Liabilities</span>
+            <span className={styles.pfsSummaryRowValueRed}>({formatCurrency(totalLiabilities)})</span>
+          </div>
+          <div className={styles.pfsSummaryTotalRow}>
+            <span className={styles.pfsSummaryTotalLabel}>Net Worth</span>
+            <span className={netWorth >= 0 ? styles.pfsSummaryTotalValuePositive : styles.pfsSummaryTotalValueNegative}>
+              {formatCurrency(netWorth)}
+            </span>
+          </div>
+        </div>
       </div>
 
-
       {/* Note */}
-      <p className="text-xs text-muted-foreground text-center pb-4">
+      <p className={styles.pfsNote}>
         This worksheet is for planning purposes only. Business values are based on current market valuations from each company&apos;s Scorecard.
         {canEditPersonal
           ? hasUnsavedChanges

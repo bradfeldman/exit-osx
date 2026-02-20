@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import type { PFSWizardData, BusinessInfo } from '../PFSWizardTypes'
 import { calculateWizardTotals, formatCurrency } from '../pfs-wizard-utils'
+import styles from '@/components/financials/financials-pages.module.css'
 
 interface RevealStepProps {
   data: PFSWizardData
@@ -44,7 +45,6 @@ function AnimatedCounter({
       const animate = (currentTime: number) => {
         const elapsed = currentTime - startTime
         const progress = Math.min(elapsed / duration, 1)
-        // Cubic ease-out for deceleration
         const eased = 1 - Math.pow(1 - progress, 3)
         setValue(Math.round(eased * target))
 
@@ -86,16 +86,15 @@ const CONFETTI_PARTICLES = Array.from({ length: 30 }, (_, i) => ({
   rotation: (i * 37) % 360,
 }))
 
-// CSS-based confetti burst
 function ConfettiBurst() {
   const particles = CONFETTI_PARTICLES
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 50, overflow: 'hidden' }}>
       {particles.map((p) => {
         const rad = (p.angle * Math.PI) / 180
         const x = Math.cos(rad) * p.velocity
-        const y = Math.sin(rad) * p.velocity - 200 // Bias upward
+        const y = Math.sin(rad) * p.velocity - 200
 
         return (
           <motion.div
@@ -132,11 +131,11 @@ function ConfettiBurst() {
   )
 }
 
-// Concentration color helper
-function getConcentrationColor(pct: number): { text: string; bg: string; label: string } {
-  if (pct < 50) return { text: 'text-green-600', bg: 'bg-green-100 dark:bg-green-900/30', label: 'Diversified' }
-  if (pct < 80) return { text: 'text-amber-600', bg: 'bg-amber-100 dark:bg-amber-900/30', label: 'Concentrated' }
-  return { text: 'text-red-600', bg: 'bg-red-100 dark:bg-red-900/30', label: 'Highly Concentrated' }
+// Concentration color helper — returns inline color string for CSS module icon coloring
+function getConcentrationColor(pct: number): string {
+  if (pct < 50) return '#16a34a'
+  if (pct < 80) return '#d97706'
+  return '#dc2626'
 }
 
 export function RevealStep({
@@ -153,7 +152,6 @@ export function RevealStep({
 
   const totals = calculateWizardTotals(data, businessInfo)
 
-  // Auto-save on mount
   useEffect(() => {
     if (!hasSavedRef.current) {
       hasSavedRef.current = true
@@ -161,17 +159,12 @@ export function RevealStep({
     }
   }, [onSave])
 
-  // Animation timeline
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = []
 
-    // T=1500ms: Show the reveal
     timers.push(setTimeout(() => setPhase('reveal'), 1500))
-
-    // T=3500ms: Show insight cards
     timers.push(setTimeout(() => setPhase('insights'), 3500))
 
-    // T=2500ms: Confetti if net worth > $500K
     if (totals.netWorth > 500000) {
       timers.push(setTimeout(() => setShowConfetti(true), 2500))
     }
@@ -179,7 +172,6 @@ export function RevealStep({
     return () => timers.forEach(clearTimeout)
   }, [totals.netWorth])
 
-  // Build insight cards
   const insightCards = useCallback(() => {
     const cards: Array<{
       icon: typeof TrendingUp
@@ -189,9 +181,8 @@ export function RevealStep({
       color: string
     }> = []
 
-    // Card 1: Business Concentration (only if business info exists)
     if (businessInfo && totals.businessValue > 0) {
-      const conc = getConcentrationColor(totals.businessConcentration)
+      const concColor = getConcentrationColor(totals.businessConcentration)
       cards.push({
         icon: Shield,
         title: 'Business Concentration',
@@ -199,25 +190,23 @@ export function RevealStep({
         detail: totals.businessConcentration > 50
           ? 'The average diversified investor has less than 5% in any single asset.'
           : 'You have good diversification beyond your business.',
-        color: conc.text,
+        color: concColor,
       })
     }
 
-    // Card 2: After-Tax Preview (only if business value exists)
     if (businessInfo && totals.businessValue > 0) {
       cards.push({
         icon: TrendingUp,
         title: 'After-Tax Preview',
         value: `${formatCurrency(totals.businessValue)} becomes ~${formatCurrency(totals.afterTaxBusinessValue)}`,
         detail: 'Estimated after 25% capital gains tax. Your actual rate depends on structure, state, and timing.',
-        color: 'text-blue-600',
+        color: '#2563eb',
       })
     }
 
-    // Card 3: Retirement Funds (always show)
     if (totals.totalRetirement > 0) {
       const retirementYears = data.currentAge
-        ? Math.round(totals.totalRetirement / 80000) // Rough $80K/year spending
+        ? Math.round(totals.totalRetirement / 80000)
         : null
       cards.push({
         icon: Clock,
@@ -226,18 +215,17 @@ export function RevealStep({
         detail: retirementYears
           ? `Your retirement savings alone could fund roughly ${retirementYears} year${retirementYears !== 1 ? 's' : ''} of a moderate lifestyle.`
           : 'Complete your retirement profile for personalized projections.',
-        color: totals.totalRetirement > 200000 ? 'text-green-600' : 'text-amber-600',
+        color: totals.totalRetirement > 200000 ? '#16a34a' : '#d97706',
       })
     }
 
-    // If no cards yet, show a general one
     if (cards.length === 0) {
       cards.push({
         icon: TrendingUp,
         title: 'Your Starting Point',
         value: formatCurrency(totals.netWorth),
         detail: 'Complete your business assessment to see how your business contributes to your total picture.',
-        color: 'text-primary',
+        color: 'var(--accent)',
       })
     }
 
@@ -245,7 +233,7 @@ export function RevealStep({
   }, [totals, businessInfo, data.currentAge])
 
   return (
-    <div className="space-y-6">
+    <div className={styles.pfsReveal}>
       {showConfetti && <ConfettiBurst />}
 
       <AnimatePresence mode="wait">
@@ -256,17 +244,17 @@ export function RevealStep({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-center py-16"
+            className={styles.pfsRevealLoading}
           >
             <motion.div
               animate={{ scale: [1, 1.05, 1] }}
               transition={{ duration: 1.5, repeat: Infinity }}
             >
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <Loader2 className="h-8 w-8 text-primary animate-spin" />
+              <div className={styles.pfsRevealLoadingIcon}>
+                <Loader2 style={{ width: 32, height: 32, color: 'var(--accent)' }} className="animate-spin" />
               </div>
             </motion.div>
-            <p className="text-muted-foreground font-medium">
+            <p className={styles.pfsRevealLoadingText}>
               Calculating your financial picture
               <motion.span
                 animate={{ opacity: [0, 1, 0] }}
@@ -292,16 +280,14 @@ export function RevealStep({
             }}
           >
             {/* Net Worth Card */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-900 p-8 text-center mb-6">
-              {/* Decorative glow */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent" />
-
-              <div className="relative">
+            <div className={styles.pfsRevealHero}>
+              <div className={styles.pfsRevealHeroGlow} />
+              <div className={styles.pfsRevealHeroInner}>
                 <motion.p
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-2"
+                  className={styles.pfsRevealLabel}
                 >
                   Your Net Worth
                 </motion.p>
@@ -310,9 +296,7 @@ export function RevealStep({
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
-                  className={`text-5xl sm:text-6xl font-bold font-display ${
-                    totals.netWorth >= 0 ? 'text-white' : 'text-red-400'
-                  }`}
+                  className={totals.netWorth >= 0 ? styles.pfsRevealNetWorth : `${styles.pfsRevealNetWorth} ${styles.pfsRevealNetWorthNegative}`}
                 >
                   <AnimatedCounter
                     target={totals.netWorth}
@@ -326,7 +310,7 @@ export function RevealStep({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1.5 }}
-                    className="text-sm text-gray-400 mt-3"
+                    className={styles.pfsRevealSub}
                   >
                     Including {formatCurrency(totals.businessValue)} in{' '}
                     {businessInfo.companyName}
@@ -338,7 +322,7 @@ export function RevealStep({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 2 }}
-                    className="text-sm text-gray-400 mt-2"
+                    className={styles.pfsRevealSub}
                   >
                     Many successful founders carry strategic debt while building value.
                   </motion.p>
@@ -351,25 +335,26 @@ export function RevealStep({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.8 }}
-              className="grid grid-cols-3 gap-3 mb-6"
+              className={styles.pfsBreakdownGrid}
+              style={{ marginTop: 16, marginBottom: 16 }}
             >
-              <div className="text-center p-3 rounded-xl bg-card border border-border">
-                <p className="text-xs text-muted-foreground mb-1">Personal Assets</p>
-                <p className="text-sm font-semibold text-green-600">
+              <div className={styles.pfsBreakdownItem}>
+                <p className={styles.pfsBreakdownLabel}>Personal Assets</p>
+                <p className={`${styles.pfsBreakdownValue} ${styles.pfsBreakdownValueGreen}`}>
                   {formatCurrency(totals.totalPersonalAssets)}
                 </p>
               </div>
               {businessInfo && totals.businessValue > 0 && (
-                <div className="text-center p-3 rounded-xl bg-card border border-border">
-                  <p className="text-xs text-muted-foreground mb-1">Business Value</p>
-                  <p className="text-sm font-semibold text-primary">
+                <div className={styles.pfsBreakdownItem}>
+                  <p className={styles.pfsBreakdownLabel}>Business Value</p>
+                  <p className={`${styles.pfsBreakdownValue} ${styles.pfsBreakdownValuePrimary}`}>
                     {formatCurrency(totals.businessValue)}
                   </p>
                 </div>
               )}
-              <div className="text-center p-3 rounded-xl bg-card border border-border">
-                <p className="text-xs text-muted-foreground mb-1">Liabilities</p>
-                <p className="text-sm font-semibold text-red-500">
+              <div className={styles.pfsBreakdownItem}>
+                <p className={styles.pfsBreakdownLabel}>Liabilities</p>
+                <p className={`${styles.pfsBreakdownValue} ${styles.pfsBreakdownValueRed}`}>
                   {totals.totalLiabilities > 0
                     ? `(${formatCurrency(totals.totalLiabilities)})`
                     : formatCurrency(0)}
@@ -383,7 +368,7 @@ export function RevealStep({
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="space-y-3 mb-8"
+                  className={styles.pfsInsightCards}
                 >
                   {insightCards().map((card, index) => {
                     const Icon = card.icon
@@ -393,22 +378,18 @@ export function RevealStep({
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.3 }}
-                        className="p-4 rounded-xl border border-border bg-card"
+                        className={styles.pfsInsightCard}
                       >
-                        <div className="flex items-start gap-3">
-                          <div className={`p-2 rounded-lg bg-muted ${card.color}`}>
-                            <Icon className="h-4 w-4" />
+                        <div className={styles.pfsInsightCardInner}>
+                          <div className={styles.pfsInsightIcon}>
+                            <Icon style={{ width: 16, height: 16, color: card.color }} />
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-foreground">
-                              {card.title}
-                            </p>
-                            <p className={`text-sm font-semibold ${card.color} mt-0.5`}>
+                          <div className={styles.pfsInsightBody}>
+                            <p className={styles.pfsInsightTitle}>{card.title}</p>
+                            <p className={styles.pfsInsightValue} style={{ color: card.color }}>
                               {card.value}
                             </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {card.detail}
-                            </p>
+                            <p className={styles.pfsInsightDetail}>{card.detail}</p>
                           </div>
                         </div>
                       </motion.div>
@@ -423,10 +404,10 @@ export function RevealStep({
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20"
+                className={styles.pfsRevealError}
               >
-                <div className="flex items-center gap-2 text-sm text-destructive">
-                  <AlertTriangle className="h-4 w-4" />
+                <div className={styles.pfsRevealErrorInner}>
+                  <AlertTriangle style={{ width: 16, height: 16, flexShrink: 0 }} />
                   <span>{saveError}</span>
                   <Button
                     variant="ghost"
@@ -447,7 +428,7 @@ export function RevealStep({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1 }}
-                className="space-y-3"
+                style={{ display: 'flex', flexDirection: 'column', gap: 12 }}
               >
                 <Button
                   onClick={onViewPFS}

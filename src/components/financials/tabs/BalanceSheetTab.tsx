@@ -10,6 +10,7 @@ import {
   Landmark,
   Users,
 } from 'lucide-react'
+import styles from '@/components/financials/financials-pages.module.css'
 
 interface BalanceSheetTabProps {
   companyId: string
@@ -28,6 +29,14 @@ const parseInputValue = (value: string) => {
   return parseFloat(cleaned) || 0
 }
 
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value)
+
 // InputField moved outside component to prevent focus loss on re-render
 function InputField({
   id,
@@ -44,22 +53,22 @@ function InputField({
 }) {
   return (
     <div>
-      <Label htmlFor={id} className="text-sm font-medium text-gray-700">
+      <Label htmlFor={id} className={styles.stmtFieldLabel}>
         {label}
       </Label>
-      <div className="relative mt-1.5">
-        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">$</span>
+      <div className={styles.stmtInputWrap}>
+        <span className={styles.stmtInputPrefix}>$</span>
         <Input
           id={id}
           type="text"
           inputMode="numeric"
           value={formatInputValue(value)}
           onChange={(e) => onChange(parseInputValue(e.target.value))}
-          className="pl-8 h-11 font-medium bg-gray-50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+          className="pl-8 h-11 font-medium"
           placeholder="0"
         />
       </div>
-      {hint && <p className="text-xs text-gray-500 mt-1">{hint}</p>}
+      {hint && <p className={styles.stmtInputHint}>{hint}</p>}
     </div>
   )
 }
@@ -67,21 +76,23 @@ function InputField({
 function SectionHeader({
   icon: Icon,
   title,
-  color,
+  colorClass,
 }: {
   icon: React.ComponentType<{ className?: string }>
   title: string
-  color: string
+  colorClass: string
 }) {
   return (
-    <div className="flex items-center gap-3">
-      <div className={`flex items-center justify-center w-8 h-8 rounded-full ${color}`}>
+    <div className={styles.stmtSectionHead}>
+      <div className={`${styles.stmtIconBadge} ${colorClass}`}>
         <Icon className="h-4 w-4" />
       </div>
-      <h3 className="font-semibold text-gray-900">{title}</h3>
+      <h3 className={styles.stmtSectionLabel}>{title}</h3>
     </div>
   )
 }
+
+type TotalRowVariant = 'default' | 'primary' | 'success' | 'error'
 
 function TotalRow({
   label,
@@ -90,56 +101,50 @@ function TotalRow({
 }: {
   label: string
   value: number
-  variant?: 'default' | 'primary' | 'success' | 'error'
+  variant?: TotalRowVariant
 }) {
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(val)
-  }
+  const rowClass = {
+    default: styles.stmtTotalRow,
+    primary: `${styles.stmtTotalRow} ${styles.stmtTotalRowPrimary}`,
+    success: `${styles.stmtTotalRow} ${styles.stmtTotalRowSuccess}`,
+    error: `${styles.stmtTotalRow} ${styles.stmtTotalRowError}`,
+  }[variant]
 
-  const colors = {
-    default: 'bg-gray-50 text-gray-900',
-    primary: 'bg-blue-50 text-blue-700',
-    success: 'bg-emerald-50 text-emerald-700',
-    error: 'bg-red-50 text-red-700',
-  }
+  const valueClass = {
+    default: styles.stmtTotalRowValue,
+    primary: `${styles.stmtTotalRowValue} ${styles.stmtTotalRowValuePrimary}`,
+    success: `${styles.stmtTotalRowValue} ${styles.stmtTotalRowValueSuccess}`,
+    error: `${styles.stmtTotalRowValue} ${styles.stmtTotalRowValueError}`,
+  }[variant]
+
   return (
-    <div className={`flex justify-between items-center px-4 py-3 rounded-lg ${colors[variant]}`}>
-      <span className="font-medium">{label}</span>
-      <span className="font-bold text-lg">{formatCurrency(value)}</span>
+    <div className={rowClass}>
+      <span className={styles.stmtTotalRowLabel}>{label}</span>
+      <span className={valueClass}>{formatCurrency(value)}</span>
     </div>
   )
 }
 
-// BalanceSheet interface reserved for type checking API responses
+// BalanceSheet interface reserved for type-checking API responses
 interface _BalanceSheet {
   id: string
   periodId: string
-  // Current Assets
   cash: number
   accountsReceivable: number
   inventory: number
   prepaidExpenses: number
   otherCurrentAssets: number
-  // Long-term Assets
   ppeGross: number
   accumulatedDepreciation: number
   intangibleAssets: number
   otherLongTermAssets: number
-  // Current Liabilities
   accountsPayable: number
   accruedExpenses: number
   currentPortionLtd: number
   otherCurrentLiabilities: number
-  // Long-term Liabilities
   longTermDebt: number
   deferredTaxLiabilities: number
   otherLongTermLiabilities: number
-  // Equity
   retainedEarnings: number
   ownersEquity: number
 }
@@ -148,7 +153,6 @@ export function BalanceSheetTab({ companyId, periodId, onDirty }: BalanceSheetTa
   const [isLoading, setIsLoading] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
 
-  // Store callback in ref
   const onDirtyRef = useRef(onDirty)
   onDirtyRef.current = onDirty
 
@@ -191,8 +195,6 @@ export function BalanceSheetTab({ companyId, periodId, onDirty }: BalanceSheetTa
   const totalLiabilities = totalCurrentLiabilities + totalLongTermLiabilities
 
   const totalEquity = retainedEarnings + ownersEquity
-
-  // Balance check
   const isBalanced = Math.abs(totalAssets - (totalLiabilities + totalEquity)) < 0.01
 
   const fetchBalanceSheet = useCallback(async () => {
@@ -288,130 +290,118 @@ export function BalanceSheetTab({ companyId, periodId, onDirty }: BalanceSheetTa
     retainedEarnings, ownersEquity
   ])
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value)
-  }
-
   if (isLoading) {
     return (
-      <div className="flex justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className={styles.stmtTabLoading}>
+        <div className={styles.stmtSpinner} />
       </div>
     )
   }
 
   return (
-    <div className="space-y-8">
+    <div className={styles.stmtSection} style={{ gap: '32px' }}>
+
       {/* Current Assets */}
-      <div className="space-y-4">
-        <SectionHeader icon={Wallet} title="Current Assets" color="bg-emerald-100 text-emerald-600" />
-        <div className="ml-11 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className={styles.stmtSection}>
+        <SectionHeader icon={Wallet} title="Current Assets" colorClass={styles.stmtIconBadgeGreen} />
+        <div className={`${styles.stmtSectionIndent} ${styles.stmtFieldGrid}`}>
           <InputField id="cash" label="Cash & Equivalents" value={cash} onChange={setCash} />
           <InputField id="ar" label="Accounts Receivable" value={accountsReceivable} onChange={setAccountsReceivable} />
           <InputField id="inventory" label="Inventory" value={inventory} onChange={setInventory} />
           <InputField id="prepaid" label="Prepaid Expenses" value={prepaidExpenses} onChange={setPrepaidExpenses} />
           <InputField id="otherCurrent" label="Other Current Assets" value={otherCurrentAssets} onChange={setOtherCurrentAssets} />
         </div>
-        <div className="ml-11">
+        <div className={styles.stmtSectionIndent}>
           <TotalRow label="Total Current Assets" value={totalCurrentAssets} variant="success" />
         </div>
       </div>
 
       {/* Long-term Assets */}
-      <div className="space-y-4">
-        <SectionHeader icon={Building2} title="Long-term Assets" color="bg-blue-100 text-blue-600" />
-        <div className="ml-11 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className={styles.stmtSection}>
+        <SectionHeader icon={Building2} title="Long-term Assets" colorClass={styles.stmtIconBadgeBlue} />
+        <div className={`${styles.stmtSectionIndent} ${styles.stmtFieldGrid}`}>
           <InputField id="ppeGross" label="PP&E (Gross)" value={ppeGross} onChange={setPpeGross} />
           <InputField id="accumDepr" label="Accumulated Depreciation" value={accumulatedDepreciation} onChange={setAccumulatedDepreciation} hint="Enter as positive number" />
           <InputField id="intangible" label="Intangible Assets" value={intangibleAssets} onChange={setIntangibleAssets} />
           <InputField id="otherLTA" label="Other Long-term Assets" value={otherLongTermAssets} onChange={setOtherLongTermAssets} />
         </div>
-        <div className="ml-11 space-y-2">
-          <div className="flex justify-between items-center px-4 py-2 text-sm text-gray-600">
+        <div className={styles.stmtSectionIndent} style={{ gap: '8px' }}>
+          <div className={styles.stmtNetPPERow}>
             <span>Net PP&E</span>
-            <span className="font-medium">{formatCurrency(netPPE)}</span>
+            <span className={styles.stmtNetPPEValue}>{formatCurrency(netPPE)}</span>
           </div>
           <TotalRow label="Total Long-term Assets" value={totalLongTermAssets} variant="primary" />
         </div>
       </div>
 
       {/* Total Assets */}
-      <div className="ml-11">
+      <div className={styles.stmtSectionIndent}>
         <TotalRow label="Total Assets" value={totalAssets} variant="primary" />
       </div>
 
-      <hr className="border-gray-200" />
+      <hr className={styles.stmtSectionDivider} />
 
       {/* Current Liabilities */}
-      <div className="space-y-4">
-        <SectionHeader icon={CreditCard} title="Current Liabilities" color="bg-orange-100 text-orange-600" />
-        <div className="ml-11 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className={styles.stmtSection}>
+        <SectionHeader icon={CreditCard} title="Current Liabilities" colorClass={styles.stmtIconBadgeOrange} />
+        <div className={`${styles.stmtSectionIndent} ${styles.stmtFieldGrid}`}>
           <InputField id="ap" label="Accounts Payable" value={accountsPayable} onChange={setAccountsPayable} />
           <InputField id="accrued" label="Accrued Expenses" value={accruedExpenses} onChange={setAccruedExpenses} />
           <InputField id="currentLtd" label="Current Portion of LTD" value={currentPortionLtd} onChange={setCurrentPortionLtd} />
           <InputField id="otherCL" label="Other Current Liabilities" value={otherCurrentLiabilities} onChange={setOtherCurrentLiabilities} />
         </div>
-        <div className="ml-11">
+        <div className={styles.stmtSectionIndent}>
           <TotalRow label="Total Current Liabilities" value={totalCurrentLiabilities} />
         </div>
       </div>
 
       {/* Long-term Liabilities */}
-      <div className="space-y-4">
-        <SectionHeader icon={Landmark} title="Long-term Liabilities" color="bg-purple-100 text-purple-600" />
-        <div className="ml-11 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className={styles.stmtSection}>
+        <SectionHeader icon={Landmark} title="Long-term Liabilities" colorClass={styles.stmtIconBadgeGray} />
+        <div className={`${styles.stmtSectionIndent} ${styles.stmtFieldGrid}`}>
           <InputField id="longTermDebt" label="Long-term Debt" value={longTermDebt} onChange={setLongTermDebt} />
           <InputField id="deferredTax" label="Deferred Tax Liabilities" value={deferredTaxLiabilities} onChange={setDeferredTaxLiabilities} />
           <InputField id="otherLTL" label="Other Long-term Liabilities" value={otherLongTermLiabilities} onChange={setOtherLongTermLiabilities} />
         </div>
-        <div className="ml-11">
+        <div className={styles.stmtSectionIndent}>
           <TotalRow label="Total Long-term Liabilities" value={totalLongTermLiabilities} />
         </div>
       </div>
 
       {/* Total Liabilities */}
-      <div className="ml-11">
+      <div className={styles.stmtSectionIndent}>
         <TotalRow label="Total Liabilities" value={totalLiabilities} />
       </div>
 
-      <hr className="border-gray-200" />
+      <hr className={styles.stmtSectionDivider} />
 
       {/* Equity */}
-      <div className="space-y-4">
-        <SectionHeader icon={Users} title="Shareholders' Equity" color="bg-indigo-100 text-indigo-600" />
-        <div className="ml-11 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className={styles.stmtSection}>
+        <SectionHeader icon={Users} title="Shareholders' Equity" colorClass={styles.stmtIconBadgeBlue} />
+        <div className={`${styles.stmtSectionIndent} ${styles.stmtFieldGrid}`}>
           <InputField id="retainedEarnings" label="Retained Earnings" value={retainedEarnings} onChange={setRetainedEarnings} />
           <InputField id="ownersEquity" label="Owner's Equity / Common Stock" value={ownersEquity} onChange={setOwnersEquity} />
         </div>
-        <div className="ml-11">
+        <div className={styles.stmtSectionIndent}>
           <TotalRow label="Total Equity" value={totalEquity} variant="success" />
         </div>
       </div>
 
       {/* Balance Check */}
-      <div className="ml-11">
-        <div className={`flex justify-between items-center px-4 py-4 rounded-lg border-2 ${
-          isBalanced ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'
-        }`}>
+      <div className={styles.stmtSectionIndent}>
+        <div className={`${styles.stmtBalanceCheck} ${isBalanced ? styles.stmtBalanceCheckOk : styles.stmtBalanceCheckErr}`}>
           <div>
-            <span className={`font-semibold ${isBalanced ? 'text-emerald-700' : 'text-red-700'}`}>
+            <p className={`${styles.stmtBalanceCheckTitle} ${isBalanced ? styles.stmtBalanceCheckTitleOk : styles.stmtBalanceCheckTitleErr}`}>
               Balance Check
-            </span>
-            <p className="text-sm text-gray-600 mt-0.5">
-              Assets = Liabilities + Equity
             </p>
+            <p className={styles.stmtBalanceCheckSubtitle}>Assets = Liabilities + Equity</p>
           </div>
-          <div className="text-right">
-            <span className={`font-bold text-lg ${isBalanced ? 'text-emerald-700' : 'text-red-700'}`}>
+          <div className={styles.stmtBalanceCheckResult}>
+            <p className={`${styles.stmtBalanceCheckStatus} ${isBalanced ? styles.stmtBalanceCheckStatusOk : styles.stmtBalanceCheckStatusErr}`}>
               {isBalanced ? 'Balanced' : 'Unbalanced'}
-            </span>
+            </p>
             {!isBalanced && (
-              <p className="text-sm text-red-600">
+              <p className={styles.stmtBalanceCheckDiff}>
                 Difference: {formatCurrency(totalAssets - (totalLiabilities + totalEquity))}
               </p>
             )}

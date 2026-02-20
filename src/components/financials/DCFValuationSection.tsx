@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import {
   Table,
   TableBody,
@@ -11,8 +9,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
 import { Settings, TrendingUp, AlertCircle } from 'lucide-react'
 import { WACCModal } from './WACCModal'
+import styles from '@/components/valuation/valuation-pages.module.css'
 
 interface DCFData {
   wacc: number | null
@@ -93,13 +93,9 @@ export function DCFValuationSection({ companyId }: DCFValuationSectionProps) {
 
   if (loading) {
     return (
-      <Card>
-        <CardContent className="py-8">
-          <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
-          </div>
-        </CardContent>
-      </Card>
+      <div className={styles.dcfValLoadCard}>
+        <div className={styles.dcfValLoadCardSpinner} />
+      </div>
     )
   }
 
@@ -107,32 +103,33 @@ export function DCFValuationSection({ companyId }: DCFValuationSectionProps) {
   if (!hasAssumptions) {
     return (
       <>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              DCF Valuation
-            </CardTitle>
-            <CardDescription>
-              Discounted Cash Flow analysis for your company
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-8">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 mb-4">
-                <AlertCircle className="h-6 w-6 text-blue-600" />
+        <div className={styles.dcfValSectionCard}>
+          <div className={styles.dcfValSectionHeader}>
+            <div>
+              <div className={styles.dcfValSectionTitleRow}>
+                <TrendingUp />
+                DCF Valuation
               </div>
-              <h3 className="font-medium text-gray-900 mb-2">Configure WACC Variables</h3>
-              <p className="text-sm text-gray-500 max-w-md mx-auto mb-4">
-                Set up your Weighted Average Cost of Capital (WACC) assumptions to calculate DCF valuation.
+              <p className={styles.dcfValSectionDesc}>
+                Discounted Cash Flow analysis for your company
               </p>
-              <Button onClick={() => setShowWACCModal(true)}>
-                <Settings className="mr-2 h-4 w-4" />
-                Configure WACC
-              </Button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+
+          <div className={styles.dcfValConfigureState}>
+            <div className={styles.dcfValConfigureIcon}>
+              <AlertCircle />
+            </div>
+            <p className={styles.dcfValConfigureTitle}>Configure WACC Variables</p>
+            <p className={styles.dcfValConfigureDesc}>
+              Set up your Weighted Average Cost of Capital (WACC) assumptions to calculate DCF valuation.
+            </p>
+            <Button onClick={() => setShowWACCModal(true)}>
+              <Settings className="mr-2 h-4 w-4" />
+              Configure WACC
+            </Button>
+          </div>
+        </div>
 
         <WACCModal
           open={showWACCModal}
@@ -146,42 +143,41 @@ export function DCFValuationSection({ companyId }: DCFValuationSectionProps) {
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                DCF Valuation
-              </CardTitle>
-              <CardDescription>
-                Discounted Cash Flow analysis based on your WACC assumptions
-              </CardDescription>
+      <div className={styles.dcfValSectionCard}>
+        <div className={styles.dcfValSectionHeader}>
+          <div>
+            <div className={styles.dcfValSectionTitleRow}>
+              <TrendingUp />
+              DCF Valuation
             </div>
-            <Button variant="outline" size="sm" onClick={() => setShowWACCModal(true)}>
-              <Settings className="mr-2 h-4 w-4" />
-              Edit WACC
-            </Button>
+            <p className={styles.dcfValSectionDesc}>
+              Discounted Cash Flow analysis based on your WACC assumptions
+            </p>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 rounded-lg bg-blue-50 border border-blue-100">
-              <p className="text-sm font-medium text-blue-600 mb-1">Enterprise Value</p>
-              <p className="text-2xl font-bold text-blue-900">
+          <Button variant="outline" size="sm" onClick={() => setShowWACCModal(true)}>
+            <Settings className="mr-2 h-4 w-4" />
+            Edit WACC
+          </Button>
+        </div>
+
+        <div className={styles.dcfValSectionContent}>
+          {/* Summary metric tiles */}
+          <div className={styles.dcfValMetricGrid}>
+            <div className={`${styles.dcfValMetric} ${styles.blue}`}>
+              <p className={styles.dcfValMetricLabel}>Enterprise Value</p>
+              <p className={styles.dcfValMetricValue}>
                 {formatCurrency(dcfData?.enterpriseValue)}
               </p>
             </div>
-            <div className="p-4 rounded-lg bg-green-50 border border-green-100">
-              <p className="text-sm font-medium text-green-600 mb-1">Equity Value</p>
-              <p className="text-2xl font-bold text-green-900">
+            <div className={`${styles.dcfValMetric} ${styles.green}`}>
+              <p className={styles.dcfValMetricLabel}>Equity Value</p>
+              <p className={styles.dcfValMetricValue}>
                 {formatCurrency(dcfData?.equityValue)}
               </p>
             </div>
-            <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
-              <p className="text-sm font-medium text-gray-600 mb-1">WACC</p>
-              <p className="text-2xl font-bold text-gray-900">
+            <div className={styles.dcfValMetric}>
+              <p className={styles.dcfValMetricLabel}>WACC</p>
+              <p className={styles.dcfValMetricValue}>
                 {formatPercent(dcfData?.wacc)}
               </p>
             </div>
@@ -190,11 +186,11 @@ export function DCFValuationSection({ companyId }: DCFValuationSectionProps) {
           {/* Discounted Cash Flow Table */}
           {dcfData?.projections && dcfData.projections.length > 0 && (
             <div>
-              <h4 className="font-medium text-gray-900 mb-3">Discounted Cash Flows</h4>
-              <div className="border rounded-lg overflow-hidden">
+              <p className={styles.dcfValTableTitle}>Discounted Cash Flows</p>
+              <div className={styles.dcfValTableWrap}>
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-gray-50">
+                    <TableRow>
                       <TableHead>Year</TableHead>
                       <TableHead className="text-right">FCF</TableHead>
                       <TableHead className="text-right">Discount Factor</TableHead>
@@ -217,9 +213,9 @@ export function DCFValuationSection({ companyId }: DCFValuationSectionProps) {
                       </TableRow>
                     ))}
                     {dcfData.terminalValuePV && (
-                      <TableRow className="bg-gray-50 font-medium">
-                        <TableCell colSpan={3}>Terminal Value (PV)</TableCell>
-                        <TableCell className="text-right tabular-nums">
+                      <TableRow>
+                        <TableCell colSpan={3} className="font-medium">Terminal Value (PV)</TableCell>
+                        <TableCell className="text-right tabular-nums font-medium">
                           {formatCurrency(dcfData.terminalValuePV)}
                         </TableCell>
                       </TableRow>
@@ -229,8 +225,8 @@ export function DCFValuationSection({ companyId }: DCFValuationSectionProps) {
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <WACCModal
         open={showWACCModal}
