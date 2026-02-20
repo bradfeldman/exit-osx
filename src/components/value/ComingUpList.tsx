@@ -47,7 +47,7 @@ export function ComingUpList({ tasks }: ComingUpListProps) {
           <div
             key={task.id}
             className="flex items-center py-2 text-sm cursor-pointer hover:text-foreground transition-colors"
-            onClick={() => router.push('/dashboard/actions')}
+            onClick={() => router.push('/dashboard/action-center')}
           >
             <span className={`w-2 h-2 rounded-full ${impact.color} flex-shrink-0 mr-2.5`} />
             <span className="text-muted-foreground flex-1 min-w-0 truncate">

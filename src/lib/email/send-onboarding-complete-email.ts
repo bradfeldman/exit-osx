@@ -226,7 +226,7 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
                     <table role="presentation" cellspacing="0" cellpadding="0">
                       <tr>
                         <td style="border-radius: 8px; background-color: #B87333;">
-                          <a href="${baseUrl}/dashboard/actions" target="_blank" style="display: inline-block; padding: 14px 32px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
+                          <a href="${baseUrl}/dashboard/action-center" target="_blank" style="display: inline-block; padding: 14px 32px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
                             Start This Task
                           </a>
                         </td>
@@ -243,7 +243,7 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
               <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
                 <tr>
                   <td style="border-radius: 8px; background-color: #B87333;">
-                    <a href="${baseUrl}/dashboard/actions" target="_blank" style="display: inline-block; padding: 16px 48px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
+                    <a href="${baseUrl}/dashboard/action-center" target="_blank" style="display: inline-block; padding: 16px 48px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
                       View Your Action Plan
                     </a>
                   </td>

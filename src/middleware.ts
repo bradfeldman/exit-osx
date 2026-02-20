@@ -167,8 +167,8 @@ export async function middleware(request: NextRequest) {
 
   // PROD-025: Redirect legacy routes to their new locations
   const legacyRedirects: Record<string, string> = {
-    '/dashboard/playbook': '/dashboard/actions',
-    '/dashboard/action-plan': '/dashboard/actions',
+    '/dashboard/playbook': '/dashboard/action-center',
+    '/dashboard/action-plan': '/dashboard/action-center',
     '/dashboard/data-room': '/dashboard/evidence',
     '/dashboard/contacts': '/dashboard/deal-room',
   }

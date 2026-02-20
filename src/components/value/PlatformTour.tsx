@@ -275,7 +275,7 @@ export function PlatformTour({ open, onComplete }: PlatformTourProps) {
       analytics.track('tour_completed', { stepsViewed: currentStep + 1 })
       await completeTour()
       onComplete()
-      router.push('/dashboard/actions')
+      router.push('/dashboard/action-center')
     } else {
       setCurrentStep((s) => s + 1)
     }

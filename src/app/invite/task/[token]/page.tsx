@@ -98,7 +98,7 @@ export default function TaskInvitePage() {
 
       const data = await res.json()
       // Route to the Actions page with the task highlighted
-      router.push(`/dashboard/actions?company=${data.companyId}&taskId=${data.taskId}`)
+      router.push(`/dashboard/action-center?company=${data.companyId}&taskId=${data.taskId}`)
     } catch {
       setError('Failed to accept invite')
     } finally {

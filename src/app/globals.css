@@ -51,6 +51,10 @@
   --color-orange-light: var(--orange-light);
   --color-red: var(--red);
   --color-red-light: var(--red-light);
+  --color-purple: var(--purple);
+  --color-purple-light: var(--purple-light);
+  --color-teal: var(--teal);
+  --color-teal-light: var(--teal-light);
   --color-accent-light: var(--accent-light);
   /* Radius scale: 8px / 12px / 16px / 20px / 24px */
   --radius-sm: 8px;
@@ -104,6 +108,10 @@
   --orange-light: #FFF6E8;
   --red: #FF3B30;
   --red-light: #FFEBEA;
+  --purple: #AF52DE;
+  --purple-light: #F5EDFB;
+  --teal: #5AC8FA;
+  --teal-light: #EAF8FE;
 
   /* Text hierarchy */
   --text-primary: #1D1D1F;
@@ -165,6 +173,10 @@
   --orange-light: #2D2410;
   --red: #FF6B6B;
   --red-light: #2D1A1A;
+  --purple: #BF6DFF;
+  --purple-light: #2A1D33;
+  --teal: #6DD5FA;
+  --teal-light: #1A2D33;
   --text-primary: #F5F5F7;
   --text-secondary: #AEAEB2;
   --text-tertiary: #6E6E73;

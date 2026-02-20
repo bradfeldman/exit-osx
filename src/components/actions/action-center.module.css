@@ -241,7 +241,7 @@
 .signalTimeline { position: relative; margin-bottom: 28px; }
 .signalDateHeader {
   font-size: 13px; font-weight: 700; color: var(--text-tertiary);
-  padding: 12px 0 8px; position: sticky; top: 0; background: var(--bg); z-index: 2;
+  padding: 12px 0 8px; position: sticky; top: 0; background: var(--background); z-index: 2;
 }
 .signalCard {
   background: var(--surface); border-radius: var(--radius);

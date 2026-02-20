@@ -151,7 +151,7 @@ function ActionIcon({ type }: { type: string }) {
 export default function ReportsPage() {
   return (
     <>
-      <TrackPageView pageName="reports" />
+      <TrackPageView page="reports" />
 
       {/* Header */}
       <div className={styles.pageHeader}>

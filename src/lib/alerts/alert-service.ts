@@ -373,7 +373,7 @@ export async function createActionPlanUpdatedAlert(
     type: 'ACTION_PLAN_UPDATED',
     title: 'Action Plan Updated',
     message: `${tasksUpdated} task${tasksUpdated === 1 ? '' : 's'} in ${companyName} updated with your latest financials`,
-    actionUrl: '/dashboard/actions',
+    actionUrl: '/dashboard/action-center',
     metadata: { companyName, tasksUpdated },
   })
 }

@@ -559,7 +559,7 @@ export default function DealRoomPage() {
               {isActivating ? 'Activating...' : 'Activate Deal Room'}
             </button>
           ) : (
-            <Link href="/dashboard/actions" className={`${styles.btn} ${styles.btnPrimary}`}>
+            <Link href="/dashboard/action-center" className={`${styles.btn} ${styles.btnPrimary}`}>
               View Action Center
             </Link>
           )}

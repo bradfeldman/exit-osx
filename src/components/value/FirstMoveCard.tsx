@@ -92,7 +92,7 @@ export function FirstMoveCard({ task, onStart }: FirstMoveCardProps) {
             <ArrowRight className="w-4 h-4" />
           </button>
           <Link
-            href="/dashboard/actions"
+            href="/dashboard/action-center"
             className="text-sm font-medium transition-colors"
             style={{ color: 'var(--text-secondary, #6E6E73)' }}
           >

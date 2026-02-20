@@ -182,7 +182,7 @@ export default function AdvisorClientPage() {
       title: 'Action Plan',
       description: 'View assigned tasks',
       icon: TrendingUp,
-      href: `/dashboard/actions?company=${companyId}`,
+      href: `/dashboard/action-center?company=${companyId}`,
       enabled: hasPermission('playbook.tasks:view'),
     },
     {

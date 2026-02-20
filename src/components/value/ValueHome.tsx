@@ -31,7 +31,6 @@ import type { CoreFactors } from '@/lib/valuation/calculate-valuation'
 const ValueTimeline = dynamic(() => import('./ValueTimeline').then(m => ({ default: m.ValueTimeline })), { ssr: false })
 const WhatIfScenarios = dynamic(() => import('./WhatIfScenarios').then(m => ({ default: m.WhatIfScenarios })), { ssr: false })
 const ProceedsWaterfall = dynamic(() => import('./ProceedsWaterfall').then(m => ({ default: m.ProceedsWaterfall })), { ssr: false })
-const ValueLedgerSection = dynamic(() => import('@/components/value-ledger/ValueLedgerSection').then(m => ({ default: m.ValueLedgerSection })), { ssr: false })
 const DriftReportBanner = dynamic(() => import('@/components/drift-report/DriftReportBanner').then(m => ({ default: m.DriftReportBanner })), { ssr: false })
 
 interface DashboardData {
@@ -376,11 +375,6 @@ export function ValueHome() {
             valueGap={tier1?.valueGap ?? 0}
             valueGapDelta={data.valueGapDelta}
           />
-        </AnimatedItem>
-
-        {/* Value Ledger Summary */}
-        <AnimatedItem>
-          <ValueLedgerSection />
         </AnimatedItem>
 
         {/* Drift Report Banner */}

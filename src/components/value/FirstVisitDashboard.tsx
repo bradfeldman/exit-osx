@@ -139,7 +139,7 @@ export function FirstVisitDashboard({
             {quickWins.map((win) => (
               <Link
                 key={win.id}
-                href={`/dashboard/actions?task=${win.id}`}
+                href={`/dashboard/action-center?task=${win.id}`}
                 className="bg-white rounded-xl border p-4 min-w-[160px] max-w-[200px] shrink-0 snap-start hover:shadow-sm transition-shadow"
                 style={{ borderColor: 'var(--border, #E5E7EB)' }}
               >

@@ -61,7 +61,7 @@ export async function sendTaskDelegationEmail(params: TaskDelegationEmailParams)
   // If inviteToken is provided, link to invite acceptance page; otherwise direct to task
   const taskUrl = inviteToken
     ? `${baseUrl}/invite/task/${inviteToken}`
-    : `${baseUrl}/dashboard/actions?task=${taskId}`
+    : `${baseUrl}/dashboard/action-center?task=${taskId}`
   const firstName = name?.split(' ')[0] || 'there'
   const delegatorFirstName = delegatedBy.name.split(' ')[0]
   const unsubscribeLink = await getUnsubscribeLink(userId)

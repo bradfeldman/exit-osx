@@ -69,7 +69,7 @@ export function NextMoveCard({ task, comingUp, isFreeUser: _isFreeUser = false, 
           // Navigate anyway even if status update fails
         }
       }
-      router.push(`/dashboard/actions?taskId=${task.id}`)
+      router.push(`/dashboard/action-center?taskId=${task.id}`)
     }
   }
 

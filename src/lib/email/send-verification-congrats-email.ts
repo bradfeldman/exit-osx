@@ -188,7 +188,7 @@ export async function sendVerificationCongratsEmail(params: VerificationCongrats
               <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
                 <tr>
                   <td style="border-radius: 8px; background-color: #B87333;">
-                    <a href="${baseUrl}/dashboard/actions" target="_blank" style="display: inline-block; padding: 16px 48px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
+                    <a href="${baseUrl}/dashboard/action-center" target="_blank" style="display: inline-block; padding: 16px 48px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
                       See Your Full Report
                     </a>
                   </td>

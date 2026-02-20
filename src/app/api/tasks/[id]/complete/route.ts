@@ -131,7 +131,7 @@ export async function POST(
       eventName: 'task_completed',
       eventCategory: 'task',
       metadata: { taskId: id, companyId: existingTask.companyId, taskTitle: task.title },
-      page: '/dashboard/actions',
+      page: '/dashboard/action-center',
     })
 
     // =========================================================================
