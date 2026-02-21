@@ -1277,3 +1277,1683 @@
     display: none;
   }
 }
+
+/* ============================================================ */
+/* ===== BREADCRUMB ===== */
+/* ============================================================ */
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.breadcrumbLink {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.breadcrumbLink:hover { text-decoration: underline; }
+
+.breadcrumbChevron {
+  width: 14px;
+  height: 14px;
+  opacity: 0.5;
+}
+
+/* ============================================================ */
+/* ===== PAGE HEADER (sub-pages) ===== */
+/* ============================================================ */
+
+.pageHeaderFlex {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 28px;
+}
+
+.pageTitle {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.pageSubtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.headerActions {
+  display: flex;
+  gap: 10px;
+}
+
+/* ============================================================ */
+/* ===== BUTTONS (standalone, not using shadcn) ===== */
+/* ============================================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+
+.btn svg { width: 16px; height: 16px; }
+
+.btnPrimary {
+  background: var(--accent);
+  color: #fff;
+}
+.btnPrimary:hover { background: #005EC4; }
+
+.btnSecondary {
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+.btnSecondary:hover { background: var(--surface-secondary); }
+
+.btnSm { padding: 6px 12px; font-size: 12px; }
+
+/* ============================================================ */
+/* ===== VAL HERO (mocksite layout) ===== */
+/* ============================================================ */
+
+.valHeroCard {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  margin-bottom: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 40px;
+}
+
+.valHeroLeftSection { flex: 1; }
+
+.valHeroAmountLg {
+  font-size: 52px;
+  font-weight: 800;
+  letter-spacing: -2.5px;
+  line-height: 1.1;
+}
+
+.valHeroRangeSub {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+.valHeroChangePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--green);
+  background: var(--green-light);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.valHeroMetaRow {
+  margin-top: 16px;
+  display: flex;
+  gap: 20px;
+}
+
+.valMetaItem {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.valHeroRightSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+}
+
+.confidenceLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-tertiary);
+}
+
+.confidenceRingMd {
+  width: 100px;
+  height: 100px;
+  position: relative;
+}
+
+.confidenceRingMd svg {
+  width: 100px;
+  height: 100px;
+  transform: rotate(-90deg);
+}
+
+.confidenceNote {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  text-align: center;
+  line-height: 1.3;
+  max-width: 140px;
+}
+
+/* ============================================================ */
+/* ===== AI INSIGHT (dark card) ===== */
+/* ============================================================ */
+
+.aiInsightCard {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  color: #fff;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.aiInsightIconWrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.aiInsightIconWrap svg { width: 20px; height: 20px; stroke: #C084FC; }
+
+.aiInsightCardTitle {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.aiInsightCardText {
+  font-size: 13px;
+  line-height: 1.65;
+  color: rgba(255,255,255,0.75);
+}
+
+.aiInsightActionRow {
+  margin-top: 12px;
+}
+
+.aiInsightActionLink {
+  color: #C084FC;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.aiInsightActionLink:hover { text-decoration: underline; }
+
+/* ============================================================ */
+/* ===== BENCHMARK / PEER CONTEXT ===== */
+/* ============================================================ */
+
+.benchmarkCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 18px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.benchmarkRow {
+  display: flex;
+  gap: 24px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.benchmarkDivider {
+  width: 1px;
+  background: var(--border);
+  align-self: stretch;
+}
+
+.benchmarkStat {}
+
+.benchmarkStatLabel {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.benchmarkStatValue {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ============================================================ */
+/* ===== CONSEQUENCE CHAIN ===== */
+/* ============================================================ */
+
+.consequenceChain {
+  background: linear-gradient(135deg, var(--green-light), var(--accent-light));
+  border: 1px solid rgba(52,199,89,0.2);
+  border-radius: var(--radius-sm);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+
+.consequenceChainLabel {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #1B7A34;
+  margin-bottom: 12px;
+}
+
+.consequenceChainSteps {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.consequenceStep {
+  background: white;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(52,199,89,0.2);
+}
+
+.consequenceStepFinal {
+  background: var(--green);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 8px;
+}
+
+.consequenceArrow {
+  color: var(--text-tertiary);
+}
+
+.consequenceCaption {
+  font-size: 12px;
+  color: #2D8A47;
+  margin-top: 10px;
+}
+
+/* ============================================================ */
+/* ===== TREND CHART (mocksite version) ===== */
+/* ============================================================ */
+
+.trendCard {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+}
+
+.trendChart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 160px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 8px;
+}
+
+.trendCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.trendVal {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.trendBar {
+  width: 100%;
+  max-width: 48px;
+  border-radius: 6px 6px 0 0;
+  background: var(--accent-light);
+  transition: height 0.3s;
+}
+
+.trendBarCurrent { background: var(--accent); }
+
+.trendMonth {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+.trendMonthCurrent {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.trendEvents {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.trendEvent {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.trendEventPositive { background: var(--green-light); color: #1B8731; }
+.trendEventNegative { background: var(--red-light); color: var(--red); }
+.trendEventNeutral { background: var(--surface-secondary); color: var(--text-secondary); }
+
+/* ============================================================ */
+/* ===== VALUE LEDGER (mocksite) ===== */
+/* ============================================================ */
+
+.ledgerList {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  overflow: hidden;
+}
+
+.ledgerItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-light);
+  transition: background 0.1s;
+}
+
+.ledgerItem:last-child { border-bottom: none; }
+.ledgerItem:hover { background: var(--surface-secondary); }
+
+.ledgerDotCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 4px;
+}
+
+.ledgerDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ledgerDotPositive { background: var(--green); }
+.ledgerDotNegative { background: var(--red); }
+.ledgerDotNeutral { background: var(--text-tertiary); }
+
+.ledgerContent { flex: 1; }
+
+.ledgerTitle {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.ledgerNarrative {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.ledgerDate {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+}
+
+.ledgerImpact {
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  padding-top: 2px;
+}
+
+.ledgerImpactPositive { color: var(--green); }
+.ledgerImpactNegative { color: var(--red); }
+
+/* ============================================================ */
+/* ===== MULTIPLES HERO ===== */
+/* ============================================================ */
+
+.multiplesHero {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.heroMain {
+  background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.heroMainLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.heroMainAmount {
+  font-size: 52px;
+  font-weight: 800;
+  letter-spacing: -2px;
+  margin-bottom: 4px;
+}
+
+.heroMainSub {
+  font-size: 14px;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 24px;
+}
+
+.heroMainStats { display: flex; gap: 36px; }
+
+.heroStatLabel {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.heroStatValueLg {
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.heroStatBlue { color: #60AEFF; }
+.heroStatGreen { color: var(--green); }
+.heroStatOrange { color: #FFB740; }
+
+.heroSidebarCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.methodCompareLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 16px;
+}
+
+.methodBarRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.methodBarRowLast { margin-bottom: 0; }
+
+.methodBarName {
+  font-size: 13px;
+  font-weight: 500;
+  width: 110px;
+  flex-shrink: 0;
+  color: var(--text-secondary);
+}
+
+.methodBarNameActive {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.methodBarTrack {
+  flex: 1;
+  height: 8px;
+  background: var(--surface-secondary);
+  border-radius: 4px;
+  position: relative;
+}
+
+.methodBarFill { height: 100%; border-radius: 4px; }
+.methodBarFillBlue { background: var(--accent); }
+.methodBarFillPurple { background: var(--purple); }
+.methodBarFillGreen { background: var(--green); }
+
+.methodBarValue {
+  font-size: 14px;
+  font-weight: 700;
+  width: 56px;
+  text-align: right;
+}
+
+.activeBadge {
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--accent-light);
+  color: var(--accent);
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 6px;
+}
+
+.blendedSection {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-light);
+}
+
+.blendedLabel {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.blendedAmount {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -1px;
+}
+
+.blendedRange {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ============================================================ */
+/* ===== EQUATION ROW ===== */
+/* ============================================================ */
+
+.equationRow {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+}
+
+.eqBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 28px;
+  border-radius: var(--radius);
+  flex: 1;
+  min-width: 160px;
+}
+
+.eqBlockEbitda {
+  background: var(--green-light);
+  border: 2px solid var(--green);
+}
+
+.eqBlockMultiple {
+  background: var(--accent-light);
+  border: 2px solid var(--accent);
+}
+
+.eqBlockResult {
+  background: linear-gradient(135deg, #0f2027 0%, #2c5364 100%);
+  border: 2px solid transparent;
+}
+
+.eqOperator {
+  font-size: 32px;
+  font-weight: 300;
+  color: var(--text-tertiary);
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  align-self: center;
+}
+
+.eqLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 8px;
+}
+
+.eqLabelEbitda { color: #28A745; }
+.eqLabelMultiple { color: var(--accent); }
+.eqLabelResult { color: rgba(255,255,255,0.6); }
+
+.eqValue {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.eqValueEbitda { color: #1B7A34; }
+.eqValueMultiple { color: var(--accent); }
+.eqValueResult { color: #fff; }
+
+.eqDesc { font-size: 12px; margin-top: 4px; }
+.eqDescEbitda { color: #34A85A; }
+.eqDescMultiple { color: var(--accent); opacity: 0.8; }
+.eqDescResult { color: rgba(255,255,255,0.55); }
+
+/* ============================================================ */
+/* ===== INFO BOX ===== */
+/* ============================================================ */
+
+.infoBox {
+  margin-top: 20px;
+  padding: 14px 16px;
+  background: var(--surface-secondary);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.warnBox {
+  margin-top: 14px;
+  padding: 12px 16px;
+  background: var(--orange-light);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--orange);
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+/* ============================================================ */
+/* ===== NORM TABLE ===== */
+/* ============================================================ */
+
+.normTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.normTable td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.normTable tr:last-child td { border-bottom: none; }
+
+.normRowTotal td {
+  font-weight: 700;
+  font-size: 16px;
+  border-top: 2px solid var(--text-primary);
+  border-bottom: none;
+  background: var(--green-light);
+}
+
+.normLabel { font-weight: 600; color: var(--text-primary); }
+.normDesc { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+.normArrow { font-size: 18px; color: var(--text-tertiary); text-align: center; }
+.normAmount { text-align: right; font-weight: 600; font-size: 15px; font-variant-numeric: tabular-nums; }
+.normAmountPositive { color: var(--green); }
+.normAmountNegative { color: var(--red); }
+.normAmountBase { color: var(--text-primary); }
+
+/* ============================================================ */
+/* ===== NORM SUMMARY TILES ===== */
+/* ============================================================ */
+
+.normSummaryRow {
+  margin-top: 16px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.normSummaryTile {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  flex: 1;
+  min-width: 180px;
+}
+
+.normSummaryTileGreen { background: var(--green-light); }
+.normSummaryTileBlue { background: var(--accent-light); }
+.normSummaryTileOrange { background: var(--orange-light); }
+
+.normSummaryTileLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.normSummaryTileLabelGreen { color: #28A745; }
+.normSummaryTileLabelBlue { color: var(--accent); }
+.normSummaryTileLabelOrange { color: var(--orange); }
+
+.normSummaryTileValue {
+  font-size: 20px;
+  font-weight: 800;
+  margin-top: 2px;
+}
+
+.normSummaryTileValueGreen { color: #1B7A34; }
+.normSummaryTileValueBlue { color: var(--accent); }
+.normSummaryTileValueOrange { color: var(--orange); }
+
+/* ============================================================ */
+/* ===== RANGE GAUGE ===== */
+/* ============================================================ */
+
+.rangeGaugeWrap { padding: 8px 0 20px; }
+
+.rangeGaugeTrack {
+  height: 16px;
+  border-radius: 8px;
+  position: relative;
+  overflow: visible;
+  background: linear-gradient(to right, var(--red-light) 0%, var(--orange-light) 40%, var(--green-light) 100%);
+  border: 1px solid var(--border);
+  margin: 0 24px;
+}
+
+.rangeGaugeRangeBar {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 100%;
+  background: rgba(0,113,227,0.15);
+  border-left: 2px dashed rgba(0,113,227,0.4);
+  border-right: 2px dashed rgba(0,113,227,0.4);
+}
+
+.rangeGaugeMarker {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid #fff;
+  box-shadow: 0 2px 8px rgba(0,113,227,0.4);
+}
+
+.rangeGaugeLabels {
+  display: flex;
+  justify-content: space-between;
+  margin: 8px 24px 0;
+}
+
+.rangeGaugeLabels span {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* ============================================================ */
+/* ===== COMPS TABLE ===== */
+/* ============================================================ */
+
+.compsTable { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+.compsTable thead th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--border);
+  background: var(--surface-secondary);
+}
+
+.compsTable thead th:not(:first-child) { text-align: right; }
+
+.compsTable tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.compsTable tbody td:not(:first-child) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.compsTable tbody tr:hover { background: var(--surface-secondary); }
+
+.compsMultipleCell { font-weight: 700; font-size: 14px; }
+
+.compsRangeRow td {
+  background: var(--accent-light);
+  font-weight: 700;
+  border-top: 2px solid var(--accent);
+  border-bottom: 2px solid var(--accent);
+}
+
+.compsRangeRow td:first-child { color: var(--accent); }
+
+/* ============================================================ */
+/* ===== ADJUSTMENT GRID ===== */
+/* ============================================================ */
+
+.adjustmentGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.adjustmentTable { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+.adjustmentTable thead th {
+  text-align: right;
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--border);
+  background: var(--surface-secondary);
+}
+
+.adjustmentTable thead th:first-child { text-align: left; }
+
+.adjustmentTable tbody td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border-light);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.adjustmentTable tbody td:first-child { text-align: left; font-weight: 500; }
+
+.adjTablePositive { color: var(--green); font-weight: 600; }
+.adjTableNegative { color: var(--red); font-weight: 600; }
+
+.adjTotalRow td {
+  font-weight: 700;
+  border-top: 2px solid var(--text-primary);
+  border-bottom: none;
+}
+
+.adjResultRow td {
+  background: var(--accent-light);
+  font-weight: 700;
+}
+
+.adjustmentWaterfall {
+  background: var(--surface-secondary);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.waterfallBarRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.waterfallBarLabel {
+  font-size: 12px;
+  color: var(--text-secondary);
+  width: 100px;
+  flex-shrink: 0;
+}
+
+.waterfallBarTrack {
+  flex: 1;
+  height: 6px;
+  background: var(--border-light);
+  border-radius: 3px;
+  position: relative;
+  margin-right: 8px;
+}
+
+.waterfallBarFillPos {
+  position: absolute;
+  left: 50%;
+  height: 100%;
+  background: var(--green);
+  border-radius: 0 3px 3px 0;
+  top: 0;
+}
+
+.waterfallBarFillNeg {
+  position: absolute;
+  right: 50%;
+  height: 100%;
+  background: var(--red);
+  border-radius: 3px 0 0 3px;
+  top: 0;
+}
+
+.waterfallValue {
+  font-size: 12px;
+  font-weight: 700;
+  width: 44px;
+  text-align: right;
+}
+
+.waterfallValuePos { color: var(--green); }
+.waterfallValueNeg { color: var(--red); }
+
+/* ============================================================ */
+/* ===== SENSITIVITY TABLE ===== */
+/* ============================================================ */
+
+.sensitivityTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: center;
+}
+
+.sensitivityTable th {
+  padding: 10px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  background: var(--surface-secondary);
+  border-bottom: 2px solid var(--border);
+}
+
+.sensitivityTable th:first-child { text-align: left; }
+
+.sensitivityTable td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border-light);
+  font-weight: 500;
+}
+
+.sensitivityTable td:first-child {
+  text-align: left;
+  font-weight: 600;
+  background: var(--surface-secondary);
+  color: var(--text-secondary);
+}
+
+.sensitivityTable tbody tr:hover { background: var(--surface-secondary); }
+
+.cellHighlight {
+  background: var(--accent-light);
+  color: var(--accent);
+  font-weight: 700;
+  border-radius: 6px;
+}
+
+.cellGood { color: var(--green); }
+.cellWarn { color: var(--orange); }
+.cellBad { color: var(--red); }
+
+/* ============================================================ */
+/* ===== DCF HERO ===== */
+/* ============================================================ */
+
+.dcfHeroLayout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.dcfHeroMain {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.dcfHeroLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.dcfHeroAmount {
+  font-size: 48px;
+  font-weight: 800;
+  letter-spacing: -2px;
+  margin-bottom: 4px;
+}
+
+.dcfHeroRange {
+  font-size: 14px;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 20px;
+}
+
+.dcfHeroStats { display: flex; gap: 32px; }
+
+.dcfStatLabel {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dcfStatValue {
+  font-size: 20px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.dcfStatGreen { color: var(--green); }
+.dcfStatPurple { color: #C084FC; }
+.dcfStatTeal { color: var(--teal); }
+
+.dcfActiveMarker {
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--purple-light);
+  color: var(--purple);
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 4px;
+}
+
+/* ============================================================ */
+/* ===== COMPS HERO ===== */
+/* ============================================================ */
+
+.compsHero {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.compsHeroMain {
+  background: linear-gradient(135deg, #0a2647 0%, #144272 50%, #205295 100%);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.compsActiveBadge {
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--green-light);
+  color: var(--green);
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 6px;
+}
+
+/* ============================================================ */
+/* ===== FILTER CHIPS ===== */
+/* ============================================================ */
+
+.filterRow { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.filterChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  background: var(--surface-secondary);
+}
+
+.filterChipLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-right: 2px;
+}
+
+.filterChipValue { color: var(--text-primary); font-weight: 600; }
+
+.filterChipActive {
+  background: var(--accent-light);
+  border-color: var(--accent);
+}
+
+.filterChipActive .filterChipLabel { color: rgba(0,113,227,0.6); }
+.filterChipActive .filterChipValue { color: var(--accent); }
+
+/* ============================================================ */
+/* ===== TX TABLE ===== */
+/* ============================================================ */
+
+.txTable { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+.txTable thead th {
+  padding: 10px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  border-bottom: 2px solid var(--border);
+  background: var(--surface-secondary);
+  white-space: nowrap;
+}
+
+.txTable thead th:not(:first-child):not(:nth-child(2)) { text-align: right; }
+.txTable thead th:nth-child(2) { text-align: left; }
+
+.txTable tbody td {
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: middle;
+}
+
+.txTable tbody td:not(:first-child):not(:nth-child(2)) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.txTable tbody tr:hover { background: var(--surface-secondary); }
+
+.txTarget { font-weight: 600; font-size: 13px; }
+.txSub { font-size: 11px; color: var(--text-secondary); margin-top: 1px; }
+.txMultiple { font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+.txStatsRow td {
+  background: linear-gradient(135deg, #0a2647 0%, #144272 100%);
+  color: #fff;
+  border-top: 2px solid #144272;
+  border-bottom: 2px solid #144272;
+}
+
+.txBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.txBadgeStrategic { background: var(--accent-light); color: var(--accent); }
+.txBadgePe { background: var(--purple-light); color: var(--purple); }
+.txBadgeYear { background: var(--surface-secondary); color: var(--text-secondary); border: 1px solid var(--border); }
+
+/* ============================================================ */
+/* ===== STAT GRID ===== */
+/* ============================================================ */
+
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+.statTile {
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 14px 12px;
+  text-align: center;
+}
+
+.statTileHighlight {
+  background: var(--accent-light);
+  border-color: var(--accent);
+}
+
+.statTileLabel {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-tertiary);
+  margin-bottom: 6px;
+}
+
+.statTileHighlight .statTileLabel { color: rgba(0,113,227,0.7); }
+
+.statTileValue {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.statTileHighlight .statTileValue { color: var(--accent); }
+
+.statTileSub { font-size: 11px; color: var(--text-tertiary); margin-top: 3px; }
+
+/* ============================================================ */
+/* ===== HISTORY HERO STATS ===== */
+/* ============================================================ */
+
+.historyHeroStats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.historyHeroStat {
+  background: var(--surface);
+  padding: 24px 28px;
+}
+
+.historyHeroStatLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.historyHeroStatValue {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  color: var(--text-primary);
+}
+
+.historyHeroStatValueAccent { color: var(--accent); }
+.historyHeroStatValueGreen { color: var(--green); }
+
+.historyHeroStatDelta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 4px;
+  color: var(--green);
+}
+
+.historyHeroStatSub {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+}
+
+/* ============================================================ */
+/* ===== CHART WRAPPER (history page) ===== */
+/* ============================================================ */
+
+.chartWrapper {
+  position: relative;
+  padding-left: 48px;
+  padding-bottom: 28px;
+}
+
+.chartAreaHistory {
+  height: 240px;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 0 4px 0;
+  position: relative;
+}
+
+.chartColHistory {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.chartBarHistory {
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+  background: linear-gradient(180deg, #0071E3 0%, #005EC4 100%);
+  position: relative;
+  transition: opacity 0.15s;
+  min-height: 4px;
+}
+
+.chartBarHistoryCurrent {
+  background: linear-gradient(180deg, #34C759 0%, #28A745 100%);
+}
+
+.chartBarValueHistory {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.chartBarHistoryCurrent .chartBarValueHistory { color: var(--green); }
+
+.chartLabelHistory {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+  margin-top: 8px;
+}
+
+.chartLabelHistoryCurrent {
+  color: var(--green);
+  font-weight: 700;
+}
+
+/* ============================================================ */
+/* ===== SNAPSHOT BADGE (mocksite) ===== */
+/* ============================================================ */
+
+.snapshotBadgeCurrent {
+  background: var(--green-light);
+  color: #1B7A34;
+}
+
+.snapshotBadgeManual {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.snapshotBadgeAuto {
+  background: var(--surface-secondary);
+  color: var(--text-secondary);
+}
+
+.sourceTag {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+/* ============================================================ */
+/* ===== EVENT TIMELINE ===== */
+/* ============================================================ */
+
+.eventTimeline { display: flex; flex-direction: column; gap: 0; }
+
+.eventItem {
+  display: flex;
+  gap: 16px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--border-light);
+  position: relative;
+}
+
+.eventItem:last-child { border-bottom: none; }
+
+.eventConnector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 36px;
+  flex-shrink: 0;
+}
+
+.eventIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  z-index: 1;
+  position: relative;
+}
+
+.eventIconGreen { background: var(--green-light); }
+.eventIconGreen svg { stroke: var(--green); }
+.eventIconOrange { background: var(--orange-light); }
+.eventIconOrange svg { stroke: var(--orange); }
+.eventIconBlue { background: var(--accent-light); }
+.eventIconBlue svg { stroke: var(--accent); }
+
+.eventIcon svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.eventLine {
+  width: 1px;
+  flex: 1;
+  background: var(--border-light);
+  margin-top: 4px;
+}
+
+.eventContent { flex: 1; padding-top: 6px; }
+
+.eventDate {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.eventTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.eventDesc { font-size: 13px; color: var(--text-secondary); }
+
+.eventImpact {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 6px;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.eventImpactPositive { color: #1B7A34; background: var(--green-light); }
+.eventImpactNeutral { color: var(--text-secondary); background: var(--surface-secondary); }
+
+.eventImpact svg { width: 10px; height: 10px; }
+
+/* ============================================================ */
+/* ===== SECTION HELPER ===== */
+/* ============================================================ */
+
+.sectionSubtitleSm {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.sectionLabelBadge {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  background: var(--surface-secondary);
+  border-radius: var(--radius-sm);
+}
+
+@media (max-width: 1024px) {
+  .multiplesHero,
+  .dcfHeroLayout,
+  .compsHero {
+    grid-template-columns: 1fr;
+  }
+
+  .adjustmentGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .statGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .historyHeroStats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .statGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ============================================================ */
+/* ===== MISSING ALIASES (added for component compatibility) ===== */
+/* ============================================================ */
+
+/* valHeroChangePill color modifiers */
+.valHeroChangePill.positive { background: var(--green-light); color: #1B7A34; }
+.valHeroChangePill.negative { background: var(--red-light); color: var(--red); }
+.positive { color: #1B7A34; }
+.negative { color: var(--red); }
+
+/* rangeGaugeMarker label (tooltip above the marker dot) */
+.rangeGaugeMarkerLabel {
+  position: absolute;
+  bottom: 34px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+.rangeGaugeMarkerLabel::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: var(--accent);
+}
+
+/* valMetaDivider */
+.valMetaDivider {
+  width: 1px;
+  height: 24px;
+  background: var(--border-light);
+  margin: 0 4px;
+}
+.valMetaLabel { font-size: 11px; color: var(--text-tertiary); font-weight: 500; }
+.valMetaValue { font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-top: 2px; }
+
+/* heroStat color shorthands used in hero sections */
+.heroStatAccentColor { color: var(--accent); }
+.heroStatGreenColor { color: var(--green); }
+
+/* historyHeroStat color modifiers - aliases for the suffixed versions */
+.historyHeroStatAccent { color: var(--accent); }
+.historyHeroStatGreen { color: var(--green); }
+.historyHeroStatRed { color: var(--red); }
+
+/* normAmount color aliases */
+.normAmountNeutral { color: var(--text-primary); }
+.normAmountPos { color: var(--green); }
+.normAmountAccent { color: var(--accent); font-weight: 800; }
+
+/* normSummaryTile gray variant */
+.normSummaryTileGray { background: var(--surface-secondary); }
+.normSummaryLabelGray { color: var(--text-secondary); }
+.normSummaryValueGray { color: var(--text-primary); }
+
+/* ledgerImpact aliases */
+.ledgerImpactPos { color: var(--green); }
+.ledgerImpactNeg { color: var(--red); }
+
+/* eventImpact negative */
+.eventImpactNegative { color: var(--red); background: var(--red-light); }
+
+/* txMultiple color modifier */
+.txMultipleGood { color: var(--green); }
+
+/* eventIconRed */
+.eventIconRed { background: var(--red-light); }
+.eventIconRed svg { stroke: var(--red); }
+

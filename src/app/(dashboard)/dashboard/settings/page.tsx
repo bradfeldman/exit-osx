@@ -1,11 +1,9 @@
 import { SettingsPage } from '@/components/settings/SettingsPage'
-import { TrackPageView } from '@/components/tracking/TrackPageView'
+
+export const metadata = {
+  title: 'Settings | Exit OSx',
+}
 
 export default function SettingsPageRoute() {
-  return (
-    <>
-      <TrackPageView page="/dashboard/settings" />
-      <SettingsPage />
-    </>
-  )
+  return <SettingsPage />
 }

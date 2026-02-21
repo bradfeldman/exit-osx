@@ -1,5 +1,3 @@
-import { redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 
-export default function OrganizationSettingsPage() {
-  redirect('/dashboard/settings?tab=team')
-}
+export default function Page() { notFound() }

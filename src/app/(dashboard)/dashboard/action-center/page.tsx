@@ -92,6 +92,7 @@ export default function ActionCenterPage() {
   const [showCompleted, setShowCompleted] = useState(false)
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all')
   const [filterPriority, setFilterPriority] = useState<FilterPriority>('all')
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     if (!selectedCompanyId) return
@@ -126,6 +127,10 @@ export default function ActionCenterPage() {
   if (filterStatus === 'todo') filtered = filtered.filter(t => t.status === 'PENDING')
   if (filterStatus === 'in_progress') filtered = filtered.filter(t => t.status === 'IN_PROGRESS')
   if (filterPriority !== 'all') filtered = filtered.filter(t => getPriorityGroup(t.priorityRank) === filterPriority)
+  if (search.trim()) {
+    const q = search.toLowerCase()
+    filtered = filtered.filter(t => t.title.toLowerCase().includes(q) || t.description?.toLowerCase().includes(q))
+  }
 
   // Group by priority
   const groups: Record<string, TaskData[]> = {}
@@ -141,10 +146,13 @@ export default function ActionCenterPage() {
   const notStartedImpact = data.upNext.reduce((s, t) => s + t.normalizedValue, 0)
   const capturedImpact = data.summary.valueRecoveredThisMonth
 
+  const delegatableCount = data.waitingOnOthers.length
+
   return (
     <>
       <TrackPageView page="/dashboard/action-center" />
 
+      {/* Page Header */}
       <div className={styles.pageHeader}>
         <div>
           <h1>Action Center</h1>
@@ -152,7 +160,16 @@ export default function ActionCenterPage() {
         </div>
         <div className={styles.headerActions}>
           <Link href="/dashboard/action-center" className={`${styles.btn} ${styles.btnSecondary}`}>
-            <DownloadIcon /> Export Plan
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Export Plan
+          </Link>
+          <Link href="/dashboard" className={`${styles.btn} ${styles.btnPrimary}`}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10"/>
+            </svg>
+            Generate New Actions
           </Link>
         </div>
       </div>
@@ -176,7 +193,7 @@ export default function ActionCenterPage() {
         </div>
         <div className={styles.statCard}>
           <div className={styles.statLabel}>Delegated</div>
-          <div className={styles.statValue} style={{ color: 'var(--purple)' }}>{data.waitingOnOthers.length}</div>
+          <div className={styles.statValue} style={{ color: 'var(--purple)' }}>{delegatableCount}</div>
           <div className={styles.statSub}>To team & advisors</div>
         </div>
         <div className={styles.statCard}>
@@ -189,9 +206,12 @@ export default function ActionCenterPage() {
       {/* Value Impact Summary */}
       {totalImpact > 0 && (
         <div className={styles.impactBanner}>
-          <div style={{ flex: 1 }}>
+          <div className={styles.impactBannerLeft}>
             <div className={styles.impactBannerLabel}>Total Potential Value Impact</div>
             <div className={styles.impactBannerValue}>+{formatShort(totalImpact)}</div>
+            <div className={styles.impactBannerDesc}>
+              If all open actions are completed, your valuation could increase significantly
+            </div>
           </div>
           <div className={styles.impactDivider} />
           <div className={styles.impactSegments}>
@@ -217,6 +237,27 @@ export default function ActionCenterPage() {
         </div>
       )}
 
+      {/* Delegation Banner */}
+      {delegatableCount > 0 && (
+        <div className={styles.delegateBanner}>
+          <div className={styles.delegateBannerIcon}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+            </svg>
+          </div>
+          <div className={styles.delegateBannerContent}>
+            <div className={styles.delegateBannerTitle}>{delegatableCount} action{delegatableCount !== 1 ? 's' : ''} can be delegated to your team</div>
+            <div className={styles.delegateBannerDesc}>Invite your CPA, attorney, or operations manager to handle tasks directly. They&apos;ll get a secure link — no account needed.</div>
+          </div>
+          <Link href="/dashboard/settings" className={`${styles.btn} ${styles.btnPurple}`}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9"/>
+            </svg>
+            Invite Team
+          </Link>
+        </div>
+      )}
+
       {/* Filter Bar */}
       <div className={styles.filterBar}>
         <div className={styles.filterGroup}>
@@ -226,7 +267,7 @@ export default function ActionCenterPage() {
               className={`${styles.filterBtn} ${filterStatus === s ? styles.filterBtnActive : ''}`}
               onClick={() => setFilterStatus(s)}
             >
-              {s === 'all' ? `All (${allTasks.length})` : s === 'todo' ? 'To Do' : 'In Progress'}
+              {s === 'all' ? `All (${allTasks.length})` : s === 'todo' ? `To Do` : 'In Progress'}
             </button>
           ))}
         </div>
@@ -240,6 +281,17 @@ export default function ActionCenterPage() {
               {p === 'all' ? 'All Priority' : p.charAt(0).toUpperCase() + p.slice(1)}
             </button>
           ))}
+        </div>
+        <div className={styles.filterSearch}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            type="text"
+            placeholder="Search actions..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
         </div>
       </div>
 
@@ -255,16 +307,27 @@ export default function ActionCenterPage() {
               <div className={styles.taskGroupHeader}>
                 <span style={{ color: ps.color }}>{ps.label}</span>
                 <span className={styles.groupCount}>{tasks.length}</span>
+                {priority === 'critical' && (
+                  <span style={{ marginLeft: 'auto', fontSize: '11px', color: 'var(--text-tertiary)', fontWeight: 500, textTransform: 'none', letterSpacing: 0 }}>
+                    Highest impact on valuation
+                  </span>
+                )}
               </div>
               {tasks.map(task => {
                 const tag = TAG_MAP[task.briCategory]
                 const progress = task.subStepProgress
+                const initials = task.assignee
+                  ? task.assignee.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+                  : '?'
+                const isOwner = task.isAssignedToCurrentUser
+                const isDelegate = task.assignee && !task.isAssignedToCurrentUser
                 return (
                   <Link
                     key={task.id}
                     href={`/dashboard/action-center/${task.id}`}
                     className={styles.taskItem}
                   >
+                    <div className={styles.taskCheck} />
                     <div className={`${styles.taskPriority} ${styles[ps.class]}`} />
                     <div className={styles.taskContent}>
                       <div className={styles.taskTitle}>{task.title}</div>
@@ -296,9 +359,21 @@ export default function ActionCenterPage() {
                       {task.normalizedValue > 0 && (
                         <div className={styles.taskImpact}>+{formatShort(task.normalizedValue)}</div>
                       )}
+                      {task.assignee && (
+                        <div className={styles.taskAssignee}>
+                          <div className={`${styles.taskAssigneeAvatar} ${isOwner ? styles.taskAssigneeOwner : isDelegate ? styles.taskAssigneeDelegate : styles.taskAssigneeUnassigned}`}>
+                            {initials}
+                          </div>
+                          <span className={styles.taskAssigneeName}>
+                            {isOwner ? 'You' : task.assignee.name}
+                          </span>
+                        </div>
+                      )}
                     </div>
-                    <div style={{ color: 'var(--text-tertiary)', flexShrink: 0 }}>
-                      <ChevronIcon />
+                    <div className={styles.taskArrow}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 18 15 12 9 6"/>
+                      </svg>
                     </div>
                   </Link>
                 )
@@ -311,12 +386,18 @@ export default function ActionCenterPage() {
         {data.completedThisMonth.length > 0 && (
           <>
             <button
-              className={styles.taskGroupHeader}
+              className={styles.completedToggle}
               onClick={() => setShowCompleted(!showCompleted)}
-              style={{ cursor: 'pointer', width: '100%', textAlign: 'left', border: 'none', fontFamily: 'inherit' }}
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                style={{ width: '14px', height: '14px', transition: 'transform 0.2s', transform: showCompleted ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ transform: showCompleted ? 'rotate(180deg)' : 'rotate(0deg)' }}
+              >
                 <polyline points="6 9 12 15 18 9"/>
               </svg>
               Completed ({data.completedThisMonth.length})
@@ -327,9 +408,13 @@ export default function ActionCenterPage() {
                 <Link
                   key={task.id}
                   href={`/dashboard/action-center/${task.id}`}
-                  className={styles.taskItem}
-                  style={{ opacity: 0.6 }}
+                  className={`${styles.taskItem} ${styles.taskItemCompleted}`}
                 >
+                  <div className={`${styles.taskCheck} ${styles.taskCheckDone}`}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  </div>
                   <div className={styles.taskPriority} style={{ background: 'var(--green)' }} />
                   <div className={styles.taskContent}>
                     <div className={styles.taskTitle} style={{ textDecoration: 'line-through', color: 'var(--text-tertiary)' }}>
@@ -362,21 +447,5 @@ export default function ActionCenterPage() {
         )}
       </div>
     </>
-  )
-}
-
-function ChevronIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '16px', height: '16px' }}>
-      <polyline points="9 18 15 12 9 6"/>
-    </svg>
-  )
-}
-
-function DownloadIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '16px', height: '16px' }}>
-      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-    </svg>
   )
 }

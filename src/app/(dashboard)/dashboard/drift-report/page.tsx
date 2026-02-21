@@ -1,5 +1,3 @@
-import { DriftReportPage } from '@/components/drift-report/DriftReportPage'
+import { notFound } from 'next/navigation'
 
-export default function DriftReportPageRoute() {
-  return <DriftReportPage />
-}
+export default function Page() { notFound() }

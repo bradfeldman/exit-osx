@@ -2,12 +2,11 @@
 
 import { useState, useEffect, useCallback, Suspense, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { motion, AnimatePresence } from '@/lib/motion'
-import { Button } from '@/components/ui/button'
+import { AnimatePresence, motion } from '@/lib/motion'
+import Link from 'next/link'
 import { useCompany } from '@/contexts/CompanyContext'
-import { formatCurrency } from '@/lib/utils/currency'
 import { FinancialsDataEntry } from '@/components/financials/FinancialsDataEntry'
-import { Pencil, Loader2, CheckCircle, Link2, AlertCircle, X, TrendingUp } from 'lucide-react'
+import { Loader2, CheckCircle, AlertCircle, X } from 'lucide-react'
 import { fetchWithRetry } from '@/lib/fetch-with-retry'
 import { analytics } from '@/lib/analytics'
 import { TrackPageView } from '@/components/tracking/TrackPageView'
@@ -26,54 +25,18 @@ interface IntegrationData {
   providerCompanyName?: string | null
 }
 
-// QuickBooks Logo Component
-function QuickBooksLogo({ className = "w-8 h-8" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 40 40" className={className}>
-      <circle cx="20" cy="20" r="18" fill="#2CA01C" />
-      <path
-        d="M12 20c0-4.4 3.6-8 8-8s8 3.6 8 8-3.6 8-8 8"
-        stroke="white"
-        strokeWidth="3"
-        fill="none"
-      />
-      <circle cx="20" cy="20" r="3" fill="white" />
-    </svg>
-  )
-}
-
-// Get conditional headline based on assessment status
-function getFinancialsHeadline(hasAssessment: boolean, hasBriScore: boolean) {
-  if (hasBriScore) {
-    return {
-      title: "Move Beyond Industry Averages",
-      description: "Your BRI shows how buyers see your business. Add your financials to see what they'd actually pay.",
-    }
-  }
-  if (hasAssessment) {
-    return {
-      title: "Your Profile is Missing Financials",
-      description: "Add 3 years of historical data to unlock your actual valuation — not just industry estimates.",
-    }
-  }
-  return {
-    title: "Unlock Your True Valuation",
-    description: "Add your financial data to see what your business is really worth.",
-  }
-}
-
 // Empty State Component
 function FinancialsEmptyState({
   companyId: _companyId,
-  integrationData,
+  integrationData: _integrationData,
   onAddYear,
   onQuickBooksConnect,
   isConnecting,
   isCreatingPeriods = false,
-  hasAssessment = false,
-  hasBriScore = false,
-  completedTaskCount = 0,
-  completedTaskValue = 0,
+  hasAssessment: _hasAssessment = false,
+  hasBriScore: _hasBriScore = false,
+  completedTaskCount: _completedTaskCount = 0,
+  completedTaskValue: _completedTaskValue = 0,
 }: {
   companyId: string
   integrationData: IntegrationData
@@ -86,277 +49,182 @@ function FinancialsEmptyState({
   completedTaskCount?: number
   completedTaskValue?: number
 }) {
-  const headline = getFinancialsHeadline(hasAssessment, hasBriScore)
-
-  const currentYear = new Date().getFullYear()
-  const requiredYears = [
-    { year: currentYear - 3, label: `FY ${currentYear - 3}`, description: '3 years ago' },
-    { year: currentYear - 2, label: `FY ${currentYear - 2}`, description: '2 years ago' },
-    { year: currentYear - 1, label: `FY ${currentYear - 1}`, description: 'Last year' },
-    { year: currentYear, label: 'T12', description: 'Trailing 12 months' },
-  ]
-
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className={styles.editEmptyRoot}
-    >
-      {/* Hero Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className={styles.editHero}
-      >
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-          className={styles.editHeroIcon}
-        >
-          <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
-          </svg>
-        </motion.div>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className={styles.editHeroTitle}
-        >
-          {headline.title}
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className={styles.editHeroDesc}
-        >
-          {headline.description}
-        </motion.p>
-
-        {hasBriScore && (
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className={styles.editHeroSub}
-          >
-            Add 3 years of historical financials plus your trailing 12 months.
-          </motion.p>
-        )}
-      </motion.div>
-
-      {/* Task Value Context Banner */}
-      {completedTaskCount > 0 && completedTaskValue > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.45 }}
-          className={styles.editContextBanner}
-        >
-          <div className={styles.editBannerEmerald}>
-            <div className={styles.editBannerEmeraldIcon}>
-              <TrendingUp size={16} />
-            </div>
-            <p>
-              You&apos;ve already improved your value by{' '}
-              <span className={styles.editBannerBold}>{formatCurrency(completedTaskValue)}</span>{' '}
-              through {completedTaskCount} completed task{completedTaskCount !== 1 ? 's' : ''}.
-              Add your financials to see your total valuation.
-            </p>
-          </div>
-        </motion.div>
-      )}
-
-      {hasBriScore && completedTaskCount === 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.45 }}
-          className={styles.editContextBanner}
-        >
-          <div className={styles.editBannerBlue}>
-            <div className={styles.editBannerBlueIcon}>
-              <CheckCircle size={16} />
-            </div>
-            <p>
-              Your risk profile is assessed. Now add financials to see what buyers would actually pay.
-            </p>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Timeline Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className={styles.editTimelineCard}
-      >
-        <h3 className={styles.editTimelineHeading}>
-          Required Financial Periods
-        </h3>
-
-        {/* Period Timeline */}
-        <div className={styles.editTimeline}>
-          <div className={styles.editTimelineTrack} />
-
-          <div className={styles.editTimelineGrid}>
-            {requiredYears.map((period, index) => (
-              <motion.div
-                key={period.year}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 + index * 0.1 }}
-              >
-                <div className={styles.editTimelineDot} />
-                <div className={styles.editPeriodTile}>
-                  <div className={styles.editPeriodYear}>{period.label}</div>
-                  <div className={styles.editPeriodDesc}>{period.description}</div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+    <>
+      {/* Top bar */}
+      <div className={styles.finTopBar}>
+        <div>
+          <h1 className={styles.finTopBarTitle}>Financials</h1>
+          <p className={styles.finTopBarSub}>Connect your accounting to get started</p>
         </div>
+        <button
+          className={styles.finTopBarBtn}
+          onClick={onQuickBooksConnect}
+          disabled={isConnecting}
+        >
+          {isConnecting ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          )}
+          Connect QuickBooks
+        </button>
+      </div>
 
-        {/* Divider */}
-        <div className={styles.editDivider}>
-          <div className={styles.editDividerInner}>
-            <hr className={styles.editDividerLine} />
-            <span className={styles.editDividerLabel}>Choose how to add your data</span>
-            <hr className={styles.editDividerLine} />
-          </div>
+      {/* Empty hero card */}
+      <div className={styles.emptyHero}>
+        <div className={styles.emptyIconWrap}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" width="36" height="36"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><polyline points="7 10 9 10 11 6 13 14 15 10 17 10"/></svg>
         </div>
-
-        {/* Two Paths */}
-        <div className={styles.editPathGrid}>
-          {/* QuickBooks Path */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.9 }}
-            className={
-              integrationData.hasQuickBooksIntegration
-                ? `${styles.editQbCard} ${styles.editQbCardConnected}`
-                : styles.editQbCard
-            }
+        <div className={styles.emptyTitle}>No financial data yet</div>
+        <div className={styles.emptySubtitle}>Connect your accounting software or upload statements to unlock:</div>
+        <ul className={styles.benefitList}>
+          <li>
+            <div className={styles.benefitCheck}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="11" height="11"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            Automated P&amp;L, balance sheet, and cash flow analysis
+          </li>
+          <li>
+            <div className={styles.benefitCheck}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="11" height="11"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            EBITDA calculation with add-back suggestions
+          </li>
+          <li>
+            <div className={styles.benefitCheck}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="11" height="11"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            Trend analysis and financial health scoring
+          </li>
+        </ul>
+        <div className={styles.ctaStack}>
+          <button
+            className={styles.finTopBarBtn}
+            style={{ fontSize: '14px', padding: '11px 28px' }}
+            onClick={onQuickBooksConnect}
+            disabled={isConnecting}
           >
-            {integrationData.configured && !integrationData.hasQuickBooksIntegration && (
-              <span className={styles.editRecommendedBadge}>Recommended</span>
+            {isConnecting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
             )}
-
-            <div className={styles.editPathHeader}>
-              <div className={styles.editQbLogoWrap}>
-                <QuickBooksLogo />
-              </div>
-              <div className={styles.editPathMeta}>
-                <h4 className={styles.editPathTitle}>QuickBooks Online</h4>
-                <p className={styles.editPathDesc}>
-                  {integrationData.hasQuickBooksIntegration
-                    ? `Connected${integrationData.providerCompanyName ? ` to ${integrationData.providerCompanyName}` : ''}`
-                    : 'Import P&L and Balance Sheet data automatically'
-                  }
-                </p>
-              </div>
-            </div>
-
-            <div className={styles.editPathAction}>
-              {integrationData.hasQuickBooksIntegration ? (
-                <div className={styles.editQbConnectedStatus}>
-                  <CheckCircle size={16} />
-                  <span>Connected and syncing</span>
-                </div>
-              ) : integrationData.configured ? (
-                <Button
-                  onClick={onQuickBooksConnect}
-                  disabled={isConnecting}
-                  className="w-full"
-                >
-                  {isConnecting ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : (
-                    <Link2 className="h-4 w-4 mr-2" />
-                  )}
-                  Connect QuickBooks
-                </Button>
-              ) : (
-                <p className={styles.editQbNotConfigured}>
-                  QuickBooks integration not configured for your account
-                </p>
-              )}
-            </div>
-          </motion.div>
-
-          {/* Manual Entry Path */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 1 }}
-            className={styles.editManualCard}
-          >
-            <div className={styles.editPathHeader}>
-              <div className={styles.editManualIconWrap}>
-                <Pencil size={24} />
-              </div>
-              <div className={styles.editPathMeta}>
-                <h4 className={styles.editPathTitle}>Enter Manually</h4>
-                <p className={styles.editPathDesc}>
-                  Add your financial data year by year
-                </p>
-              </div>
-            </div>
-
-            <div className={styles.editPathAction}>
-              <Button variant="outline" onClick={() => onAddYear(12, 31)} className="w-full" disabled={isCreatingPeriods}>
-                {isCreatingPeriods ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Setting up your periods...
-                  </>
-                ) : (
-                  <>
-                    <Pencil className="h-4 w-4 mr-2" />
-                    Enter Manually
-                  </>
-                )}
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      </motion.div>
-
-      {/* Benefits */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.1 }}
-        className={styles.editBenefits}
-      >
-        <div className={styles.editBenefitsGrid}>
-          {[
-            { icon: '📊', title: 'Accurate Valuation', desc: 'Based on your actual EBITDA trends' },
-            { icon: '📈', title: 'Growth Analysis', desc: 'See revenue and profit trajectories' },
-            { icon: '💰', title: 'DCF Modeling', desc: 'Unlock discounted cash flow analysis' },
-          ].map((benefit, index) => (
-            <motion.div
-              key={benefit.title}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.2 + index * 0.1 }}
-              className={styles.editBenefit}
+            Connect QuickBooks
+          </button>
+          <div className={styles.ctaLinks}>
+            <button
+              className={styles.linkPlain}
+              onClick={() => onAddYear(12, 31)}
+              disabled={isCreatingPeriods}
             >
-              <div className={styles.editBenefitIcon}>{benefit.icon}</div>
-              <h4 className={styles.editBenefitTitle}>{benefit.title}</h4>
-              <p className={styles.editBenefitDesc}>{benefit.desc}</p>
-            </motion.div>
-          ))}
+              {isCreatingPeriods ? 'Setting up your periods...' : 'Or upload CSV statements'}
+            </button>
+            <span className={styles.ctaDivider}>&nbsp;&middot;&nbsp;</span>
+            <Link href="/dashboard/financials" className={styles.linkAccent}>
+              See sample financials &rarr;
+            </Link>
+          </div>
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+
+      {/* Blurred preview cards */}
+      <div className={styles.previewGrid}>
+
+        {/* P&L Preview */}
+        <div className={styles.previewCard}>
+          <div className={styles.previewCardInner}>
+            <div className={styles.previewCardLabel}>P&amp;L Statement</div>
+            <div className={styles.previewRow}>
+              <div className={styles.previewCell} style={{ width: '44%' }} />
+              <div className={styles.previewCell} style={{ width: '18%' }} />
+            </div>
+            <div className={styles.previewRow}>
+              <div className={styles.previewCell} style={{ width: '58%' }} />
+              <div className={styles.previewCell} style={{ width: '20%' }} />
+            </div>
+            <div className={styles.previewRow}>
+              <div className={styles.previewCell} style={{ width: '32%' }} />
+              <div className={styles.previewCell} style={{ width: '22%' }} />
+            </div>
+            <div className={styles.previewRow} style={{ borderBottom: 'none' }}>
+              <div className={styles.previewCell} style={{ width: '50%', height: '11px' }} />
+              <div className={styles.previewCell} style={{ width: '22%', height: '11px' }} />
+            </div>
+            <div className={styles.previewBars}>
+              <div className={styles.previewBar} style={{ height: '42%' }} />
+              <div className={styles.previewBar} style={{ height: '53%' }} />
+              <div className={styles.previewBar} style={{ height: '48%' }} />
+              <div className={styles.previewBar} style={{ height: '63%' }} />
+              <div className={styles.previewBar} style={{ height: '57%' }} />
+              <div className={styles.previewBar} style={{ height: '72%' }} />
+            </div>
+          </div>
+          <div className={styles.previewOverlay}>
+            <div>
+              <div className={styles.previewLock}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+              </div>
+              <div className={styles.previewOverlayLabel}>P&amp;L Statement<br />Unlocked with financial data</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Balance Sheet Preview */}
+        <div className={styles.previewCard}>
+          <div className={styles.previewCardInner}>
+            <div className={styles.previewCardLabel}>Balance Sheet</div>
+            <div className={styles.previewRow}>
+              <div className={styles.previewCell} style={{ width: '36%' }} />
+              <div className={styles.previewCell} style={{ width: '21%' }} />
+            </div>
+            <div className={styles.previewRow}>
+              <div className={styles.previewCell} style={{ width: '52%' }} />
+              <div className={styles.previewCell} style={{ width: '19%' }} />
+            </div>
+            <div className={styles.previewRow}>
+              <div className={styles.previewCell} style={{ width: '40%' }} />
+              <div className={styles.previewCell} style={{ width: '23%' }} />
+            </div>
+            <div className={styles.previewRow} style={{ borderBottom: 'none' }}>
+              <div className={styles.previewCell} style={{ width: '46%', height: '11px' }} />
+              <div className={styles.previewCell} style={{ width: '20%', height: '11px' }} />
+            </div>
+            <div className={styles.previewBars}>
+              <div className={styles.previewBar} style={{ height: '60%' }} />
+              <div className={styles.previewBar} style={{ height: '60%' }} />
+              <div className={styles.previewBar} style={{ height: '38%' }} />
+              <div className={styles.previewBar} style={{ height: '38%' }} />
+              <div className={styles.previewBar} style={{ height: '76%' }} />
+              <div className={styles.previewBar} style={{ height: '76%' }} />
+            </div>
+          </div>
+          <div className={styles.previewOverlay}>
+            <div>
+              <div className={styles.previewLock}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+              </div>
+              <div className={styles.previewOverlayLabel}>Balance Sheet<br />Unlocked with financial data</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* AI Coach CTA */}
+      <Link href="/dashboard/ai-coach" className={styles.finCoachCta}>
+        <div className={styles.finCoachIcon}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="24" height="24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </div>
+        <div className={styles.finCoachContent}>
+          <div className={styles.finCoachTitle}>Your AI Coach is ready to analyze your financials</div>
+          <div className={styles.finCoachDesc}>Once you connect your financials, I&apos;ll automatically identify EBITDA adjustments that could increase your valuation. Most owners miss $50K&ndash;$200K in legitimate add-backs.</div>
+        </div>
+        <div className={styles.finCoachArrow}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </Link>
+    </>
   )
 }
 

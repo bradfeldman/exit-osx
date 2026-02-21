@@ -379,6 +379,12 @@ export async function POST(request: Request) {
       return { company, user, workspace }
     })
 
+    // Mark any existing assessment leads as converted (prevents Day 2/5 drip emails)
+    prisma.assessmentLead.updateMany({
+      where: { email: normalizedEmail, convertedAt: null },
+      data: { convertedAt: new Date() },
+    }).catch(err => console.warn('[assess/save] Failed to mark leads as converted:', err instanceof Error ? err.message : String(err)))
+
     // High-value prospect alert to Brad (revenue >$3M or value gap >$1M)
     const isHighValue = annualRevenue >= 3_000_000 || results.valueGap >= 1_000_000
     if (isHighValue) {

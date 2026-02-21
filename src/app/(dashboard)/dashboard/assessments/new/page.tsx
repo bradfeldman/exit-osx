@@ -1,5 +1,3 @@
-import { redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 
-export default function NewAssessmentPage() {
-  redirect('/dashboard/diagnosis')
-}
+export default function Page() { notFound() }

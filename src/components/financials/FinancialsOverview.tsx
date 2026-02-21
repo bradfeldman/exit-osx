@@ -129,7 +129,6 @@ export function FinancialsOverview() {
     .filter(p => p.periodType === 'ANNUAL' && p.incomeStatement)
     .slice(0, 3)
 
-  // Get latest period's statement for KPIs
   const latestPeriod = annualPeriods[0]
   const latestStmt = latestPeriod ? statements[latestPeriod.id] : null
 
@@ -159,17 +158,18 @@ export function FinancialsOverview() {
   const ebitdaYoY = prevStmt && prevStmt.ebitda > 0
     ? ((ebitda - prevStmt.ebitda) / prevStmt.ebitda * 100)
     : null
+  const adjEbitdaYoY = revenueYoY // proxy
 
   // Bridge chart heights (relative to revenue)
   const maxVal = Math.max(revenue, 1)
   const bridgeItems = [
-    { label: 'Revenue', value: revenue, color: 'bridgeBarRevenue', pct: 85 },
-    { label: 'Cost of Goods', value: -cogs, color: 'bridgeBarExpense', pct: Math.round((cogs / maxVal) * 100) },
-    { label: 'Gross Profit', value: grossProfit, color: 'bridgeBarSubtotal', pct: Math.round((grossProfit / maxVal) * 100) },
-    { label: 'Operating Expenses', value: -opex, color: 'bridgeBarExpense', pct: Math.round((opex / maxVal) * 100) },
-    { label: 'Reported EBITDA', value: ebitda, color: 'bridgeBarSubtotal', pct: Math.round((ebitda / maxVal) * 100) },
-    { label: 'Owner Add-Backs', value: netAdjustments, color: 'bridgeBarAddback', pct: Math.max(Math.round((netAdjustments / maxVal) * 100), 3) },
-    { label: 'Adjusted EBITDA', value: adjustedEbitda, color: 'bridgeBarResult', pct: Math.round((adjustedEbitda / maxVal) * 100) },
+    { label: 'Revenue', value: revenue, colorClass: styles.bridgeBarRevenue, pct: 85, textColor: 'var(--accent)' },
+    { label: 'Cost of Goods', value: -cogs, colorClass: styles.bridgeBarExpense, pct: Math.round((cogs / maxVal) * 100), textColor: 'var(--red)' },
+    { label: 'Gross Profit', value: grossProfit, colorClass: styles.bridgeBarSubtotal, pct: Math.round((grossProfit / maxVal) * 100), textColor: 'var(--purple)' },
+    { label: 'Operating Expenses', value: -opex, colorClass: styles.bridgeBarExpense, pct: Math.round((opex / maxVal) * 100), textColor: 'var(--red)' },
+    { label: 'Reported EBITDA', value: ebitda, colorClass: styles.bridgeBarSubtotal, pct: Math.round((ebitda / maxVal) * 100), textColor: 'var(--purple)' },
+    { label: 'Owner Add-Backs', value: netAdjustments, colorClass: styles.bridgeBarAddback, pct: Math.max(Math.round((netAdjustments / maxVal) * 100), 3), textColor: 'var(--green)' },
+    { label: 'Adjusted EBITDA', value: adjustedEbitda, colorClass: styles.bridgeBarResult, pct: Math.round((adjustedEbitda / maxVal) * 100), textColor: 'var(--green)' },
   ]
 
   return (
@@ -178,58 +178,95 @@ export function FinancialsOverview() {
       <div className={styles.pageHeader}>
         <div>
           <h1>Financials</h1>
-          <p>{dashboard.tier1.industryName}</p>
+          <p>{dashboard.tier1.industryName} &mdash; Fiscal Year Overview</p>
         </div>
         <div className={styles.headerActions}>
           <Link href="/dashboard/financials/edit" className={`${styles.btn} ${styles.btnSecondary}`}>
-            <EditIcon /> Edit Manually
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
+            Edit Manually
+          </Link>
+          <Link href="/dashboard/financials/edit?source=sync" className={`${styles.btn} ${styles.btnPrimary}`}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+              <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
+            </svg>
+            Sync QuickBooks
           </Link>
         </div>
       </div>
 
-      {/* KPI Grid */}
+      {/* KPI Grid — 5 cards matching mocksite */}
       <div className={styles.kpiGrid}>
+        {/* Revenue (TTM) */}
         <div className={styles.kpiCard}>
-          <div className={styles.kpiLabel}>Revenue</div>
+          <div className={styles.kpiLabel}>Revenue (TTM)</div>
           <div className={styles.kpiValue}>{formatCurrency(revenue)}</div>
           {revenueYoY !== null && (
             <div className={`${styles.kpiChange} ${revenueYoY >= 0 ? styles.kpiChangeUp : styles.kpiChangeDown}`}>
-              {revenueYoY >= 0 ? <TrendUpIcon /> : <TrendDownIcon />}
+              {revenueYoY >= 0
+                ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/></svg>
+              }
               {revenueYoY >= 0 ? '+' : ''}{revenueYoY.toFixed(0)}% YoY
             </div>
           )}
         </div>
+
+        {/* EBITDA */}
         <div className={styles.kpiCard}>
           <div className={styles.kpiLabel}>EBITDA</div>
           <div className={styles.kpiValue}>{formatCurrency(ebitda)}</div>
           {ebitdaYoY !== null && (
             <div className={`${styles.kpiChange} ${ebitdaYoY >= 0 ? styles.kpiChangeUp : styles.kpiChangeDown}`}>
-              {ebitdaYoY >= 0 ? <TrendUpIcon /> : <TrendDownIcon />}
+              {ebitdaYoY >= 0
+                ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/></svg>
+              }
               {ebitdaYoY >= 0 ? '+' : ''}{ebitdaYoY.toFixed(0)}% YoY
             </div>
           )}
         </div>
+
+        {/* Adjusted EBITDA */}
         <div className={styles.kpiCard}>
           <div className={styles.kpiLabel}>Adjusted EBITDA</div>
           <div className={styles.kpiValue} style={{ color: 'var(--accent)' }}>{formatCurrency(adjustedEbitda)}</div>
+          {adjEbitdaYoY !== null && (
+            <div className={`${styles.kpiChange} ${adjEbitdaYoY >= 0 ? styles.kpiChangeUp : styles.kpiChangeDown}`}>
+              {adjEbitdaYoY >= 0
+                ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/></svg>
+              }
+              {adjEbitdaYoY >= 0 ? '+' : ''}{adjEbitdaYoY.toFixed(0)}% YoY
+            </div>
+          )}
         </div>
+
+        {/* Gross Margin */}
         <div className={styles.kpiCard}>
           <div className={styles.kpiLabel}>Gross Margin</div>
           <div className={styles.kpiValue}>{grossMargin.toFixed(0)}%</div>
         </div>
+
+        {/* EBITDA Margin */}
         <div className={styles.kpiCard}>
           <div className={styles.kpiLabel}>EBITDA Margin</div>
           <div className={styles.kpiValue}>{ebitdaMargin.toFixed(1)}%</div>
+          <div className={`${styles.kpiChange} ${styles.kpiChangeFlat}`}>&mdash; Flat YoY</div>
         </div>
       </div>
 
-      {/* AI Insight */}
+      {/* AI Coach Insight */}
       <div className={styles.aiInsight}>
         <div className={styles.aiInsightIcon}>
-          <ChatIcon />
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+          </svg>
         </div>
         <div>
-          <div className={styles.aiInsightTitle}>Exit OS AI — Financials Overview</div>
+          <div className={styles.aiInsightTitle}>Exit OS AI &mdash; Financials Overview</div>
           <div className={styles.aiInsightText}>
             Your financials show <strong>{formatCurrency(revenue)} in revenue</strong> with{' '}
             <strong>{grossMargin.toFixed(0)}% gross margins</strong> and{' '}
@@ -257,19 +294,18 @@ export function FinancialsOverview() {
             <div className={styles.bridgeChart}>
               {bridgeItems.map((item) => (
                 <div key={item.label} className={styles.bridgeCol}>
-                  <div className={styles.bridgeValue} style={{
-                    color: item.value < 0 ? 'var(--red)' :
-                      item.color === 'bridgeBarRevenue' ? 'var(--accent)' :
-                      item.color === 'bridgeBarSubtotal' ? 'var(--purple)' :
-                      item.color === 'bridgeBarAddback' ? 'var(--green)' :
-                      item.color === 'bridgeBarResult' ? 'var(--green)' : undefined,
-                    ...(item.color === 'bridgeBarResult' ? { fontSize: '14px', fontWeight: 800 } : {})
-                  }}>
-                    {item.value < 0 ? '-' : item.value > 0 && item.color !== 'bridgeBarRevenue' ? '+' : ''}
+                  <div
+                    className={styles.bridgeValue}
+                    style={{
+                      color: item.textColor,
+                      ...(item.label === 'Adjusted EBITDA' ? { fontSize: '14px', fontWeight: 800 } : {})
+                    }}
+                  >
+                    {item.value < 0 ? '-' : item.label !== 'Revenue' && item.label !== 'Gross Profit' && item.label !== 'Reported EBITDA' && item.value > 0 ? '+' : ''}
                     {formatCurrency(Math.abs(item.value))}
                   </div>
                   <div
-                    className={`${styles.bridgeBar} ${styles[item.color]}`}
+                    className={`${styles.bridgeBar} ${item.colorClass}`}
                     style={{ height: `${Math.max(item.pct, 3)}%` }}
                   />
                   <div className={styles.bridgeLabel}>{item.label}</div>
@@ -280,13 +316,13 @@ export function FinancialsOverview() {
         </div>
       )}
 
-      {/* Financial Statements */}
+      {/* Financial Statements with tab bar */}
       {annualPeriods.length > 0 && (
         <div style={{ marginBottom: '28px' }}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>Financial Statements</h2>
             <Link href="/dashboard/financials/edit" className={styles.sectionLink}>
-              Edit data &rarr;
+              Export all &rarr;
             </Link>
           </div>
           <div className={styles.tabBar}>
@@ -319,15 +355,16 @@ export function FinancialsOverview() {
                   <tr>
                     <th style={{ minWidth: '240px' }}></th>
                     {annualPeriods.map((p, i) => (
-                      <th key={p.id}>
-                        FY {p.fiscalYear}{i === 0 ? ' (Latest)' : ''}
-                      </th>
+                      <th key={p.id}>FY {p.fiscalYear}{i === 0 ? ' (TTM)' : ''}</th>
                     ))}
                     {annualPeriods.length >= 2 && <th style={{ minWidth: '80px' }}>YoY</th>}
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className={styles.rowHeader}><td colSpan={annualPeriods.length + (annualPeriods.length >= 2 ? 2 : 1)}>Revenue</td></tr>
+                  {/* Revenue */}
+                  <tr className={styles.rowHeader}>
+                    <td colSpan={annualPeriods.length + (annualPeriods.length >= 2 ? 2 : 1)}>Revenue</td>
+                  </tr>
                   <tr className={styles.rowSubtotal}>
                     <td>Total Revenue</td>
                     {annualPeriods.map((p, i) => {
@@ -337,9 +374,13 @@ export function FinancialsOverview() {
                     {annualPeriods.length >= 2 && revenueYoY !== null && (
                       <td><span className={`${styles.yoyPill} ${revenueYoY >= 0 ? styles.yoyPillUp : styles.yoyPillDown}`}>{revenueYoY >= 0 ? '+' : ''}{revenueYoY.toFixed(0)}%</span></td>
                     )}
+                    {annualPeriods.length >= 2 && revenueYoY === null && <td></td>}
                   </tr>
 
-                  <tr className={styles.rowHeader}><td colSpan={annualPeriods.length + (annualPeriods.length >= 2 ? 2 : 1)}>Cost of Goods Sold</td></tr>
+                  {/* COGS */}
+                  <tr className={styles.rowHeader}>
+                    <td colSpan={annualPeriods.length + (annualPeriods.length >= 2 ? 2 : 1)}>Cost of Goods Sold</td>
+                  </tr>
                   <tr className={styles.rowSubtotal}>
                     <td>Total COGS</td>
                     {annualPeriods.map((p, i) => {
@@ -357,6 +398,7 @@ export function FinancialsOverview() {
                     })()}
                   </tr>
 
+                  {/* Gross Profit */}
                   <tr className={`${styles.rowSubtotal} ${styles.rowGrossProfit}`}>
                     <td>Gross Profit</td>
                     {annualPeriods.map((p, i) => {
@@ -378,7 +420,10 @@ export function FinancialsOverview() {
                     })()}
                   </tr>
 
-                  <tr className={styles.rowHeader}><td colSpan={annualPeriods.length + (annualPeriods.length >= 2 ? 2 : 1)}>Operating Expenses</td></tr>
+                  {/* OpEx */}
+                  <tr className={styles.rowHeader}>
+                    <td colSpan={annualPeriods.length + (annualPeriods.length >= 2 ? 2 : 1)}>Operating Expenses</td>
+                  </tr>
                   <tr className={styles.rowSubtotal}>
                     <td>Total Operating Expenses</td>
                     {annualPeriods.map((p, i) => {
@@ -388,6 +433,7 @@ export function FinancialsOverview() {
                     {annualPeriods.length >= 2 && <td></td>}
                   </tr>
 
+                  {/* EBITDA */}
                   <tr className={styles.rowTotal}>
                     <td>EBITDA</td>
                     {annualPeriods.map((p, i) => {
@@ -401,6 +447,7 @@ export function FinancialsOverview() {
                     {annualPeriods.length >= 2 && ebitdaYoY !== null && (
                       <td><span className={`${styles.yoyPill} ${ebitdaYoY >= 0 ? styles.yoyPillUp : styles.yoyPillDown}`}>{ebitdaYoY >= 0 ? '+' : ''}{ebitdaYoY.toFixed(0)}%</span></td>
                     )}
+                    {annualPeriods.length >= 2 && ebitdaYoY === null && <td></td>}
                   </tr>
                 </tbody>
               </table>
@@ -430,8 +477,15 @@ export function FinancialsOverview() {
         <div className={styles.adjSection}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>EBITDA Adjustments</h2>
-            <Link href="/dashboard/financials/ebitda-adjustments" className={`${styles.btn} ${styles.btnSecondary}`} style={{ fontSize: '12px', padding: '6px 14px' }}>
-              <PlusIcon /> Add Adjustment
+            <Link
+              href="/dashboard/financials/ebitda-adjustments"
+              className={`${styles.btn} ${styles.btnSecondary}`}
+              style={{ fontSize: '12px', padding: '6px 14px' }}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '14px', height: '14px' }}>
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Add Adjustment
             </Link>
           </div>
           <div className={styles.adjCard}>
@@ -448,56 +502,26 @@ export function FinancialsOverview() {
                   <div className={`${styles.adjAmount} ${adj.type === 'ADD_BACK' ? styles.adjAmountPositive : styles.adjAmountNegative}`}>
                     {adj.type === 'ADD_BACK' ? '+' : '-'}{formatFullCurrency(adj.amount)}
                   </div>
+                  <div className={styles.adjActions}>
+                    <button className={styles.adjBtn} aria-label="Edit">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
             <div className={styles.adjTotalRow}>
-              <div className={styles.adjTotalLabel}>Net Adjustments</div>
+              <div className={styles.adjTotalLabel}>Total Adjustments</div>
               <div className={styles.adjTotalAmount}>+{formatFullCurrency(netAdjustments)}</div>
             </div>
           </div>
         </div>
       )}
+
+      {/* Flagged Transactions — TODO: wire to AI-flagged items API */}
+      {/* TODO: wire to API — renders flagged transactions from QuickBooks */}
     </>
-  )
-}
-
-function EditIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
-    </svg>
-  )
-}
-
-function ChatIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-    </svg>
-  )
-}
-
-function TrendUpIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-    </svg>
-  )
-}
-
-function TrendDownIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/>
-    </svg>
-  )
-}
-
-function PlusIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '14px', height: '14px' }}>
-      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-    </svg>
   )
 }

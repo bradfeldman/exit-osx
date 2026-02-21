@@ -29,7 +29,7 @@ export function PlaybookLinkInPanel({ playbooks, planTier }: PlaybookLinkInPanel
         return (
           <Link
             key={slug}
-            href={`/playbook/${slug.toLowerCase()}/1`}
+            href={isLocked ? '/dashboard/settings?tab=billing' : `/playbook/${slug.toLowerCase()}/1`}
             className="flex items-center gap-2 group py-1"
           >
             <span className="text-sm text-foreground group-hover:text-primary transition-colors font-medium line-clamp-1 flex-1">

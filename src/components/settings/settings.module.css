@@ -31,41 +31,680 @@
 }
 
 /* ============================================================
-   Custom Tab Bar (replaces shadcn Tabs)
+   Tab Bar — Underline style (matches mocksite)
    ============================================================ */
 .tabBar {
   display: flex;
-  gap: 4px;
-  padding: 4px;
-  background: var(--surface-secondary);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
 }
 
 .tab {
-  flex: 1;
-  padding: 8px 16px;
+  padding: 10px 18px;
   font-size: 14px;
   font-weight: 500;
   color: var(--text-secondary);
   background: transparent;
   border: none;
-  border-radius: var(--radius-sm);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
   cursor: pointer;
   transition: all 0.15s ease;
   text-align: center;
+  white-space: nowrap;
 }
 
 .tab:hover {
   color: var(--text-primary);
-  background: var(--surface);
 }
 
 .tabActive {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+
+/* ============================================================
+   Settings section card (matches mocksite .settings-section)
+   ============================================================ */
+.settingsSection {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.settingsSection h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text-primary);
+}
+
+.sectionDesc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+
+/* ============================================================
+   Form elements (mocksite style)
+   ============================================================ */
+.formLabel {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.formInput {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
   color: var(--text-primary);
   background: var(--surface);
-  box-shadow: var(--shadow-sm);
+  transition: all 0.15s;
+  font-family: inherit;
+  min-height: 44px;
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.formInput::placeholder {
+  color: var(--text-tertiary);
+}
+
+.formSelect {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--surface);
+  cursor: pointer;
+  font-family: inherit;
+  min-height: 44px;
+}
+
+.formSelect:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.formTextarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--surface);
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.formTextarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.formRow2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.formGroupSpaced {
+  margin-bottom: 16px;
+}
+
+.formGroupSpaced:last-child {
+  margin-bottom: 0;
+}
+
+.formActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-light, var(--border));
+  margin-top: 20px;
+}
+
+/* ============================================================
+   Buttons (settings-local)
+   ============================================================ */
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  background: var(--accent);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-height: 44px;
+  font-family: inherit;
+}
+
+.btnPrimary:hover {
+  background: var(--primary);
+}
+
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s;
+  min-height: 44px;
+  font-family: inherit;
+  text-decoration: none;
+}
+
+.btnSecondary:hover {
+  background: var(--surface-secondary);
+}
+
+.btnSecondarySmall {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  text-decoration: none;
+}
+
+.btnSecondarySmall:hover {
+  background: var(--surface-secondary);
+}
+
+.btnDanger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--red-light);
+  color: var(--red);
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.btnDanger:hover {
+  opacity: 0.85;
+}
+
+/* ============================================================
+   Avatar upload
+   ============================================================ */
+.avatarUpload {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.avatarLarge {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
   font-weight: 600;
+  flex-shrink: 0;
+}
+
+.avatarActions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ============================================================
+   Toggle rows (notification preferences)
+   ============================================================ */
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-light, var(--border));
+}
+
+.toggleRow:last-child {
+  border-bottom: none;
+}
+
+.toggleInfo {
+  flex: 1;
+}
+
+.toggleLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.toggleDesc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.toggle {
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--border);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+  border: none;
+}
+
+.toggleOn {
+  background: var(--green);
+}
+
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s;
+}
+
+.toggleOn::after {
+  transform: translateX(20px);
+}
+
+/* ============================================================
+   Integration cards
+   ============================================================ */
+.integrationCard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  transition: all 0.15s;
+}
+
+.integrationCard:last-child {
+  margin-bottom: 0;
+}
+
+.integrationIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.integrationIcon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.integrationInfo {
+  flex: 1;
+}
+
+.integrationName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.integrationStatus {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.statusConnected {
+  background: var(--green-light);
+  color: var(--green-dark, #1B7A34);
+}
+
+.statusDisconnected {
+  background: var(--surface-secondary);
+  color: var(--text-secondary);
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.statusDotConnected {
+  background: var(--green);
+}
+
+.statusDotDisconnected {
+  background: var(--text-tertiary);
+}
+
+/* ============================================================
+   Plan card (subscription tab)
+   ============================================================ */
+.planCardCurrent {
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.planBadgeCurrent {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: var(--accent);
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.planNameLarge {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.planPriceRow {
+  margin-top: 6px;
+}
+
+.planAmount {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  color: var(--text-primary);
+}
+
+.planPeriod {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.planFeatureList {
+  list-style: none;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-light, var(--border));
+}
+
+.planFeatureItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.planFeatureItem svg {
+  width: 16px;
+  height: 16px;
+  color: var(--green);
+  flex-shrink: 0;
+}
+
+.planComparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.planOption {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.planOption:hover {
+  border-color: var(--accent);
+}
+
+.planOptionCurrent {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+
+.planOptionName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.planOptionNameCurrent {
+  color: var(--accent);
+}
+
+.planOptionPrice {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.paymentRow {
+  margin-top: 12px;
+  padding: 16px;
+  background: var(--surface-secondary);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.paymentRowLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.paymentRowDesc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ============================================================
+   Team rows
+   ============================================================ */
+.teamRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-light, var(--border));
+}
+
+.teamRow:last-child {
+  border-bottom: none;
+}
+
+.teamAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.teamInfo {
+  flex: 1;
+}
+
+.teamName {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.teamEmail {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.teamRoleBadge {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--surface-secondary);
+  color: var(--text-secondary);
+}
+
+.teamRoleBadgeOwner {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+/* ============================================================
+   Danger zone (mocksite style)
+   ============================================================ */
+.dangerSection {
+  border: 1px solid var(--red);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.dangerSection h2 {
+  color: var(--red);
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.dangerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-light, var(--border));
+}
+
+.dangerRow:last-child {
+  border-bottom: none;
+}
+
+.dangerRowLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.dangerRowDesc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ============================================================
+   Info row (payment/billing inline)
+   ============================================================ */
+.infoHint {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 6px;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 768px) {
+  .tabBar {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .formRow2 {
+    grid-template-columns: 1fr;
+  }
+
+  .planComparison {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ============================================================

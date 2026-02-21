@@ -39,7 +39,7 @@ export function AddBacksFormGrid({ companyId }: AddBacksFormGridProps) {
   const [newDeductionDesc, setNewDeductionDesc] = useState('')
   const [showAddBackInput, setShowAddBackInput] = useState(false)
   const [showDeductionInput, setShowDeductionInput] = useState(false)
-  const saveTimersRef = useRef<Record<string, NodeJS.Timeout>>({})
+  const saveTimersRef = useRef<Record<string, { timer: NodeJS.Timeout; saveFn: () => Promise<void> }>>({})
 
   // Load periods
   const loadPeriods = useCallback(async (): Promise<FinancialPeriod[]> => {
@@ -112,10 +112,15 @@ export function AddBacksFormGrid({ companyId }: AddBacksFormGridProps) {
     load()
   }, [loadPeriods, loadAdjustments, loadEbitda])
 
-  // Cleanup timers
+  // Flush pending saves on unmount (instead of canceling them)
   useEffect(() => {
-    const timers = saveTimersRef.current
-    return () => { Object.values(timers).forEach(clearTimeout) }
+    const pending = saveTimersRef.current
+    return () => {
+      Object.values(pending).forEach(({ timer, saveFn }) => {
+        clearTimeout(timer)
+        saveFn()
+      })
+    }
   }, [])
 
   // ─── Helpers: group adjustments by description ──────────────────
@@ -139,8 +144,9 @@ export function AddBacksFormGrid({ companyId }: AddBacksFormGridProps) {
       )
       // Debounced PATCH
       const timerKey = existing.id
-      if (saveTimersRef.current[timerKey]) clearTimeout(saveTimersRef.current[timerKey])
-      saveTimersRef.current[timerKey] = setTimeout(async () => {
+      if (saveTimersRef.current[timerKey]) clearTimeout(saveTimersRef.current[timerKey].timer)
+      const saveFn = async () => {
+        delete saveTimersRef.current[timerKey]
         try {
           await fetch(
             `/api/companies/${companyId}/adjustments?adjustmentId=${existing.id}`,
@@ -153,7 +159,11 @@ export function AddBacksFormGrid({ companyId }: AddBacksFormGridProps) {
         } catch (err) {
           console.error('Failed to update adjustment:', err)
         }
-      }, 1000)
+      }
+      saveTimersRef.current[timerKey] = {
+        timer: setTimeout(saveFn, 1000),
+        saveFn,
+      }
     } else if (value !== 0) {
       // Create new adjustment for this period
       const tempId = `temp-${Date.now()}-${Math.random()}`
@@ -168,8 +178,9 @@ export function AddBacksFormGrid({ companyId }: AddBacksFormGridProps) {
       setAdjustments(prev => [...prev, newAdj])
 
       const timerKey = tempId
-      if (saveTimersRef.current[timerKey]) clearTimeout(saveTimersRef.current[timerKey])
-      saveTimersRef.current[timerKey] = setTimeout(async () => {
+      if (saveTimersRef.current[timerKey]) clearTimeout(saveTimersRef.current[timerKey].timer)
+      const saveFn = async () => {
+        delete saveTimersRef.current[timerKey]
         try {
           const res = await fetch(`/api/companies/${companyId}/adjustments`, {
             method: 'POST',
@@ -186,7 +197,11 @@ export function AddBacksFormGrid({ companyId }: AddBacksFormGridProps) {
         } catch (err) {
           console.error('Failed to create adjustment:', err)
         }
-      }, 1000)
+      }
+      saveTimersRef.current[timerKey] = {
+        timer: setTimeout(saveFn, 1000),
+        saveFn,
+      }
     }
   }, [adjustments, companyId])
 

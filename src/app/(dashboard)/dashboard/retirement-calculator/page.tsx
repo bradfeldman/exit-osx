@@ -1,5 +1,3 @@
-import { redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 
-export default function RetirementCalculatorPage() {
-  redirect('/dashboard/retirement')
-}
+export default function Page() { notFound() }

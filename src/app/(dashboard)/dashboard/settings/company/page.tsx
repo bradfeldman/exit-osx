@@ -1,5 +1,3 @@
-import { redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 
-export default function CompanySettingsPage() {
-  redirect('/dashboard/settings?tab=company')
-}
+export default function Page() { notFound() }

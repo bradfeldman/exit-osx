@@ -30,7 +30,7 @@ export function PlaybookCard({ definition, progress, planTier, rationale }: Play
 
   return (
     <Link
-      href={`/playbook/${definition.slug}`}
+      href={isLocked ? '/dashboard/settings?tab=billing' : `/playbook/${definition.slug}`}
       className="bg-white rounded-xl border p-4 hover:shadow-md transition-shadow flex items-start gap-3"
       style={{ borderColor: 'var(--border, #E5E7EB)' }}
     >

@@ -8,21 +8,22 @@ import { getAllPlaybooks } from '@/lib/playbook/playbook-registry'
 import styles from '@/components/playbook/playbook.module.css'
 
 const CATEGORY_LABELS: Record<string, string> = {
-  PERSONAL: 'Personal',
+  PERSONAL: 'Owner Dependence',
   FINANCIAL: 'Financial',
   OPERATIONAL: 'Operations',
-  LEGAL: 'Legal & Compliance',
-  MARKET_GROWTH: 'Revenue Growth',
+  LEGAL: 'Legal',
+  MARKET_GROWTH: 'Growth',
   DEAL_PREP: 'Deal Prep',
 }
 
-const ICON_COLORS: Record<string, string> = {
-  PERSONAL: 'iconPurple',
-  FINANCIAL: 'iconBlue',
-  OPERATIONAL: 'iconOrange',
-  LEGAL: 'iconTeal',
-  MARKET_GROWTH: 'iconGreen',
-  DEAL_PREP: 'iconRed',
+// Maps category to the pb-cat modifier class
+const CATEGORY_TAG_CLASS: Record<string, string> = {
+  PERSONAL: 'pbCatOwner',
+  FINANCIAL: 'pbCatFinancial',
+  OPERATIONAL: 'pbCatOperations',
+  LEGAL: 'pbCatLegal',
+  MARKET_GROWTH: 'pbCatGrowth',
+  DEAL_PREP: 'pbCatOwner',
 }
 
 interface Recommendation {
@@ -45,15 +46,32 @@ function formatImpact(low: number, high: number): string {
     if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`
     return `$${Math.round(v / 1000)}K`
   }
-  return `+${fmtK(low)}–${fmtK(high)}`
+  return `+${fmtK(low)} – ${fmtK(high)}`
+}
+
+function formatDuration(low: number, high: number): string {
+  if (low === high) return `${low} months`
+  return `${low}–${high} months`
+}
+
+function getDifficultyLabel(difficulty: string): string {
+  if (difficulty === 'LOW' || difficulty === 'NONE') return 'Easy'
+  if (difficulty === 'MEDIUM') return 'Medium'
+  return 'Hard'
+}
+
+function getDifficultyClass(difficulty: string): string {
+  if (difficulty === 'LOW' || difficulty === 'NONE') return 'pbBadgeEasy'
+  if (difficulty === 'MEDIUM') return 'pbBadgeMedium'
+  return 'pbBadgeHard'
 }
 
 export default function PlaybookPage() {
   const { selectedCompanyId } = useCompany()
   const allPlaybooks = getAllPlaybooks()
-  const [recommended, setRecommended] = useState<Recommendation[]>([])
   const [activePlaybooks, setActivePlaybooks] = useState<ActivePlaybook[]>([])
   const [categoryFilter, setCategoryFilter] = useState('all')
+  const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -63,11 +81,8 @@ export default function PlaybookPage() {
     Promise.all([
       fetch(`/api/companies/${selectedCompanyId}/playbook-recommendations`).then(r => r.ok ? r.json() : null),
       fetch(`/api/companies/${selectedCompanyId}/active-playbooks`).then(r => r.ok ? r.json() : null),
-    ]).then(([recData, activeData]) => {
+    ]).then(([_recData, activeData]) => {
       if (cancelled) return
-      if (recData?.recommendations) {
-        setRecommended(recData.recommendations.filter((r: Recommendation) => r.isRecommended).slice(0, 3))
-      }
       if (activeData?.playbooks) {
         setActivePlaybooks(activeData.playbooks)
       }
@@ -82,10 +97,27 @@ export default function PlaybookPage() {
     categoryCounts[pb.category] = (categoryCounts[pb.category] || 0) + 1
   }
 
+  const activeIds = new Set(activePlaybooks.map(ap => ap.id))
+  // Completed = 100%, in-progress = >0% and <100%
+  const completedIds = new Set(activePlaybooks.filter(ap => ap.percentComplete >= 100).map(ap => ap.id))
+  const inProgressIds = new Set(activePlaybooks.filter(ap => ap.percentComplete > 0 && ap.percentComplete < 100).map(ap => ap.id))
+
   const filteredPlaybooks = allPlaybooks.filter(pb => {
     if (categoryFilter !== 'all' && pb.category !== categoryFilter) return false
+    if (search && !pb.title.toLowerCase().includes(search.toLowerCase()) && !pb.description?.toLowerCase().includes(search.toLowerCase())) return false
     return true
   })
+
+  // Split filtered playbooks into sections
+  const inProgressPlaybooks = filteredPlaybooks.filter(pb => inProgressIds.has(pb.slug))
+  const completedPlaybooks = filteredPlaybooks.filter(pb => completedIds.has(pb.slug))
+  const notStartedPlaybooks = filteredPlaybooks.filter(pb => !activeIds.has(pb.slug))
+
+  // Summary stats
+  const totalPotential = allPlaybooks.reduce((sum, pb) => sum + pb.impactBaseLow + pb.impactBaseHigh, 0)
+  const totalPotentialFmt = totalPotential >= 2_000_000
+    ? `+$${(totalPotential / 2 / 1_000_000).toFixed(1)}M`
+    : `+$${Math.round(totalPotential / 2 / 1000)}K`
 
   if (loading) {
     return (
@@ -101,83 +133,117 @@ export default function PlaybookPage() {
     <>
       <TrackPageView page="/dashboard/playbook" />
 
+      {/* Breadcrumb */}
+      <div className={styles.breadcrumb}>
+        <Link href="/dashboard">Home</Link>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+        <span>Playbook Library</span>
+      </div>
+
       {/* Page Header */}
       <div className={styles.pageHeader}>
         <div>
-          <h1>Playbook</h1>
-          <p>Proven step-by-step guides to increase your business value and close readiness gaps</p>
-        </div>
-        <div>
-          <Link href="/dashboard/playbook/library" className={`${styles.btn} ${styles.btnSecondary}`}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
-            View Library
-          </Link>
+          <h1>Playbook Library</h1>
+          <p>{allPlaybooks.length} proven strategies to increase your business value before going to market</p>
         </div>
       </div>
 
-      {/* Recommended Banner */}
-      {recommended.length > 0 && (
-        <div className={styles.recommendedBanner}>
-          <div className={styles.recHeader}>
-            <div className={styles.recIcon}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
-            </div>
-            <h2>Recommended for You</h2>
-          </div>
-          <div className={styles.recDesc}>Based on your assessment results, BRI score, and value gaps — these playbooks will have the highest impact on your valuation.</div>
-          <div className={styles.recCards}>
-            {recommended.map((rec, i) => (
-              <Link key={rec.playbook.slug} href={`/dashboard/playbook/${rec.playbook.slug}`} className={styles.recCard}>
-                <div className={styles.recCardRank} style={i === 1 ? { background: 'var(--orange)' } : i === 2 ? { background: 'var(--accent)' } : undefined}>
-                  #{i + 1} Impact
-                </div>
-                <div className={styles.recCardTitle}>{rec.playbook.title}</div>
-                <div className={styles.recCardDesc}>{rec.playbook.description || 'Targeted playbook to address key value gaps.'}</div>
-                <div className={styles.recCardMeta}>
-                  <span className={styles.recCardImpact}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
-                    {formatImpact(rec.estimatedImpactLow, rec.estimatedImpactHigh)}
-                  </span>
-                  <span>Score: {Math.round(rec.relevanceScore)}</span>
-                </div>
-              </Link>
-            ))}
-          </div>
+      {/* Summary Stats */}
+      <div className={styles.libSummaryStats}>
+        <div className={styles.libStatCard}>
+          <div className={styles.libStatLabel}>Total Potential</div>
+          <div className={`${styles.libStatValue} ${styles.libStatGreen}`}>{totalPotentialFmt}</div>
+          <div className={styles.libStatSub}>Across all {allPlaybooks.length} playbooks</div>
         </div>
-      )}
+        <div className={styles.libStatCard}>
+          <div className={styles.libStatLabel}>In Progress</div>
+          <div className={`${styles.libStatValue} ${styles.libStatBlue}`}>{inProgressIds.size}</div>
+          <div className={styles.libStatSub}>Active playbooks</div>
+        </div>
+        <div className={styles.libStatCard}>
+          <div className={styles.libStatLabel}>Completed</div>
+          <div className={`${styles.libStatValue} ${styles.libStatGreen}`}>{completedIds.size}</div>
+          <div className={styles.libStatSub}>Fully executed</div>
+        </div>
+        <div className={styles.libStatCard}>
+          <div className={styles.libStatLabel}>Not Started</div>
+          <div className={`${styles.libStatValue} ${styles.libStatOrange}`}>{allPlaybooks.length - activeIds.size}</div>
+          <div className={styles.libStatSub}>Available to start</div>
+        </div>
+      </div>
 
-      {/* Active Playbooks */}
-      {activePlaybooks.length > 0 && (
+      {/* Controls: filter tabs + search */}
+      <div className={styles.libControlsRow}>
+        <div className={styles.libFilterTabs}>
+          <button
+            className={`${styles.libFilterTab} ${categoryFilter === 'all' ? styles.libFilterTabActive : ''}`}
+            onClick={() => setCategoryFilter('all')}
+          >
+            All ({allPlaybooks.length})
+          </button>
+          {categories.map(cat => (
+            <button
+              key={cat}
+              className={`${styles.libFilterTab} ${categoryFilter === cat ? styles.libFilterTabActive : ''}`}
+              onClick={() => setCategoryFilter(cat)}
+            >
+              {CATEGORY_LABELS[cat] || cat} ({categoryCounts[cat]})
+            </button>
+          ))}
+        </div>
+        <div className={styles.libSearchBox}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            type="text"
+            placeholder="Search playbooks..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* In Progress section */}
+      {inProgressPlaybooks.length > 0 && (
         <>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Active Playbooks</h2>
-            <span style={{ fontSize: '13px', color: 'var(--text-tertiary)' }}>{activePlaybooks.length} in progress</span>
-          </div>
-          <div className={styles.playbookGrid} style={{ marginBottom: 32 }}>
-            {activePlaybooks.map(ap => {
-              const def = allPlaybooks.find(p => p.slug === ap.id)
-              const iconColor = ICON_COLORS[ap.category] || 'iconBlue'
+          <div className={styles.libGridSectionLabel}>In Progress</div>
+          <div className={styles.libPlaybookGrid}>
+            {inProgressPlaybooks.map(pb => {
+              const ap = activePlaybooks.find(a => a.id === pb.slug)
+              const pct = ap?.percentComplete ?? 0
+              const catClass = CATEGORY_TAG_CLASS[pb.category] || 'pbCatOwner'
+              const diffClass = getDifficultyClass(pb.difficulty)
               return (
-                <Link key={ap.id} href={`/dashboard/playbook/${ap.id}`} className={`${styles.playbookCard} ${styles.activePlaybook}`}>
-                  <div className={styles.playbookCardTop}>
-                    <div className={`${styles.playbookIcon} ${styles[iconColor]}`}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+                <Link key={pb.slug} href={`/dashboard/playbook/${pb.slug}`} className={styles.pbCard}>
+                  <div className={styles.pbCardHeader}>
+                    <div className={styles[catClass]}>{CATEGORY_LABELS[pb.category] || pb.category}</div>
+                    <div className={styles.pbTitle}>{pb.title}</div>
+                    <div className={styles.pbDesc}>{pb.description}</div>
+                  </div>
+                  <div className={styles.pbCardMeta}>
+                    <div className={styles.pbMetaRow}>
+                      <span className={styles.pbImpact}>{formatImpact(pb.impactBaseLow, pb.impactBaseHigh)}</span>
+                      <span className={`${styles.pbBadge} ${styles[diffClass]}`}>{getDifficultyLabel(pb.difficulty)}</span>
+                      <span className={styles.pbDuration}>{formatDuration(pb.durationLow, pb.durationHigh)}</span>
                     </div>
-                    <div className={styles.playbookInfo}>
-                      <div className={styles.playbookTitle}>{ap.title}</div>
-                      <div className={styles.playbookDesc}>{def?.description || ''}</div>
+                    <div className={styles.pbStatusRow}>
+                      <div className={`${styles.pbStatusDot} ${styles.pbStatusDotInProgress}`} />
+                      <div className={styles.pbStatusText}>
+                        In Progress &mdash; <strong>{pct}% complete</strong>
+                      </div>
+                    </div>
+                    <div className={styles.pbProgress}>
+                      <div className={styles.pbProgressFill} style={{ width: `${pct}%` }} />
                     </div>
                   </div>
-                  <div className={styles.playbookCardBottom}>
-                    <div className={styles.pbMeta}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                      {ap.percentComplete}% complete
-                    </div>
-                    <span className={`${styles.pbStatus} ${styles.pbStatusActive}`}>In Progress</span>
-                  </div>
-                  <div className={styles.pbCta}>
-                    Continue playbook
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  <div className={styles.pbCardFooter}>
+                    <span className={`${styles.pbBtn} ${styles.pbBtnContinue}`}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 18 15 12 9 6"/>
+                      </svg>
+                      Continue
+                    </span>
                   </div>
                 </Link>
               )
@@ -186,58 +252,91 @@ export default function PlaybookPage() {
         </>
       )}
 
-      {/* Browse All */}
-      <div className={styles.browseHeader}>
-        <h2>All Playbooks</h2>
-        <span className={styles.browseCount}>{allPlaybooks.length} playbooks available</span>
-      </div>
+      {/* Completed section */}
+      {completedPlaybooks.length > 0 && (
+        <>
+          <div className={styles.libGridSectionLabel}>Completed</div>
+          <div className={styles.libPlaybookGrid}>
+            {completedPlaybooks.map(pb => {
+              const catClass = CATEGORY_TAG_CLASS[pb.category] || 'pbCatOwner'
+              const diffClass = getDifficultyClass(pb.difficulty)
+              return (
+                <Link key={pb.slug} href={`/dashboard/playbook/${pb.slug}`} className={`${styles.pbCard} ${styles.pbCardCompleted}`}>
+                  <div className={styles.pbCardHeader}>
+                    <div className={styles[catClass]}>{CATEGORY_LABELS[pb.category] || pb.category}</div>
+                    <div className={styles.pbTitle}>{pb.title}</div>
+                    <div className={styles.pbDesc}>{pb.description}</div>
+                  </div>
+                  <div className={styles.pbCardMeta}>
+                    <div className={styles.pbMetaRow}>
+                      <span className={styles.pbImpact}>{formatImpact(pb.impactBaseLow, pb.impactBaseHigh)}</span>
+                      <span className={`${styles.pbBadge} ${styles[diffClass]}`}>{getDifficultyLabel(pb.difficulty)}</span>
+                      <span className={styles.pbDuration}>{formatDuration(pb.durationLow, pb.durationHigh)}</span>
+                    </div>
+                    <div className={styles.pbStatusRow}>
+                      <div className={`${styles.pbStatusDot} ${styles.pbStatusDotComplete}`} />
+                      <div className={`${styles.pbStatusText} ${styles.pbStatusTextComplete}`}>Completed</div>
+                    </div>
+                    <div className={styles.pbProgress}>
+                      <div className={`${styles.pbProgressFill} ${styles.pbProgressFillGreen}`} style={{ width: '100%' }} />
+                    </div>
+                  </div>
+                  <div className={styles.pbCardFooter}>
+                    <span className={`${styles.pbBtn} ${styles.pbBtnCompleted}`}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                      Completed
+                    </span>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        </>
+      )}
 
-      <div className={styles.catTabs}>
-        <button
-          className={`${styles.catTab} ${categoryFilter === 'all' ? styles.catTabActive : ''}`}
-          onClick={() => setCategoryFilter('all')}
-        >
-          All <span className={styles.catCount}>({allPlaybooks.length})</span>
-        </button>
-        {categories.map(cat => (
-          <button
-            key={cat}
-            className={`${styles.catTab} ${categoryFilter === cat ? styles.catTabActive : ''}`}
-            onClick={() => setCategoryFilter(cat)}
-          >
-            {CATEGORY_LABELS[cat] || cat} <span className={styles.catCount}>({categoryCounts[cat]})</span>
-          </button>
-        ))}
-      </div>
+      {/* Not Started section */}
+      {notStartedPlaybooks.length > 0 && (
+        <>
+          <div className={styles.libGridSectionLabel}>Not Started</div>
+          <div className={styles.libPlaybookGrid}>
+            {notStartedPlaybooks.map(pb => {
+              const catClass = CATEGORY_TAG_CLASS[pb.category] || 'pbCatOwner'
+              const diffClass = getDifficultyClass(pb.difficulty)
+              return (
+                <Link key={pb.slug} href={`/dashboard/playbook/${pb.slug}`} className={styles.pbCard}>
+                  <div className={styles.pbCardHeader}>
+                    <div className={styles[catClass]}>{CATEGORY_LABELS[pb.category] || pb.category}</div>
+                    <div className={styles.pbTitle}>{pb.title}</div>
+                    <div className={styles.pbDesc}>{pb.description}</div>
+                  </div>
+                  <div className={styles.pbCardMeta}>
+                    <div className={styles.pbMetaRow}>
+                      <span className={styles.pbImpact}>{formatImpact(pb.impactBaseLow, pb.impactBaseHigh)}</span>
+                      <span className={`${styles.pbBadge} ${styles[diffClass]}`}>{getDifficultyLabel(pb.difficulty)}</span>
+                      <span className={styles.pbDuration}>{formatDuration(pb.durationLow, pb.durationHigh)}</span>
+                    </div>
+                    <div className={styles.pbStatusRow}>
+                      <div className={`${styles.pbStatusDot} ${styles.pbStatusDotNotStarted}`} />
+                      <div className={styles.pbStatusText}>Not Started</div>
+                    </div>
+                  </div>
+                  <div className={styles.pbCardFooter}>
+                    <span className={`${styles.pbBtn} ${styles.pbBtnStart}`}>Start Playbook</span>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        </>
+      )}
 
-      <div className={styles.playbookGrid}>
-        {filteredPlaybooks.map(pb => {
-          const iconColor = ICON_COLORS[pb.category] || 'iconBlue'
-          return (
-            <Link key={pb.slug} href={`/dashboard/playbook/${pb.slug}`} className={styles.playbookCard}>
-              <div className={styles.playbookCardTop}>
-                <div className={`${styles.playbookIcon} ${styles[iconColor]}`}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
-                </div>
-                <div className={styles.playbookInfo}>
-                  <div className={styles.playbookTitle}>{pb.title}</div>
-                  <div className={styles.playbookDesc}>{pb.description}</div>
-                </div>
-              </div>
-              <div className={styles.playbookCardBottom}>
-                <div className={styles.pbMeta}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  {pb.phases.length} phases
-                </div>
-                <div className={styles.pbImpact}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
-                  {CATEGORY_LABELS[pb.category] || pb.category}
-                </div>
-              </div>
-            </Link>
-          )
-        })}
-      </div>
+      {filteredPlaybooks.length === 0 && (
+        <div className={styles.card} style={{ textAlign: 'center', padding: '48px 40px', color: 'var(--text-secondary)' }}>
+          No playbooks match your search or filter.
+        </div>
+      )}
     </>
   )
 }

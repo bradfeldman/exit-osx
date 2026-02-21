@@ -128,7 +128,6 @@ export default function SignalsPage() {
     acc[key] = (acc[key] || 0) + 1
     return acc
   }, {} as Record<string, number>)
-  const total = signals.length || 1
 
   // Apply filters
   let filtered = signals
@@ -159,10 +158,19 @@ export default function SignalsPage() {
     <>
       <TrackPageView page="/dashboard/signals" />
 
+      {/* Page Header */}
       <div className={styles.pageHeader}>
         <div>
           <h1>Signals</h1>
           <p>Real-time indicators of business health, value changes, and risks</p>
+        </div>
+        <div className={styles.headerActions}>
+          <Link href="/dashboard/settings" className={`${styles.btn} ${styles.btnSecondary}`}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
+            </svg>
+            Notification Settings
+          </Link>
         </div>
       </div>
 
@@ -185,7 +193,7 @@ export default function SignalsPage() {
                 </>
               ) : (
                 <>
-                  <TrendUpIcon />
+                  <TrendUpSmallIcon />
                   {varData.trend.previousValue !== null && `Up from ${formatShort(varData.trend.previousValue)}`}
                 </>
               )}
@@ -198,6 +206,10 @@ export default function SignalsPage() {
             <div className={styles.varValue} style={{ color: 'var(--green)' }}>{positiveCount}</div>
             <div className={styles.varCount}>value-building events</div>
           </div>
+          <div className={`${styles.varTrend} ${styles.varTrendImproving}`}>
+            <TrendUpSmallIcon />
+            value-building events
+          </div>
         </div>
         <div className={styles.varCard}>
           <div className={styles.varLabel}>Warning Signals (30 days)</div>
@@ -205,6 +217,12 @@ export default function SignalsPage() {
             <div className={styles.varValue} style={{ color: 'var(--orange)' }}>{warningCount}</div>
             <div className={styles.varCount}>items to watch</div>
           </div>
+          {warningCount > 0 && (
+            <div className={`${styles.varTrend} ${styles.varTrendWorsening}`}>
+              <TrendUpSmallIcon />
+              items requiring attention
+            </div>
+          )}
         </div>
       </div>
 
@@ -221,6 +239,60 @@ export default function SignalsPage() {
           <div className={styles.healthLegendItem}><div className={styles.healthLegendDot} style={{ background: 'var(--orange)' }} />Warning ({severityCounts.warning || 0})</div>
           <div className={styles.healthLegendItem}><div className={styles.healthLegendDot} style={{ background: 'var(--red)' }} />Negative ({severityCounts.negative || 0})</div>
           <div className={styles.healthLegendItem}><div className={styles.healthLegendDot} style={{ background: 'var(--accent)' }} />Informational ({severityCounts.info || 0})</div>
+        </div>
+      </div>
+
+      {/* Drift Detection Card */}
+      {/* TODO: wire to API — drift report data */}
+      <div className={styles.driftCard}>
+        <div className={styles.driftHeader}>
+          <div className={styles.driftIcon}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+          <div>
+            <div className={styles.driftTitle}>Drift Report — {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</div>
+            <div className={styles.driftSubtitle}>Comparing actual performance to your improvement trajectory</div>
+          </div>
+          <div className={styles.driftDate}>Generated {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+        </div>
+        <div className={styles.driftItems}>
+          <div className={styles.driftItem}>
+            <div className={styles.driftItemLabel}>Value at Risk</div>
+            <div className={styles.driftItemRow}>
+              <div className={styles.driftItemActual} style={{ color: varData && varData.totalValueAtRisk > 0 ? 'var(--red)' : 'var(--green)' }}>
+                {varData ? formatShort(varData.totalValueAtRisk) : '—'}
+              </div>
+              <div className={styles.driftItemExpected}>Target: $0</div>
+            </div>
+            <div className={`${styles.driftItemDelta} ${varData && varData.totalValueAtRisk > 0 ? styles.driftItemDeltaBad : styles.driftItemDeltaGood}`}>
+              {varData && varData.totalValueAtRisk > 0 ? 'Risks remain open' : 'No risks detected'}
+            </div>
+          </div>
+          <div className={styles.driftItem}>
+            <div className={styles.driftItemLabel}>Positive Signals (30 days)</div>
+            <div className={styles.driftItemRow}>
+              <div className={styles.driftItemActual} style={{ color: 'var(--green)' }}>{positiveCount}</div>
+              <div className={styles.driftItemExpected}>Target: growing</div>
+            </div>
+            <div className={`${styles.driftItemDelta} ${positiveCount > 0 ? styles.driftItemDeltaGood : styles.driftItemDeltaNeutral}`}>
+              {positiveCount > 0 ? `${positiveCount} value-building events` : 'No positive signals yet'}
+            </div>
+          </div>
+          <div className={styles.driftItem}>
+            <div className={styles.driftItemLabel}>Warning Signals</div>
+            <div className={styles.driftItemRow}>
+              <div className={styles.driftItemActual} style={{ color: warningCount > 0 ? 'var(--orange)' : 'var(--green)' }}>
+                {warningCount}
+              </div>
+              <div className={styles.driftItemExpected}>Target: 0</div>
+            </div>
+            <div className={`${styles.driftItemDelta} ${warningCount > 0 ? styles.driftItemDeltaBad : styles.driftItemDeltaGood}`}>
+              {warningCount > 0 ? `${warningCount} items need attention` : 'All clear'}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -271,6 +343,8 @@ export default function SignalsPage() {
               const catTag = sig.category ? CATEGORY_TAG_MAP[sig.category] : null
               const impact = sig.estimatedValueImpact
               const isPositive = sig.severity === 'POSITIVE' || sig.severity === 'LOW'
+              const isNegative = sig.severity === 'HIGH' || sig.severity === 'CRITICAL'
+              const isWarning = sig.severity === 'MEDIUM' || sig.severity === 'WARNING'
 
               return (
                 <Link
@@ -297,7 +371,7 @@ export default function SignalsPage() {
                           {sig.channel === 'PROMPTED_DISCLOSURE' ? 'Weekly Check-In'
                             : sig.channel === 'TASK_GENERATED' ? 'Task Generated'
                             : sig.channel === 'TIME_DECAY' ? 'Automated Check'
-                            : sig.channel === 'EXTERNAL' ? 'External'
+                            : sig.channel === 'EXTERNAL' ? 'Industry Data'
                             : sig.channel}
                         </span>
                       </div>
@@ -309,9 +383,20 @@ export default function SignalsPage() {
                         </div>
                       )}
                       <div className={styles.signalTime}>{timeAgo(sig.createdAt)}</div>
+                      {(isNegative || isWarning) && (
+                        <Link
+                          href="/dashboard/action-center"
+                          className={styles.signalActionBtn}
+                          onClick={e => e.stopPropagation()}
+                        >
+                          Create Action
+                        </Link>
+                      )}
                     </div>
                     <div style={{ color: 'var(--text-tertiary)', flexShrink: 0, marginTop: '10px' }}>
-                      <ChevronIcon />
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '16px', height: '16px' }}>
+                        <polyline points="9 18 15 12 9 6"/>
+                      </svg>
                     </div>
                   </div>
                 </Link>
@@ -346,7 +431,6 @@ function SignalIcon({ type }: { type: string }) {
       <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
     </svg>
   )
-  // info
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
@@ -354,15 +438,7 @@ function SignalIcon({ type }: { type: string }) {
   )
 }
 
-function ChevronIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '16px', height: '16px' }}>
-      <polyline points="9 18 15 12 9 6"/>
-    </svg>
-  )
-}
-
-function TrendUpIcon() {
+function TrendUpSmallIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '12px', height: '12px' }}>
       <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>

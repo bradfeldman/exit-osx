@@ -54,6 +54,11 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   /* config options here */
 
+  // Type checking runs locally and in CI — skip on Vercel to avoid OOM on 8GB build machines
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+
   // SECURITY: Limit request body size to prevent DoS
   experimental: {
     serverActions: {

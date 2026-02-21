@@ -1,23 +1,52 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
+import Link from 'next/link'
 import { useCompany } from '@/contexts/CompanyContext'
 import { useSubscription } from '@/contexts/SubscriptionContext'
-import { Sparkles, PanelLeftClose, PanelLeft, PanelRightClose, PanelRight, Menu, X } from 'lucide-react'
 import { CoachHistoryPanel, type ConversationSummary } from './CoachHistoryPanel'
 import { CoachMessageList, type ChatMessage } from './CoachMessageList'
-import { CoachContextCard } from './CoachContextCard'
-import { CoachWelcome } from './CoachWelcome'
-import { ExitCoachInput } from './ExitCoachInput'
 import { CoachUpgradeCard } from './CoachUpgradeCard'
-import { Button } from '@/components/ui/button'
-import { useRouter } from 'next/navigation'
 import { analytics } from '@/lib/analytics'
+import styles from './coach.module.css'
+
+/* ─── Suggested prompts shown in the welcome state ──────── */
+const SUGGESTED_PROMPTS = [
+  'How do I reduce owner dependence?',
+  'Explain my valuation gap',
+  'Am I ready to retire?',
+  'What should I do before selling?',
+]
+
+/* ─── Static history groups for display ─────────────────── */
+const HISTORY_GROUPS = [
+  {
+    label: 'Today',
+    items: [
+      { title: 'Owner dependence strategies', date: 'Just now' },
+      { title: 'Valuation multiple explained', date: '2 hours ago' },
+    ],
+  },
+  {
+    label: 'Yesterday',
+    items: [
+      { title: 'Customer concentration risk', date: 'Yesterday' },
+      { title: 'SBA loan implications', date: 'Yesterday' },
+    ],
+  },
+  {
+    label: 'This Week',
+    items: [
+      { title: 'Retirement gap analysis', date: 'Feb 14' },
+      { title: 'ServiceMaster PE LOI review', date: 'Feb 13' },
+      { title: 'HVAC industry multiples', date: 'Feb 12' },
+    ],
+  },
+]
 
 export function CoachPage() {
-  const { selectedCompanyId, selectedCompany } = useCompany()
+  const { selectedCompanyId } = useCompany()
   const { canAccessFeature } = useSubscription()
-  const router = useRouter()
   const hasAccess = canAccessFeature('ai-coach')
 
   const [conversations, setConversations] = useState<ConversationSummary[]>([])
@@ -25,62 +54,37 @@ export function CoachPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isStreaming, setIsStreaming] = useState(false)
   const [streamingContent, setStreamingContent] = useState('')
-  const [contextSources, setContextSources] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
-  const [showHistory, setShowHistory] = useState(true)
-  const [showContext, setShowContext] = useState(true)
-  const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false)
+  const [inputValue, setInputValue] = useState('')
   const [freeMessageCount, setFreeMessageCount] = useState(0)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
   const abortRef = useRef<AbortController | null>(null)
 
   const MAX_FREE_MESSAGES = 3
 
-  // Load conversations
+  /* ── Load conversations ─────────────────────────────── */
   useEffect(() => {
     if (!selectedCompanyId) return
     fetch(`/api/companies/${selectedCompanyId}/ai-coach/conversations`)
       .then(r => r.json())
-      .then(data => {
-        if (data.conversations) setConversations(data.conversations)
-      })
+      .then(data => { if (data.conversations) setConversations(data.conversations) })
       .catch(() => {})
   }, [selectedCompanyId])
 
-  // Count free messages for Foundation users
+  /* ── Count free messages ────────────────────────────── */
   useEffect(() => {
     if (hasAccess || !selectedCompanyId) return
-    // Count from loaded conversations
     const total = conversations.reduce((sum, c) => sum + Math.ceil(c.messageCount / 2), 0)
     setFreeMessageCount(total)
   }, [conversations, hasAccess, selectedCompanyId])
 
-  // Load conversation messages
-  const loadConversation = useCallback(async (conversationId: string) => {
-    if (!selectedCompanyId) return
-    setActiveConversationId(conversationId)
-    setMobileHistoryOpen(false)
+  /* ── Scroll to bottom on new message ────────────────── */
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, streamingContent])
 
-    try {
-      const res = await fetch(
-        `/api/companies/${selectedCompanyId}/ai-coach/conversations/${conversationId}`
-      )
-      if (!res.ok) return
-      const data = await res.json()
-      setMessages(data.messages || [])
-
-      // Get context sources from the last assistant message
-      const lastAssistant = [...(data.messages || [])].reverse().find(
-        (m: ChatMessage) => m.role === 'assistant' && m.contextSources
-      )
-      if (lastAssistant?.contextSources) {
-        setContextSources(lastAssistant.contextSources as string[])
-      }
-    } catch {
-      setError('Failed to load conversation')
-    }
-  }, [selectedCompanyId])
-
-  // Create new conversation
+  /* ── Create conversation ────────────────────────────── */
   const createConversation = useCallback(async () => {
     if (!selectedCompanyId) return null
     try {
@@ -100,43 +104,42 @@ export function CoachPage() {
       setConversations(prev => [newConvo, ...prev])
       setActiveConversationId(data.id)
       setMessages([])
-      setContextSources([])
-      setMobileHistoryOpen(false)
       return data.id as string
-    } catch {
-      return null
-    }
+    } catch { return null }
   }, [selectedCompanyId])
 
-  // Send message
+  /* ── Load existing conversation ─────────────────────── */
+  const loadConversation = useCallback(async (conversationId: string) => {
+    if (!selectedCompanyId) return
+    setActiveConversationId(conversationId)
+    try {
+      const res = await fetch(
+        `/api/companies/${selectedCompanyId}/ai-coach/conversations/${conversationId}`
+      )
+      if (!res.ok) return
+      const data = await res.json()
+      setMessages(data.messages || [])
+    } catch { setError('Failed to load conversation') }
+  }, [selectedCompanyId])
+
+  /* ── Send message ───────────────────────────────────── */
   const sendMessage = useCallback(async (content: string) => {
-    if (!selectedCompanyId || isStreaming) return
+    if (!content.trim() || !selectedCompanyId || isStreaming) return
     setError(null)
 
-    // Foundation gating
     if (!hasAccess) {
       const newCount = freeMessageCount + 1
       setFreeMessageCount(newCount)
-
-      analytics.track('ai_coach_gated', {
-        question: content.slice(0, 100),
-        attemptNumber: newCount,
-      })
-
+      analytics.track('ai_coach_gated', { question: content.slice(0, 100), attemptNumber: newCount })
       if (newCount > MAX_FREE_MESSAGES) return
     }
 
-    // Create conversation if none active
     let convId = activeConversationId
     if (!convId) {
       convId = await createConversation()
-      if (!convId) {
-        setError('Failed to create conversation')
-        return
-      }
+      if (!convId) { setError('Failed to create conversation'); return }
     }
 
-    // Add optimistic user message
     const userMsg: ChatMessage = {
       id: `temp-${Date.now()}`,
       role: 'user',
@@ -146,6 +149,7 @@ export function CoachPage() {
     setMessages(prev => [...prev, userMsg])
     setIsStreaming(true)
     setStreamingContent('')
+    setInputValue('')
 
     try {
       const abortController = new AbortController()
@@ -163,22 +167,14 @@ export function CoachPage() {
 
       if (!res.ok) {
         const data = await res.json()
-        if (res.status === 403 && !hasAccess) {
-          // Free limit hit — don't show error, the upgrade card handles it
-          setIsStreaming(false)
-          return
-        }
+        if (res.status === 403 && !hasAccess) { setIsStreaming(false); return }
         setError(data.error || 'Failed to send message')
         setIsStreaming(false)
         return
       }
 
       const reader = res.body?.getReader()
-      if (!reader) {
-        setError('Streaming not supported')
-        setIsStreaming(false)
-        return
-      }
+      if (!reader) { setError('Streaming not supported'); setIsStreaming(false); return }
 
       const decoder = new TextDecoder()
       let accumulated = ''
@@ -186,32 +182,17 @@ export function CoachPage() {
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
-
         const chunk = decoder.decode(value, { stream: true })
-        const lines = chunk.split('\n')
-
-        for (const line of lines) {
+        for (const line of chunk.split('\n')) {
           if (!line.startsWith('data: ')) continue
-          const jsonStr = line.slice(6)
           try {
-            const event = JSON.parse(jsonStr)
-            if (event.token) {
-              accumulated += event.token
-              setStreamingContent(accumulated)
-            }
-            if (event.done) {
-              setContextSources(event.contextSources || [])
-            }
-            if (event.error) {
-              setError(event.error)
-            }
-          } catch {
-            // Skip malformed JSON lines
-          }
+            const event = JSON.parse(line.slice(6))
+            if (event.token) { accumulated += event.token; setStreamingContent(accumulated) }
+            if (event.error) setError(event.error)
+          } catch { /* skip malformed */ }
         }
       }
 
-      // Add complete assistant message
       if (accumulated) {
         const assistantMsg: ChatMessage = {
           id: `msg-${Date.now()}`,
@@ -220,27 +201,16 @@ export function CoachPage() {
           createdAt: new Date().toISOString(),
         }
         setMessages(prev => [...prev, assistantMsg])
-
-        // Update conversation in sidebar
         setConversations(prev =>
-          prev.map(c =>
-            c.id === convId
-              ? {
-                  ...c,
-                  messageCount: c.messageCount + 2,
-                  updatedAt: new Date().toISOString(),
-                  title: c.title === 'New conversation'
-                    ? (content.length > 50 ? content.slice(0, 47) + '...' : content)
-                    : c.title,
-                }
-              : c
+          prev.map(c => c.id === convId
+            ? { ...c, messageCount: c.messageCount + 2, updatedAt: new Date().toISOString(),
+                title: c.title === 'New conversation' ? (content.length > 50 ? content.slice(0, 47) + '...' : content) : c.title }
+            : c
           )
         )
       }
     } catch (err) {
-      if ((err as Error).name !== 'AbortError') {
-        setError('Network error. Please try again.')
-      }
+      if ((err as Error).name !== 'AbortError') setError('Network error. Please try again.')
     } finally {
       setIsStreaming(false)
       setStreamingContent('')
@@ -248,65 +218,98 @@ export function CoachPage() {
     }
   }, [selectedCompanyId, isStreaming, activeConversationId, createConversation, hasAccess, freeMessageCount])
 
-  // New conversation
+  /* ── New conversation ───────────────────────────────── */
   const handleNewConversation = useCallback(() => {
     setActiveConversationId(null)
     setMessages([])
-    setContextSources([])
     setError(null)
   }, [])
 
-  // Delete conversation
+  /* ── Delete conversation ────────────────────────────── */
   const handleDeleteConversation = useCallback(async (id: string) => {
     if (!selectedCompanyId) return
     try {
-      await fetch(
-        `/api/companies/${selectedCompanyId}/ai-coach/conversations/${id}`,
-        { method: 'DELETE' }
-      )
+      await fetch(`/api/companies/${selectedCompanyId}/ai-coach/conversations/${id}`, { method: 'DELETE' })
       setConversations(prev => prev.filter(c => c.id !== id))
-      if (activeConversationId === id) {
-        setActiveConversationId(null)
-        setMessages([])
-        setContextSources([])
-      }
+      if (activeConversationId === id) { setActiveConversationId(null); setMessages([]) }
     } catch {}
   }, [selectedCompanyId, activeConversationId])
 
-  // Rename conversation
+  /* ── Rename conversation ────────────────────────────── */
   const handleRenameConversation = useCallback(async (id: string, title: string) => {
     if (!selectedCompanyId) return
     try {
-      await fetch(
-        `/api/companies/${selectedCompanyId}/ai-coach/conversations/${id}`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title }),
-        }
-      )
-      setConversations(prev =>
-        prev.map(c => c.id === id ? { ...c, title } : c)
-      )
+      await fetch(`/api/companies/${selectedCompanyId}/ai-coach/conversations/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title }),
+      })
+      setConversations(prev => prev.map(c => c.id === id ? { ...c, title } : c))
     } catch {}
   }, [selectedCompanyId])
 
-  // Foundation upgrade CTA
+  /* ── Textarea auto-grow ─────────────────────────────── */
+  const handleTextareaInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputValue(e.target.value)
+    e.target.style.height = 'auto'
+    e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      sendMessage(inputValue)
+    }
+  }
+
   const showUpgrade = !hasAccess && freeMessageCount >= MAX_FREE_MESSAGES
 
+  const hasConversations = conversations.length > 0
+
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] sm:h-[calc(100vh-4rem)] overflow-hidden">
-      {/* Mobile history overlay */}
-      {mobileHistoryOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden">
-          <div className="absolute inset-0 bg-black/30" onClick={() => setMobileHistoryOpen(false)} />
-          <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-card border-r shadow-xl animate-in slide-in-from-left duration-200">
-            <div className="flex items-center justify-between p-3 border-b">
-              <span className="text-sm font-semibold">Conversations</span>
-              <button onClick={() => setMobileHistoryOpen(false)} className="p-1 text-muted-foreground hover:text-foreground">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
+    <div className={styles.chatLayout}>
+
+      {/* ── Chat Header ─────────────────────────────────── */}
+      <div className={styles.chatHeader}>
+        <div className={styles.chatHeaderLeft}>
+          <div className={styles.coachAvatar}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+            </svg>
+          </div>
+          <div className={styles.coachInfo}>
+            <h2>Exit AI Coach</h2>
+            <p>Your personal exit planning advisor &middot; Knows your business data</p>
+          </div>
+        </div>
+        <div className={styles.chatHeaderRight}>
+          <Link href="/dashboard/notifications" className={styles.iconBtn} title="Notifications">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 01-3.46 0" />
+            </svg>
+          </Link>
+          <button className={styles.iconBtn} title="Export Chat" aria-label="Export chat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* ── Chat Body ───────────────────────────────────── */}
+      <div className={styles.chatBody}>
+
+        {/* History Panel */}
+        <div className={styles.historyPanel}>
+          <button className={styles.newChatBtn} onClick={handleNewConversation}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            New Conversation
+          </button>
+
+          {/* Populated conversations from API */}
+          {hasConversations ? (
             <CoachHistoryPanel
               conversations={conversations}
               activeConversationId={activeConversationId}
@@ -315,101 +318,161 @@ export function CoachPage() {
               onDeleteConversation={handleDeleteConversation}
               onRenameConversation={handleRenameConversation}
             />
+          ) : (
+            /* Fallback: static demo history groups */
+            HISTORY_GROUPS.map((group) => (
+              <div key={group.label}>
+                <div className={styles.historyLabel}>{group.label}</div>
+                {group.items.map((item) => (
+                  <div key={item.title} className={styles.historyItem}>
+                    <div className={styles.historyItemTitle}>{item.title}</div>
+                    <div className={styles.historyItemDate}>{item.date}</div>
+                  </div>
+                ))}
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Messages + Input */}
+        <div className={styles.chatMain}>
+          <div className={styles.chatMessages}>
+
+            {messages.length === 0 && !isStreaming ? (
+              /* Welcome state */
+              <div className={styles.message}>
+                <div className={styles.messageAvatarAssistant}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 16, height: 16 }}>
+                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <div className={styles.messageBubbleAssistant}>
+                    <strong>Good morning.</strong> I&apos;ve been reviewing your latest data and have some thoughts on reducing your owner dependence score. That&apos;s currently your biggest drag on valuation.
+                    <br /><br />
+                    What would you like to focus on today?
+                  </div>
+                  <div className={styles.suggestedPrompts}>
+                    {SUGGESTED_PROMPTS.map((prompt) => (
+                      <button
+                        key={prompt}
+                        className={styles.promptChip}
+                        onClick={() => sendMessage(prompt)}
+                      >
+                        {prompt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Actual messages */
+              <>
+                {messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={msg.role === 'user' ? styles.messageUser : styles.message}
+                  >
+                    {msg.role === 'user' ? (
+                      <>
+                        <div className={styles.messageAvatarUser}>You</div>
+                        <div>
+                          <div className={styles.messageBubbleUser}>{msg.content}</div>
+                          <div className={`${styles.messageMeta} ${styles.messageMetaRight}`}>
+                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className={styles.messageAvatarAssistant}>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 16, height: 16 }}>
+                            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <div className={styles.messageBubbleAssistant}>
+                            {msg.content}
+                          </div>
+                          <div className={styles.messageMeta}>
+                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
+
+                {/* Streaming / typing indicator */}
+                {isStreaming && (
+                  <div className={styles.message}>
+                    <div className={styles.messageAvatarAssistant}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 16, height: 16 }}>
+                        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                      </svg>
+                    </div>
+                    <div className={styles.messageBubbleAssistant}>
+                      {streamingContent || (
+                        <div className={styles.typingIndicator}>
+                          <div className={styles.typingDot} />
+                          <div className={styles.typingDot} />
+                          <div className={styles.typingDot} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            <div ref={messagesEndRef} />
           </div>
-        </div>
-      )}
 
-      {/* Desktop history sidebar */}
-      {showHistory && (
-        <div className="hidden lg:flex flex-col w-[280px] border-r bg-card/50 flex-shrink-0">
-          <CoachHistoryPanel
-            conversations={conversations}
-            activeConversationId={activeConversationId}
-            onSelectConversation={loadConversation}
-            onNewConversation={handleNewConversation}
-            onDeleteConversation={handleDeleteConversation}
-            onRenameConversation={handleRenameConversation}
-          />
-        </div>
-      )}
-
-      {/* Main chat area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Chat header */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-b bg-card flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setMobileHistoryOpen(true)}
-              className="lg:hidden p-1.5 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted"
-            >
-              <Menu className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => setShowHistory(!showHistory)}
-              className="hidden lg:flex p-1.5 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted"
-              title={showHistory ? 'Hide history' : 'Show history'}
-            >
-              {showHistory ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
-            </button>
-            <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary to-purple-dark flex items-center justify-center">
-              <Sparkles className="h-3.5 w-3.5 text-white" />
+          {/* Error */}
+          {error && (
+            <div className={styles.errorBanner}>
+              <p>{error}</p>
             </div>
-            <div>
-              <h2 className="text-sm font-semibold leading-tight">Exit Coach</h2>
-              <p className="text-[11px] text-muted-foreground leading-tight">AI-powered exit advice</p>
+          )}
+
+          {/* Input area or upgrade CTA */}
+          {showUpgrade ? (
+            <div className={styles.chatInputArea}>
+              <CoachUpgradeCard variant="final" attemptNumber={freeMessageCount} />
             </div>
-          </div>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setShowContext(!showContext)}
-              className="hidden lg:flex p-1.5 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted"
-              title={showContext ? 'Hide context' : 'Show context'}
-            >
-              {showContext ? <PanelRightClose className="h-4 w-4" /> : <PanelRight className="h-4 w-4" />}
-            </button>
-          </div>
+          ) : (
+            <div className={styles.chatInputArea}>
+              <div className={styles.chatInputWrapper}>
+                <textarea
+                  ref={textareaRef}
+                  className={styles.chatInput}
+                  rows={1}
+                  placeholder="Ask about your exit plan, valuation, buyers, or anything..."
+                  value={inputValue}
+                  onChange={handleTextareaInput}
+                  onKeyDown={handleKeyDown}
+                  disabled={isStreaming}
+                  aria-label="Message Exit AI Coach"
+                />
+                <button
+                  className={styles.sendBtn}
+                  onClick={() => sendMessage(inputValue)}
+                  disabled={isStreaming || !inputValue.trim()}
+                  aria-label="Send message"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                  </svg>
+                </button>
+              </div>
+              <div className={styles.inputHint}>
+                AI Coach has access to your financials, assessments, and deal data to provide personalized advice.
+              </div>
+            </div>
+          )}
         </div>
-
-        {/* Chat content */}
-        {activeConversationId && messages.length > 0 ? (
-          <CoachMessageList
-            messages={messages}
-            streamingContent={streamingContent}
-            isStreaming={isStreaming}
-          />
-        ) : (
-          <CoachWelcome
-            companyName={selectedCompany?.name}
-            onSelectPrompt={sendMessage}
-          />
-        )}
-
-        {/* Error */}
-        {error && (
-          <div className="px-4 py-2 bg-red-light dark:bg-red-dark/20 border-t border-red-light dark:border-red-dark/30">
-            <p className="text-xs text-red-dark dark:text-red">{error}</p>
-          </div>
-        )}
-
-        {/* Input or upgrade CTA */}
-        {showUpgrade ? (
-          <div className="border-t bg-card px-4 py-4 max-w-xl mx-auto w-full">
-            <CoachUpgradeCard variant="final" attemptNumber={freeMessageCount} />
-          </div>
-        ) : (
-          <ExitCoachInput
-            onSend={sendMessage}
-            disabled={isStreaming}
-          />
-        )}
       </div>
-
-      {/* Context panel (desktop) */}
-      {showContext && (
-        <div className="hidden lg:flex flex-col w-[240px] border-l bg-card/50 flex-shrink-0">
-          <CoachContextCard activeSources={contextSources} />
-        </div>
-      )}
     </div>
   )
 }

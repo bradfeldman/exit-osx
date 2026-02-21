@@ -168,7 +168,7 @@ export default function ReportsPage() {
       {/* Report Cards Grid */}
       <div className={styles.reportsGrid}>
         {REPORTS.map((report) => (
-          <div key={report.id} className={styles.reportCard}>
+          <Link key={report.id} href={`/dashboard/reports/${report.id}`} className={styles.reportCard}>
             <span className={`${styles.reportBadge} ${styles[report.badgeClass]}`}>
               {report.badge}
             </span>
@@ -195,13 +195,14 @@ export default function ReportsPage() {
                     key={action}
                     className={styles.reportActionBtn}
                     title={action.charAt(0).toUpperCase() + action.slice(1)}
+                    onClick={(e) => e.preventDefault()}
                   >
                     <ActionIcon type={action} />
                   </button>
                 ))}
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 

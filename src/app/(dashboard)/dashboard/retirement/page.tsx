@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useCompany } from '@/contexts/CompanyContext'
 import { TrackPageView } from '@/components/tracking/TrackPageView'
-import styles from '@/components/assessments/assessments.module.css'
+import styles from '@/components/retirement/retirement.module.css'
 
 function formatCurrency(value: number): string {
   return `$${Math.round(value).toLocaleString()}`
@@ -121,6 +121,10 @@ export default function RetirementPage() {
           <p>Will the sale of your business fund your retirement? Let&apos;s find out.</p>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
+          <Link href="/dashboard/coach" className={`${styles.btn} ${styles.btnSecondary}`} style={{ textDecoration: 'none' }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
+            Ask AI Coach
+          </Link>
           <Link href="/dashboard/financials/retirement" className={`${styles.btn} ${styles.btnPrimary}`} style={{ textDecoration: 'none' }}>
             <EditIcon /> Update Inputs
           </Link>

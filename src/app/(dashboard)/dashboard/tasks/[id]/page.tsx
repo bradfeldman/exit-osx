@@ -1,11 +1,3 @@
-import { TaskExecutionClient } from './TaskExecutionClient'
+import { notFound } from 'next/navigation'
 
-interface PageProps {
-  params: Promise<{ id: string }>
-}
-
-export default async function TaskPage({ params }: PageProps) {
-  const { id } = await params
-
-  return <TaskExecutionClient taskId={id} />
-}
+export default function Page() { notFound() }

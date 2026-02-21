@@ -118,7 +118,11 @@ export default function SignalDetailPage({ params }: { params: Promise<{ id: str
   const sev = SEVERITY_HERO[signal.severity] || SEVERITY_HERO.LOW
   const isNegative = signal.severity === 'HIGH' || signal.severity === 'CRITICAL'
   const isWarning = signal.severity === 'MEDIUM' || signal.severity === 'WARNING'
+  const isPositive = signal.severity === 'POSITIVE' || signal.severity === 'LOW'
   const impact = signal.estimatedValueImpact
+  const severityLabel = SEVERITY_LABELS[signal.severity] || signal.severity
+  const categoryLabel = signal.category ? CATEGORY_LABELS[signal.category] || signal.category : null
+  const channelLabel = CHANNEL_LABELS[signal.channel] || signal.channel
 
   return (
     <>
@@ -127,7 +131,9 @@ export default function SignalDetailPage({ params }: { params: Promise<{ id: str
       {/* Breadcrumb */}
       <div className={styles.breadcrumb}>
         <Link href="/dashboard/signals">Signals</Link>
-        <ChevronSmallIcon />
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
         <span>{signal.title.length > 50 ? signal.title.slice(0, 50) + '...' : signal.title}</span>
       </div>
 
@@ -143,22 +149,37 @@ export default function SignalDetailPage({ params }: { params: Promise<{ id: str
               background: sev.iconBg, color: '#fff',
               padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 600
             }}>
-              {SEVERITY_LABELS[signal.severity] || signal.severity}
+              {severityLabel}
             </span>
             <div style={{ width: '3px', height: '3px', borderRadius: '50%', background: 'var(--text-tertiary)' }} />
             <div className={styles.statusMeta}>
               <CalendarIcon />
               Detected {new Date(signal.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
             </div>
-            {signal.category && (
+            {channelLabel && (
               <>
                 <div style={{ width: '3px', height: '3px', borderRadius: '50%', background: 'var(--text-tertiary)' }} />
-                <div className={styles.statusMeta}>
-                  Category: {CATEGORY_LABELS[signal.category] || signal.category}
-                </div>
+                <div className={styles.statusMeta}>Source: {channelLabel}</div>
+              </>
+            )}
+            {categoryLabel && (
+              <>
+                <div style={{ width: '3px', height: '3px', borderRadius: '50%', background: 'var(--text-tertiary)' }} />
+                <div className={styles.statusMeta}>Category: {categoryLabel}</div>
               </>
             )}
           </div>
+        </div>
+        <div className={styles.heroActions}>
+          <button className={`${styles.btn} ${styles.btnSecondary} ${styles.btnSm}`}>Dismiss</button>
+          {(isNegative || isWarning) && (
+            <Link href="/dashboard/action-center" className={`${styles.btn} ${styles.btnOrange} ${styles.btnSm}`}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
+              </svg>
+              Create Task
+            </Link>
+          )}
         </div>
       </div>
 
@@ -166,7 +187,9 @@ export default function SignalDetailPage({ params }: { params: Promise<{ id: str
       {impact !== null && impact !== 0 && (
         <div className={`${styles.impactCard} ${isNegative || isWarning ? styles.impactCardDanger : styles.impactCardPositive}`}>
           <div className={styles.impactIcon} style={{ background: isNegative || isWarning ? 'var(--red)' : 'var(--green)' }}>
-            <DollarIcon />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+            </svg>
           </div>
           <div>
             <div className={styles.impactLabel} style={{ color: isNegative || isWarning ? 'var(--red)' : '#1B7A34' }}>
@@ -174,6 +197,11 @@ export default function SignalDetailPage({ params }: { params: Promise<{ id: str
             </div>
             <div className={styles.impactRange} style={{ color: isNegative || isWarning ? 'var(--red)' : '#1B7A34' }}>
               {impact > 0 ? '+' : ''}{formatCurrency(impact)}
+            </div>
+            <div className={styles.impactDesc} style={{ color: isNegative || isWarning ? '#B02020' : '#2D8A47' }}>
+              {isNegative || isWarning
+                ? 'Resolving this signal could recover this valuation impact.'
+                : 'This positive signal contributes to your business valuation.'}
             </div>
           </div>
         </div>
@@ -186,16 +214,14 @@ export default function SignalDetailPage({ params }: { params: Promise<{ id: str
           {/* What Happened */}
           {signal.description && (
             <div className={styles.card}>
-              <div style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.6px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-                What Happened
-              </div>
+              <div className={styles.cardLabel}>What Happened</div>
               <div style={{ fontSize: '14px', lineHeight: 1.7, color: 'var(--text-secondary)' }}>
                 {signal.description}
               </div>
             </div>
           )}
 
-          {/* AI Analysis placeholder */}
+          {/* AI Root Cause Analysis */}
           {(isNegative || isWarning) && signal.description && (
             <div className={styles.aiAnalysis}>
               <div className={styles.aiAnalysisIcon}>
@@ -204,7 +230,7 @@ export default function SignalDetailPage({ params }: { params: Promise<{ id: str
                 </svg>
               </div>
               <div style={{ flex: 1 }}>
-                <div className={styles.aiAnalysisLabel}>AI Analysis</div>
+                <div className={styles.aiAnalysisLabel}>AI Root Cause Analysis</div>
                 <div className={styles.aiAnalysisTitle}>Signal Analysis</div>
                 <div className={styles.aiAnalysisText}>
                   This signal was detected automatically based on your business data. It may impact your valuation and buyer perception.
@@ -215,15 +241,61 @@ export default function SignalDetailPage({ params }: { params: Promise<{ id: str
               </div>
             </div>
           )}
+
+          {/* Recommended Actions */}
+          {(isNegative || isWarning) && (
+            <div className={styles.card}>
+              <div className={styles.sectionHeader}>
+                <div className={styles.sectionTitle}>Recommended Actions</div>
+              </div>
+              {/* TODO: wire to API — recommended actions based on signal type */}
+              <div className={styles.actionCards}>
+                <Link href="/dashboard/action-center" className={styles.actionCard}>
+                  <div className={styles.actionNum}>1</div>
+                  <div style={{ flex: 1 }}>
+                    <div className={styles.actionCardTitle}>Address This Signal in the Action Center</div>
+                    <div className={styles.actionCardDesc}>
+                      Review existing tasks related to this signal or create a new action item to resolve it and recover the valuation impact.
+                    </div>
+                    <div className={styles.actionCardMeta}>
+                      <span className={styles.actionImpactHigh}>High Impact</span>
+                      <span className={styles.actionCardSource}>Action Center Task</span>
+                    </div>
+                  </div>
+                  <div className={styles.actionCardArrow}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                  </div>
+                </Link>
+                <Link href="/dashboard" className={styles.actionCard}>
+                  <div className={styles.actionNum}>2</div>
+                  <div style={{ flex: 1 }}>
+                    <div className={styles.actionCardTitle}>Ask Your AI Coach for Guidance</div>
+                    <div className={styles.actionCardDesc}>
+                      Get a personalized analysis and step-by-step resolution plan for this specific signal from your Exit OS AI Coach.
+                    </div>
+                    <div className={styles.actionCardMeta}>
+                      <span className={styles.actionImpactMedium}>Strategic Guidance</span>
+                      <span className={styles.actionCardSource}>AI Coach</span>
+                    </div>
+                  </div>
+                  <div className={styles.actionCardArrow}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                  </div>
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* RIGHT SIDEBAR */}
         <div>
           {/* Signal Meta */}
           <div className={styles.card}>
-            <div style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.6px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-              Signal Details
-            </div>
+            <div className={styles.cardLabel}>Signal Details</div>
             <div className={styles.metaList}>
               <div className={styles.metaRow}>
                 <div className={styles.metaLabel}>Severity</div>
@@ -234,19 +306,19 @@ export default function SignalDetailPage({ params }: { params: Promise<{ id: str
                     color: isNegative ? 'var(--red)' : isWarning ? '#C47000' : '#1B7A34',
                     padding: '3px 9px', borderRadius: '12px'
                   }}>
-                    {SEVERITY_LABELS[signal.severity] || signal.severity}
+                    {severityLabel}
                   </span>
                 </div>
               </div>
-              {signal.category && (
+              {categoryLabel && (
                 <div className={styles.metaRow}>
                   <div className={styles.metaLabel}>Category</div>
-                  <div className={styles.metaValue}>{CATEGORY_LABELS[signal.category] || signal.category}</div>
+                  <div className={styles.metaValue}>{categoryLabel}</div>
                 </div>
               )}
               <div className={styles.metaRow}>
                 <div className={styles.metaLabel}>Source</div>
-                <div className={styles.metaValue}>{CHANNEL_LABELS[signal.channel] || signal.channel}</div>
+                <div className={styles.metaValue}>{channelLabel}</div>
               </div>
               <div className={styles.metaRow}>
                 <div className={styles.metaLabel}>Detected</div>
@@ -257,7 +329,10 @@ export default function SignalDetailPage({ params }: { params: Promise<{ id: str
               <div className={styles.metaRow}>
                 <div className={styles.metaLabel}>Status</div>
                 <div className={styles.metaValue}>
-                  {signal.resolutionStatus === 'OPEN' ? 'Open' : signal.resolutionStatus === 'CONFIRMED' ? 'Confirmed' : signal.resolutionStatus === 'DISMISSED' ? 'Dismissed' : signal.resolutionStatus}
+                  {signal.resolutionStatus === 'OPEN' ? 'Open'
+                    : signal.resolutionStatus === 'CONFIRMED' ? 'Confirmed'
+                    : signal.resolutionStatus === 'DISMISSED' ? 'Dismissed'
+                    : signal.resolutionStatus}
                 </div>
               </div>
               <div className={styles.metaRow}>
@@ -266,27 +341,46 @@ export default function SignalDetailPage({ params }: { params: Promise<{ id: str
                   {signal.confidence === 'HIGH' ? 'High' : signal.confidence === 'MEDIUM' ? 'Medium' : 'Low'}
                 </div>
               </div>
+              {impact !== null && (
+                <div className={styles.metaRow}>
+                  <div className={styles.metaLabel}>Est. Impact</div>
+                  <div className={styles.metaValue} style={{ color: isNegative || isWarning ? 'var(--red)' : '#1B7A34' }}>
+                    {impact > 0 ? '+' : ''}{formatCurrency(impact)}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Due diligence note for negative signals */}
+          {/* Related Signals — TODO: wire to API */}
+          <div className={styles.card}>
+            <div className={styles.cardLabel}>Related Signals</div>
+            <div className={styles.relatedSignals}>
+              <Link href="/dashboard/signals" className={styles.relatedSignal}>
+                <div className={`${styles.relatedDot} ${isWarning ? styles.relatedDotOrange : styles.relatedDotRed}`} />
+                <div style={{ flex: 1 }}>
+                  <div className={styles.relatedSignalTitle}>
+                    {categoryLabel ? `Other ${categoryLabel} signals` : 'Related business signals'}
+                  </div>
+                  <div className={styles.relatedSignalDate}>View all signals &middot; {severityLabel}</div>
+                </div>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.relatedSignalArrow}>
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </Link>
+            </div>
+          </div>
+
+          {/* Due Diligence Risk Note */}
           {(isNegative || isWarning) && (
             <div className={styles.card} style={{
               background: isNegative ? 'var(--red-light)' : 'var(--orange-light)',
               borderColor: isNegative ? 'rgba(255,59,48,0.2)' : 'rgba(255,149,0,0.2)'
             }}>
-              <div style={{
-                fontSize: '12px', fontWeight: 700,
-                color: isNegative ? 'var(--red)' : '#C47000',
-                marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px'
-              }}>
+              <div className={styles.ddNoteTitle} style={{ color: isNegative ? 'var(--red)' : '#C47000' }}>
                 Due Diligence Risk
               </div>
-              <div style={{
-                fontSize: '13px',
-                color: isNegative ? '#8B1A1A' : '#7A4800',
-                lineHeight: 1.55
-              }}>
+              <div className={styles.ddNoteBody} style={{ color: isNegative ? '#8B1A1A' : '#7A4800' }}>
                 Buyers performing due diligence will likely investigate this signal. Addressing it proactively strengthens your negotiating position and may prevent valuation discounts.
               </div>
             </div>
@@ -294,30 +388,6 @@ export default function SignalDetailPage({ params }: { params: Promise<{ id: str
         </div>
       </div>
     </>
-  )
-}
-
-function ChevronSmallIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '14px', height: '14px' }}>
-      <polyline points="9 18 15 12 9 6"/>
-    </svg>
-  )
-}
-
-function CalendarIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '13px', height: '13px', opacity: 0.6 }}>
-      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-    </svg>
-  )
-}
-
-function DollarIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
-    </svg>
   )
 }
 
@@ -337,10 +407,17 @@ function SeverityIcon({ severity }: { severity: string }) {
       <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
     </svg>
   )
-  // info / LOW
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+    </svg>
+  )
+}
+
+function CalendarIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '13px', height: '13px', opacity: 0.6 }}>
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
     </svg>
   )
 }

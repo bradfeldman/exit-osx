@@ -1,5 +1,3 @@
-import { redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 
-export default function ApprovalsPage() {
-  redirect('/dashboard/deal-room')
-}
+export default function Page() { notFound() }

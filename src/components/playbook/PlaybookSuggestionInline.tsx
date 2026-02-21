@@ -47,10 +47,10 @@ export function PlaybookSuggestionInline({
             {reason}
           </p>
           <Link
-            href={`/playbook/${slug.toLowerCase()}/1`}
+            href={isLocked ? '/dashboard/settings?tab=billing' : `/playbook/${slug.toLowerCase()}/1`}
             className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline mt-2"
           >
-            {isLocked ? 'Preview Playbook' : 'Open Playbook'} →
+            {isLocked ? 'Upgrade to Unlock' : 'Open Playbook'} →
           </Link>
         </div>
       </div>

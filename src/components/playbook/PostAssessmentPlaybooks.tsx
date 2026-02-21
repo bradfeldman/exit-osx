@@ -67,7 +67,7 @@ export function PostAssessmentPlaybooks({
           return (
             <Link
               key={slug}
-              href={`/playbook/${slug.toLowerCase()}/1`}
+              href={isLocked ? '/dashboard/settings?tab=billing' : `/playbook/${slug.toLowerCase()}/1`}
               className="flex items-start gap-4 p-4 rounded-lg border border-border hover:border-primary/30 hover:shadow-sm transition-all group"
             >
               {/* Rank number */}

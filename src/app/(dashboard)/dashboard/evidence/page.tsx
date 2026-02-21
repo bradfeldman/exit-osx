@@ -1,5 +1,3 @@
-import { EvidencePage } from '@/components/evidence/EvidencePage'
+import { notFound } from 'next/navigation'
 
-export default function EvidenceRoute() {
-  return <EvidencePage />
-}
+export default function Page() { notFound() }

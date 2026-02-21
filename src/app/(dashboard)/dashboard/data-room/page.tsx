@@ -55,6 +55,54 @@ interface SharedUser {
 
 // ── Data ─────────────────────────────────────────────────────────────────────
 
+// Category-specific SVG icons matching mocksite data-room.html exactly
+function CategoryIcon({ name }: { name: string }) {
+  switch (name) {
+    case 'Financial':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <line x1="12" y1="1" x2="12" y2="23"/>
+          <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+        </svg>
+      )
+    case 'Legal':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+      )
+    case 'HR & Team':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+        </svg>
+      )
+    case 'Operations':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+      )
+    case 'Compliance':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0110 0v4"/>
+        </svg>
+      )
+    default:
+      // All Files — folder icon
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+        </svg>
+      )
+  }
+}
+
 const CATEGORIES: CategoryCard[] = [
   { name: 'All Files', count: '38 documents', iconColor: 'var(--accent)', iconBg: 'var(--accent-light)', active: true },
   { name: 'Financial', count: '12 of 15', iconColor: 'var(--green)', iconBg: 'var(--green-light)', barColor: 'var(--green)', barPct: 80 },
@@ -308,9 +356,7 @@ export default function DataRoomPage() {
         {CATEGORIES.map((cat) => (
           <div key={cat.name} className={`${styles.categoryCard} ${cat.active ? styles.categoryCardActive : ''}`}>
             <div className={styles.categoryIcon} style={{ background: cat.iconBg, color: cat.iconColor }}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" />
-              </svg>
+              <CategoryIcon name={cat.name} />
             </div>
             <div className={styles.categoryName}>{cat.name}</div>
             <div className={styles.categoryCount}>{cat.count}</div>

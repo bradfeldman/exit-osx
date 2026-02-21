@@ -1,5 +1,3 @@
-import { redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 
-export default function ActionPlanPage() {
-  redirect('/dashboard/action-center')
-}
+export default function Page() { notFound() }

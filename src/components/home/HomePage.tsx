@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useCompany } from '@/contexts/CompanyContext'
 import { useProgression } from '@/contexts/ProgressionContext'
+import { useUserRole } from '@/contexts/UserRoleContext'
 import styles from './home.module.css'
 
 // ─── Types ──────────────────────────────────────────────────────────────
@@ -226,6 +227,7 @@ const InfoIcon = () => (
 
 export function HomePage() {
   const { selectedCompanyId, selectedCompany } = useCompany()
+  const { user } = useUserRole()
   const { progressionData } = useProgression()
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -261,7 +263,15 @@ export function HomePage() {
     )
   }
 
-  const userName = selectedCompany?.name?.split(' ')[0] || 'there'
+  // Use user's personal name if available and different from company name.
+  // Fall back to email prefix or generic greeting.
+  const companyName = selectedCompany?.name || ''
+  const rawUserName = user?.name || ''
+  const userName = rawUserName && rawUserName !== companyName
+    ? rawUserName.split(' ')[0]
+    : user?.email
+      ? user.email.split('@')[0].replace(/[._-]/g, ' ').split(' ')[0]
+      : 'there'
   const greeting = getGreeting()
   const briScore = data.tier1.briScore
   const currentValue = data.tier1.currentValue

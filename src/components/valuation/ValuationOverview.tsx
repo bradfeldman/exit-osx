@@ -42,36 +42,6 @@ function formatCurrency(value: number): string {
   return `$${Math.round(value)}`
 }
 
-const ChatIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-  </svg>
-)
-
-const DollarIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
-  </svg>
-)
-
-const ChartIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/>
-  </svg>
-)
-
-const UsersIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
-  </svg>
-)
-
-const TrendUpIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
-  </svg>
-)
-
 export function ValuationOverview() {
   const { selectedCompanyId } = useCompany()
   const [data, setData] = useState<DashboardData | null>(null)
@@ -108,48 +78,78 @@ export function ValuationOverview() {
     ? Math.round((tier1.currentValue / tier1.potentialValue) * 100)
     : 100
 
+  // BRI ring circumference = 2 * pi * 40 ≈ 251
+  const ringCircumference = 251
+  const ringOffset = ringCircumference - (ringCircumference * briScore / 100)
+
   return (
     <>
+      {/* Breadcrumb */}
+      <div className={styles.breadcrumb}>
+        <span>Valuation</span>
+      </div>
+
       {/* Page Header */}
       <div className={styles.pageHeader}>
-        <div className={styles.pageHeaderRow}>
+        <div className={styles.pageHeaderFlex}>
           <div>
-            <h1>Valuation</h1>
-            <p>{tier1.industryName}</p>
+            <div className={styles.pageTitle}>Valuation</div>
+            <div className={styles.pageSubtitle}>{tier1.industryName} &middot; Updated today</div>
           </div>
-          <Link href="/dashboard/valuation/history" className={styles.sectionLink}>
-            View History &rarr;
-          </Link>
+          <div className={styles.headerActions}>
+            <Link href="/dashboard/valuation/history" className={`${styles.btn} ${styles.btnSecondary}`}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+              History
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* Valuation Hero */}
-      <div className={styles.valHero}>
-        <div className={styles.valHeroLeft}>
+      {/* Valuation Hero Card */}
+      <div className={styles.valHeroCard}>
+        <div className={styles.valHeroLeftSection}>
           <div className={styles.valHeroLabel}>Enterprise Value</div>
-          <div className={styles.valHeroAmount}>{formatCurrency(tier1.currentValue)}</div>
+          <div className={styles.valHeroAmountLg}>{formatCurrency(tier1.currentValue)}</div>
           {tier1.evRange && (
-            <div className={styles.valHeroRange}>
-              Range: {formatCurrency(tier1.evRange.low)} — {formatCurrency(tier1.evRange.high)}
+            <div className={styles.valHeroRangeSub}>
+              Range: {formatCurrency(tier1.evRange.low)} &mdash; {formatCurrency(tier1.evRange.high)}
             </div>
           )}
-          {valueTrend.length >= 2 && (
-            <div className={styles.valHeroChange}>
-              <TrendUpIcon />
-              {formatCurrency(tier1.currentValue - valueTrend[valueTrend.length - 2].value)} since last period
+          {valueTrend.length >= 2 && (() => {
+            const change = tier1.currentValue - valueTrend[valueTrend.length - 2].value
+            const isPositive = change >= 0
+            return (
+              <div className={`${styles.valHeroChangePill} ${isPositive ? styles.positive : styles.negative}`}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  {isPositive
+                    ? <><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></>
+                    : <><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></>
+                  }
+                </svg>
+                {isPositive ? '+' : ''}{formatCurrency(change)} since last period
+              </div>
+            )
+          })()}
+          <div className={styles.valHeroMetaRow}>
+            <div className={styles.valMetaItem}>
+              <span className={styles.valMetaLabel}>Multiple</span>
+              <span className={styles.valMetaValue}>{tier2.multipleRange.current.toFixed(1)}x EBITDA</span>
             </div>
-          )}
-          <div className={styles.valHeroMeta}>
-            {tier2.multipleRange.current.toFixed(1)}x Adjusted EBITDA &middot;{' '}
-            {tier1.useDCFValue ? 'Blended (Multiples + DCF)' : 'Industry Multiples Method'}
+            <div className={styles.valMetaDivider} />
+            <div className={styles.valMetaItem}>
+              <span className={styles.valMetaLabel}>Method</span>
+              <span className={styles.valMetaValue}>{tier1.useDCFValue ? 'Blended (Multiples + DCF)' : 'Industry Multiples'}</span>
+            </div>
           </div>
         </div>
 
         {/* Confidence Ring */}
-        <div className={styles.valHeroRight}>
-          <div className={styles.valHeroLabel}>Confidence Score</div>
-          <div className={styles.confidenceRing}>
-            <svg viewBox="0 0 100 100">
+        <div className={styles.valHeroRightSection}>
+          <div className={styles.confidenceLabel}>Confidence Score</div>
+          <div className={styles.confidenceRingMd}>
+            <svg viewBox="0 0 100 100" width="120" height="120">
               <circle
                 fill="none" stroke="var(--border-light)" strokeWidth="8"
                 cx="50" cy="50" r="40"
@@ -157,26 +157,75 @@ export function ValuationOverview() {
               <circle
                 fill="none" stroke="var(--accent)" strokeWidth="8"
                 strokeLinecap="round" cx="50" cy="50" r="40"
-                strokeDasharray="251"
-                strokeDashoffset={251 - (251 * briScore / 100)}
+                strokeDasharray={ringCircumference}
+                strokeDashoffset={ringOffset}
+                style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%' }}
               />
+              <text x="50" y="46" textAnchor="middle" fill="var(--text-primary)" fontSize="18" fontWeight="800">{briScore}</text>
+              <text x="50" y="60" textAnchor="middle" fill="var(--text-tertiary)" fontSize="9" fontWeight="600">BRI SCORE</text>
             </svg>
-            <div className={styles.confidenceText}>
-              <div className={styles.confidenceNum}>{briScore}</div>
-              <div className={styles.confidenceSub}>BRI Score</div>
+          </div>
+          <div className={styles.confidenceNote}>Business Readiness Index</div>
+        </div>
+      </div>
+
+      {/* AI Coach Insight */}
+      <Link href="/dashboard/coach" className={styles.aiInsightCard} style={{ textDecoration: 'none' }}>
+        <div className={styles.aiInsightIconWrap}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+          </svg>
+        </div>
+        <div>
+          <div className={styles.aiInsightCardTitle}>AI Coach Analysis</div>
+          <div className={styles.aiInsightCardText}>
+            Your valuation is trending positively. The biggest opportunity to increase value is reducing owner dependence &mdash; this single factor could add {formatCurrency(tier1.valueGap * 0.3)} to your enterprise value.
+          </div>
+          <div className={styles.aiInsightActionRow}>
+            <span className={styles.aiInsightActionLink}>Get personalized recommendations &rarr;</span>
+          </div>
+        </div>
+      </Link>
+
+      {/* Peer Benchmark Card */}
+      {/* TODO: wire to API — /api/companies/${selectedCompanyId}/benchmarks */}
+      <div className={styles.benchmarkCard}>
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>Peer Benchmark</h2>
+          <div className={styles.sectionLabelBadge}>{tier1.industryName}</div>
+        </div>
+        <div className={styles.heroStats}>
+          <div className={styles.heroStat}>
+            <div className={styles.heroStatLabel}>Your Multiple</div>
+            <div className={`${styles.heroStatValue} ${styles.accent}`}>{tier2.multipleRange.current.toFixed(1)}x</div>
+            <div className={styles.heroStatSub}>Industry median</div>
+          </div>
+          <div className={styles.heroStat}>
+            <div className={styles.heroStatLabel}>Industry Range</div>
+            <div className={styles.heroStatValue}>{tier2.multipleRange.low.toFixed(1)}x &ndash; {tier2.multipleRange.high.toFixed(1)}x</div>
+          </div>
+          <div className={styles.heroStat}>
+            <div className={styles.heroStatLabel}>BRI Percentile</div>
+            <div className={`${styles.heroStatValue} ${styles.green}`}>
+              {tier2.multipleRange.high > tier2.multipleRange.low
+                ? Math.round(((tier2.multipleRange.current - tier2.multipleRange.low) / (tier2.multipleRange.high - tier2.multipleRange.low)) * 100)
+                : 50}th
             </div>
+            <div className={styles.heroStatSub}>vs. industry peers</div>
           </div>
         </div>
       </div>
 
-      {/* Methods Grid */}
+      {/* Valuation Methods Grid */}
       <div className={styles.sectionHeader}>
         <h2 className={styles.sectionTitle}>Valuation Methods</h2>
       </div>
       <div className={styles.methodsGrid}>
         <Link href="/dashboard/valuation/multiples" className={`${styles.methodCard} ${!tier1.useDCFValue ? styles.selected : ''}`}>
           <div className={`${styles.methodIcon} ${styles.blue}`}>
-            <DollarIcon />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+            </svg>
           </div>
           <div className={styles.methodName}>Industry Multiples</div>
           <div className={styles.methodValue}>{formatCurrency(tier1.currentValue)}</div>
@@ -187,10 +236,12 @@ export function ValuationOverview() {
 
         <Link href="/dashboard/valuation/dcf" className={`${styles.methodCard} ${tier1.useDCFValue ? styles.selected : ''}`}>
           <div className={`${styles.methodIcon} ${styles.purple}`}>
-            <ChartIcon />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/>
+            </svg>
           </div>
           <div className={styles.methodName}>DCF Analysis</div>
-          <div className={styles.methodValue}>{tier1.useDCFValue ? formatCurrency(tier1.currentValue) : 'Configure →'}</div>
+          <div className={styles.methodValue}>{tier1.useDCFValue ? formatCurrency(tier1.currentValue) : 'Configure \u2192'}</div>
           <div className={styles.methodDesc}>
             Discounted cash flow model based on projected earnings
           </div>
@@ -198,10 +249,13 @@ export function ValuationOverview() {
 
         <Link href="/dashboard/valuation/comparables" className={styles.methodCard}>
           <div className={`${styles.methodIcon} ${styles.teal}`}>
-            <UsersIcon />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+            </svg>
           </div>
           <div className={styles.methodName}>Comparables</div>
-          <div className={styles.methodValue}>View Comps →</div>
+          <div className={styles.methodValue}>View Comps \u2192</div>
           <div className={styles.methodDesc}>
             Comparable transactions in your industry and size range
           </div>
@@ -229,27 +283,27 @@ export function ValuationOverview() {
         </div>
       </div>
 
-      {/* Trend Chart */}
+      {/* Valuation Trend */}
       {valueTrend.length > 1 && (
-        <div className={styles.trendSection}>
+        <div className={styles.trendCard}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>Valuation Trend</h2>
             <Link href="/dashboard/valuation/history" className={styles.sectionLink}>
               Full History &rarr;
             </Link>
           </div>
-          <div className={styles.chartArea}>
+          <div className={styles.trendChart}>
             {valueTrend.map((point, i) => {
               const heightPct = 20 + ((point.value - trendMin) / trendRange) * 80
               const isLast = i === valueTrend.length - 1
               return (
-                <div key={i} className={styles.chartCol}>
-                  <div className={styles.chartBarValue}>{formatCurrency(point.value)}</div>
+                <div key={i} className={styles.trendCol}>
+                  <div className={styles.trendVal}>{formatCurrency(point.value)}</div>
                   <div
-                    className={`${styles.chartBar} ${isLast ? styles.current : ''}`}
+                    className={`${styles.trendBar} ${isLast ? styles.trendBarCurrent : ''}`}
                     style={{ height: `${heightPct}%` }}
                   />
-                  <div className={`${styles.chartLabel} ${isLast ? styles.current : ''}`}>
+                  <div className={`${styles.trendMonth} ${isLast ? styles.trendMonthCurrent : ''}`}>
                     {new Date(point.date).toLocaleDateString('en-US', { month: 'short' })}
                   </div>
                 </div>
@@ -292,7 +346,10 @@ export function ValuationOverview() {
               return (
                 <div key={cat.category} className={styles.gapFactor}>
                   <div className={`${styles.gapFactorIcon} ${colorClasses[i % colorClasses.length]}`}>
-                    <WarningIcon />
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                      <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
                   </div>
                   <div>
                     <div className={styles.gapFactorName}>{cat.label}</div>
@@ -305,27 +362,28 @@ export function ValuationOverview() {
         </div>
       )}
 
-      {/* AI Coach Insight */}
-      <Link href="/dashboard/coach" className={styles.aiInsight} style={{ textDecoration: 'none' }}>
-        <div className={styles.aiInsightIcon}>
-          <ChatIcon />
+      {/* Value Ledger */}
+      {/* TODO: wire to API — /api/companies/${selectedCompanyId}/value-ledger */}
+      <div className={styles.card}>
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>Value Ledger</h2>
+          <div className={styles.sectionSubtitleSm}>Key events that moved your valuation</div>
         </div>
-        <div className={styles.aiInsightContent}>
-          <div className={styles.aiInsightTitle}>AI Coach Analysis</div>
-          <div className={styles.aiInsightText}>
-            Your valuation is trending positively. The biggest opportunity to increase value is reducing owner dependence — this single factor could add {formatCurrency(tier1.valueGap * 0.3)} to your enterprise value.
-          </div>
+        <div className={styles.ledgerList}>
+          {bridgeCategories.slice(0, 3).map((cat, i) => (
+            <div key={cat.category} className={styles.ledgerItem}>
+              <div className={`${styles.ledgerDot} ${i === 0 ? styles.ledgerDotGreen : styles.ledgerDotOrange}`} />
+              <div className={styles.ledgerContent}>
+                <div className={styles.ledgerTitle}>{cat.label} improvement opportunity</div>
+                <div className={styles.ledgerNarrative}>{cat.buyerExplanation}</div>
+              </div>
+              <div className={`${styles.ledgerImpact} ${cat.dollarImpact > 0 ? styles.ledgerImpactNeg : styles.ledgerImpactPos}`}>
+                {cat.dollarImpact > 0 ? '-' : '+'}{formatCurrency(Math.abs(cat.dollarImpact))}
+              </div>
+            </div>
+          ))}
         </div>
-      </Link>
+      </div>
     </>
-  )
-}
-
-function WarningIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-      <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-    </svg>
   )
 }

@@ -6,10 +6,6 @@ import { useCompany } from '@/contexts/CompanyContext'
 import { TrackPageView } from '@/components/tracking/TrackPageView'
 import styles from '@/components/assessments/assessments.module.css'
 
-function formatCurrency(value: number): string {
-  return `$${Math.round(value).toLocaleString()}`
-}
-
 function formatShort(value: number): string {
   if (Math.abs(value) >= 1_000_000) {
     const m = value / 1_000_000
@@ -135,7 +131,6 @@ export default function AssessmentsPage() {
   const ringOffset = 377 - (377 * (briScore / 100))
   const grade = getGradeLabel(briScore)
 
-  // Key findings from signals (negative ones with value impact)
   const keyFindings = signals
     .filter(s => s.severity === 'HIGH' || s.severity === 'CRITICAL' || s.severity === 'MEDIUM' || s.severity === 'WARNING')
     .slice(0, 6)
@@ -148,6 +143,7 @@ export default function AssessmentsPage() {
     <>
       <TrackPageView page="/dashboard/assessments" />
 
+      {/* Page Header */}
       <div className={styles.pageHeader}>
         <div>
           <h1>Assessments</h1>
@@ -155,7 +151,10 @@ export default function AssessmentsPage() {
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
           <Link href="/dashboard/assessments" className={`${styles.btn} ${styles.btnSecondary}`}>
-            <DownloadIcon /> Export Results
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Export Results
           </Link>
         </div>
       </div>
@@ -167,7 +166,11 @@ export default function AssessmentsPage() {
             <div className={styles.readinessRing}>
               <svg viewBox="0 0 160 160">
                 <circle className={styles.ringBg} cx="80" cy="80" r="60" />
-                <circle className={`${styles.ringFill} ${getRingClass(briScore)}`} cx="80" cy="80" r="60" style={{ strokeDashoffset: ringOffset }} />
+                <circle
+                  className={`${styles.ringFill} ${getRingClass(briScore)}`}
+                  cx="80" cy="80" r="60"
+                  style={{ strokeDashoffset: ringOffset }}
+                />
               </svg>
               <div className={styles.readinessRingText}>
                 <div className={styles.readinessNumber}>{Math.round(briScore)}</div>
@@ -184,18 +187,72 @@ export default function AssessmentsPage() {
               const score = factor?.score ?? 0
               if (score === 0 && !factor) return null
               return (
-                <div key={dim.key} className={styles.dimensionRow}>
+                <Link key={dim.key} href="/dashboard/assessments/take" className={styles.dimensionRow}>
                   <span className={styles.dimensionLabel}>{factor?.label || dim.label}</span>
                   <div className={styles.dimensionBarTrack}>
                     <div className={`${styles.dimensionBarFill} ${getFillClass(score)}`} style={{ width: `${score}%` }} />
                   </div>
                   <span className={styles.dimensionScore} style={{ color: getScoreColor(score) }}>{Math.round(score)}</span>
                   <div className={`${styles.dimensionStatus} ${getStatusClass(score)}`}>
-                    {score >= 70 ? <CheckIcon /> : score >= 50 ? <AlertCircleIcon /> : <WarningIcon />}
+                    {score >= 70 ? (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                    ) : score >= 50 ? (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+                    )}
                   </div>
-                </div>
+                </Link>
               )
             })}
+          </div>
+        </div>
+      )}
+
+      {/* AI Coach Insight Banner */}
+      {completedAssessment && (
+        <div className={styles.aiInsight}>
+          <div className={styles.aiInsightIcon}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+            </svg>
+          </div>
+          <div>
+            <div className={styles.aiInsightLabel}>AI Coach Insight</div>
+            <div className={styles.aiInsightText}>
+              {/* TODO: wire to API — pull AI coach insight from /api/companies/:id/diagnosis */}
+              Your assessment results reveal patterns across multiple dimensions. Review your key findings below and visit the AI Diagnosis page for a full deep-dive analysis of your exit readiness gaps.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Peer Benchmark Bar */}
+      {briScore > 0 && (
+        <div className={styles.benchmarkBar}>
+          {/* TODO: wire to API — pull peer benchmark data from /api/companies/:id/benchmark */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '16px', height: '16px' }}>
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
+            </svg>
+            <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Peer Benchmark</span>
+          </div>
+          <div style={{ display: 'flex', gap: '24px', flex: 1, flexWrap: 'wrap' }}>
+            <div>
+              <div className={styles.benchmarkItemLabel}>Your BRI</div>
+              <div className={styles.benchmarkItemValue} style={{ color: 'var(--text-primary)' }}>{Math.round(briScore)}</div>
+            </div>
+            <div className={styles.benchmarkDivider} />
+            <div>
+              <div className={styles.benchmarkItemLabel}>Avg. at Exit</div>
+              <div className={styles.benchmarkItemValue} style={{ color: 'var(--text-secondary)' }}>64</div>
+            </div>
+            <div className={styles.benchmarkDivider} />
+            <div>
+              <div className={styles.benchmarkItemLabel}>Successful Exits</div>
+              <div className={styles.benchmarkItemValue} style={{ color: 'var(--text-secondary)' }}>78+ avg</div>
+            </div>
           </div>
         </div>
       )}
@@ -205,11 +262,17 @@ export default function AssessmentsPage() {
         <h2 className={styles.sectionTitle}>Your Assessments</h2>
       </div>
       <div className={styles.assessGrid}>
+
         {/* Company Assessment */}
-        <Link href={completedAssessment ? `/dashboard/diagnosis` : '/dashboard/assessments/take'} className={styles.assessCard}>
+        <Link
+          href={completedAssessment ? '/dashboard/diagnosis' : '/dashboard/assessments/take'}
+          className={styles.assessCard}
+        >
           <div className={styles.assessCardHeader}>
             <div className={`${styles.assessIcon} ${styles.assessIconBlue}`}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2" /><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16" /></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2" /><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16" />
+              </svg>
             </div>
             <div className={styles.assessCardInfo}>
               <div className={styles.assessCardTitle}>Company Assessment</div>
@@ -219,6 +282,7 @@ export default function AssessmentsPage() {
               {completedAssessment ? 'Complete' : incompleteAssessment ? 'In Progress' : 'Not Started'}
             </span>
           </div>
+
           {completedAssessment && briScore > 0 && (
             <div className={styles.assessCardBody}>
               <div className={styles.assessScoreRow}>
@@ -241,24 +305,30 @@ export default function AssessmentsPage() {
               </div>
             </div>
           )}
+
           {incompleteAssessment && !completedAssessment && (
             <div className={styles.assessCardBody}>
               <div className={styles.progressInline}>
                 <div className={styles.progressRingSm}>
                   <svg viewBox="0 0 36 36">
                     <circle className={styles.progBg} cx="18" cy="18" r="11" />
-                    <circle className={styles.progFill} cx="18" cy="18" r="11" style={{ strokeDashoffset: 69.1 - (69.1 * (totalQuestions / 30)) }} />
+                    <circle
+                      className={styles.progFill}
+                      cx="18" cy="18" r="11"
+                      style={{ strokeDashoffset: 69.1 - (69.1 * (totalQuestions / 30)) }}
+                    />
                   </svg>
                   <div className={styles.progressRingText}>{Math.round((totalQuestions / 30) * 100)}%</div>
                 </div>
                 <div className={styles.progressLabel}>
                   <strong>{totalQuestions} questions answered</strong><br />
-                  <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Continue to complete your assessment</span>
+                  <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>~{Math.max(1, Math.ceil((30 - totalQuestions) * 0.5))} minutes remaining</span>
                 </div>
               </div>
-              <Link href="/dashboard/assessments/take" className={`${styles.btn} ${styles.btnPrimary}`} style={{ width: '100%', justifyContent: 'center' }}>
-                Continue Assessment <ChevronRightIcon />
-              </Link>
+              <span className={`${styles.btn} ${styles.btnPrimary}`} style={{ width: '100%', justifyContent: 'center', display: 'flex' }}>
+                Continue Assessment
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '16px', height: '16px' }}><polyline points="9 18 15 12 9 6" /></svg>
+              </span>
             </div>
           )}
         </Link>
@@ -267,7 +337,10 @@ export default function AssessmentsPage() {
         <div className={styles.assessCard} style={{ opacity: 0.6, cursor: 'default' }}>
           <div className={styles.assessCardHeader}>
             <div className={`${styles.assessIcon} ${styles.assessIconOrange}`}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
             </div>
             <div className={styles.assessCardInfo}>
               <div className={styles.assessCardTitle}>Risk Assessment</div>
@@ -281,7 +354,9 @@ export default function AssessmentsPage() {
         <div className={styles.assessCard} style={{ opacity: 0.6, cursor: 'default' }}>
           <div className={styles.assessCardHeader}>
             <div className={`${styles.assessIcon} ${styles.assessIconPurple}`}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" />
+              </svg>
             </div>
             <div className={styles.assessCardInfo}>
               <div className={styles.assessCardTitle}>Personal Readiness</div>
@@ -295,7 +370,9 @@ export default function AssessmentsPage() {
         <Link href="/dashboard/diagnosis" className={styles.assessCard}>
           <div className={styles.assessCardHeader}>
             <div className={`${styles.assessIcon} ${styles.assessIconTeal}`}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
             </div>
             <div className={styles.assessCardInfo}>
               <div className={styles.assessCardTitle}>AI Diagnosis</div>
@@ -305,6 +382,14 @@ export default function AssessmentsPage() {
               {completedAssessment ? 'Available' : 'Requires Assessment'}
             </span>
           </div>
+          {completedAssessment && (
+            <div className={styles.assessCardBody}>
+              <span className={`${styles.btn} ${styles.btnPrimary}`} style={{ width: '100%', justifyContent: 'center', display: 'flex' }}>
+                View Diagnosis
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '16px', height: '16px' }}><polyline points="9 18 15 12 9 6" /></svg>
+              </span>
+            </div>
+          )}
         </Link>
       </div>
 
@@ -320,13 +405,22 @@ export default function AssessmentsPage() {
               <h3>Gaps Identified Across Assessments</h3>
               <div className={styles.diagCount}>
                 {criticalCount > 0 && (
-                  <div className={styles.diagCountItem}><div className={styles.diagCountDot} style={{ background: 'var(--red)' }} />{criticalCount} Critical</div>
+                  <div className={styles.diagCountItem}>
+                    <div className={styles.diagCountDot} style={{ background: 'var(--red)' }} />
+                    {criticalCount} Critical
+                  </div>
                 )}
                 {highCount > 0 && (
-                  <div className={styles.diagCountItem}><div className={styles.diagCountDot} style={{ background: 'var(--orange)' }} />{highCount} High</div>
+                  <div className={styles.diagCountItem}>
+                    <div className={styles.diagCountDot} style={{ background: 'var(--orange)' }} />
+                    {highCount} High
+                  </div>
                 )}
                 {mediumCount > 0 && (
-                  <div className={styles.diagCountItem}><div className={styles.diagCountDot} style={{ background: 'var(--accent)' }} />{mediumCount} Medium</div>
+                  <div className={styles.diagCountItem}>
+                    <div className={styles.diagCountDot} style={{ background: 'var(--accent)' }} />
+                    {mediumCount} Medium
+                  </div>
                 )}
               </div>
             </div>
@@ -334,8 +428,16 @@ export default function AssessmentsPage() {
               {keyFindings.map(signal => {
                 const isCritical = signal.severity === 'CRITICAL'
                 const isHigh = signal.severity === 'HIGH'
-                const sevClass = isCritical ? styles.diagSeverityCritical : isHigh ? styles.diagSeverityHigh : styles.diagSeverityMedium
-                const impactClass = isCritical ? styles.diagImpactNegative : isHigh ? styles.diagImpactWarning : styles.diagImpactInfo
+                const sevClass = isCritical
+                  ? styles.diagSeverityCritical
+                  : isHigh
+                    ? styles.diagSeverityHigh
+                    : styles.diagSeverityMedium
+                const impactClass = isCritical
+                  ? styles.diagImpactNegative
+                  : isHigh
+                    ? styles.diagImpactWarning
+                    : styles.diagImpactInfo
 
                 return (
                   <Link key={signal.id} href={`/dashboard/signals/${signal.id}`} className={styles.diagItem}>
@@ -349,6 +451,9 @@ export default function AssessmentsPage() {
                           {signal.description.length > 200 ? signal.description.slice(0, 200) + '...' : signal.description}
                         </div>
                       )}
+                      {signal.category && (
+                        <div className={styles.diagSource}>Source: {signal.category}</div>
+                      )}
                     </div>
                     {signal.estimatedValueImpact !== null && signal.estimatedValueImpact !== 0 && (
                       <div className={styles.diagImpact}>
@@ -359,7 +464,9 @@ export default function AssessmentsPage() {
                       </div>
                     )}
                     <div className={styles.diagArrow}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
                     </div>
                   </Link>
                 )
@@ -368,46 +475,80 @@ export default function AssessmentsPage() {
           </div>
         </div>
       )}
+
+      {/* Company Intelligence Preview */}
+      {completedAssessment && (
+        <div style={{ marginBottom: '28px' }}>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>Company Intelligence</h2>
+          </div>
+          {/* TODO: wire to API — pull dossier SWOT from /api/companies/:id/diagnosis */}
+          <Link href="/dashboard/diagnosis" className={styles.intelCard}>
+            <div className={styles.intelHeader}>
+              <div className={styles.intelIcon}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" />
+                  <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+                </svg>
+              </div>
+              <div>
+                <div className={styles.intelTitle}>Company Dossier</div>
+                <div className={styles.intelSubtitle}>AI-generated intelligence report &middot; View full analysis</div>
+              </div>
+            </div>
+            <div className={styles.intelPreview}>
+              <div>
+                <div className={styles.intelItemLabel}>Strengths</div>
+                <ul className={styles.intelItemList}>
+                  {briFactors
+                    .filter(f => f.score >= 75)
+                    .slice(0, 3)
+                    .map(f => (
+                      <li key={f.category}>
+                        <div className={`${styles.intelDot} ${styles.intelDotStrength}`} />
+                        {f.label} score: {Math.round(f.score)}
+                      </li>
+                    ))}
+                  {briFactors.filter(f => f.score >= 75).length === 0 && (
+                    <li><div className={`${styles.intelDot} ${styles.intelDotStrength}`} />Complete your assessment</li>
+                  )}
+                </ul>
+              </div>
+              <div>
+                <div className={styles.intelItemLabel}>Weaknesses</div>
+                <ul className={styles.intelItemList}>
+                  {briFactors
+                    .filter(f => f.score < 60)
+                    .slice(0, 3)
+                    .map(f => (
+                      <li key={f.category}>
+                        <div className={`${styles.intelDot} ${styles.intelDotWeakness}`} />
+                        {f.label} score: {Math.round(f.score)}
+                      </li>
+                    ))}
+                  {briFactors.filter(f => f.score < 60).length === 0 && (
+                    <li><div className={`${styles.intelDot} ${styles.intelDotWeakness}`} />No critical weaknesses identified</li>
+                  )}
+                </ul>
+              </div>
+              <div>
+                <div className={styles.intelItemLabel}>Opportunities</div>
+                <ul className={styles.intelItemList}>
+                  {/* TODO: wire to API — pull opportunities from AI diagnosis */}
+                  <li><div className={`${styles.intelDot} ${styles.intelDotOpportunity}`} />View full AI diagnosis</li>
+                  <li><div className={`${styles.intelDot} ${styles.intelDotOpportunity}`} />Complete remaining assessments</li>
+                </ul>
+              </div>
+            </div>
+            <div className={styles.intelViewFull}>
+              View full dossier
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </div>
+          </Link>
+        </div>
+      )}
     </>
-  )
-}
-
-function DownloadIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '16px', height: '16px' }}>
-      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
-    </svg>
-  )
-}
-
-function ChevronRightIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '16px', height: '16px' }}>
-      <polyline points="9 18 15 12 9 6" />
-    </svg>
-  )
-}
-
-function CheckIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  )
-}
-
-function AlertCircleIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
-    </svg>
-  )
-}
-
-function WarningIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
-    </svg>
   )
 }

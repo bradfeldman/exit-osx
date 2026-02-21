@@ -26,23 +26,45 @@ interface Assessment {
   id: string
 }
 
-const CATEGORY_LABELS: Record<string, { label: string; icon: string }> = {
-  FINANCIAL: { label: 'Financial Health', icon: 'financial' },
-  REVENUE_GROWTH: { label: 'Revenue Quality', icon: 'revenue' },
-  RECURRING_REVENUE: { label: 'Recurring Revenue', icon: 'revenue' },
-  CUSTOMER_CONCENTRATION: { label: 'Customer Concentration', icon: 'customer' },
-  OWNER_DEPENDENCY: { label: 'Owner Dependence', icon: 'owner' },
-  OPERATIONAL: { label: 'Operational Maturity', icon: 'ops' },
-  LEGAL_TAX: { label: 'Legal & Compliance', icon: 'legal' },
-  LEGAL_COMPLIANCE: { label: 'Legal & Compliance', icon: 'legal' },
-  MARKET: { label: 'Market Position', icon: 'market' },
-  PERSONAL: { label: 'Personal Readiness', icon: 'personal' },
-  TRANSFERABILITY: { label: 'Transferability', icon: 'owner' },
+const CATEGORY_LABELS: Record<string, { label: string }> = {
+  FINANCIAL: { label: 'Financial Health' },
+  REVENUE_GROWTH: { label: 'Revenue Quality' },
+  RECURRING_REVENUE: { label: 'Recurring Revenue' },
+  CUSTOMER_CONCENTRATION: { label: 'Customer Concentration' },
+  OWNER_DEPENDENCY: { label: 'Owner Dependence' },
+  OPERATIONAL: { label: 'Operational Maturity' },
+  LEGAL_TAX: { label: 'Legal & Compliance' },
+  LEGAL_COMPLIANCE: { label: 'Legal & Compliance' },
+  MARKET: { label: 'Market Position' },
+  PERSONAL: { label: 'Personal Readiness' },
+  TRANSFERABILITY: { label: 'Transferability' },
 }
 
-const HINT_COLORS = ['answerOptionRed', 'answerOptionOrange', 'answerOptionBlue', 'answerOptionGreen']
-const HINT_LABEL_COLORS = ['hintRed', 'hintOrange', 'hintBlue', 'hintGreen']
-const HINT_LABELS = ['High risk signal', 'Moderate concern', 'Good position', 'Excellent signal']
+// Maps option index → left-border color class
+const HINT_OPTION_CLASSES = [
+  styles.answerOptionRed,
+  styles.answerOptionOrange,
+  styles.answerOptionBlue,
+  styles.answerOptionGreen,
+]
+
+// Maps option index → hint label color class
+const HINT_LABEL_CLASSES = [
+  styles.hintRed,
+  styles.hintOrange,
+  styles.hintBlue,
+  styles.hintGreen,
+]
+
+// Human-readable hint labels for each answer position (lowest → highest score)
+const HINT_LABELS = [
+  'High risk signal',
+  'Moderate concern',
+  'Good position',
+  'Excellent signal',
+]
+
+const OPTION_LETTERS = ['A', 'B', 'C', 'D', 'E']
 
 export default function TakeAssessmentPage() {
   const { selectedCompanyId } = useCompany()
@@ -60,7 +82,7 @@ export default function TakeAssessmentPage() {
 
     async function init() {
       try {
-        // Create or get assessment
+        // Create or get existing assessment
         const assessRes = await fetch('/api/assessments', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -84,7 +106,7 @@ export default function TakeAssessmentPage() {
         if (!cancelled) {
           setQuestions(qData.questions || [])
 
-          // Load existing responses
+          // Restore existing responses so the user can resume mid-assessment
           if (assessData.isExisting && assessData.assessment?.id) {
             const respRes = await fetch(`/api/assessments/${assessData.assessment.id}/responses`)
             if (respRes.ok) {
@@ -104,7 +126,7 @@ export default function TakeAssessmentPage() {
           }
         }
       } catch {
-        // Failed to initialize
+        // Initialization error — stay on loading state and show empty state
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -123,7 +145,7 @@ export default function TakeAssessmentPage() {
         body: JSON.stringify({ questionId, selectedOptionId: optionId }),
       })
     } catch {
-      // Silent save failure
+      // Silent — auto-saves best-effort
     }
   }, [assessment])
 
@@ -138,12 +160,9 @@ export default function TakeAssessmentPage() {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(prev => prev + 1)
     } else if (assessment) {
-      // Complete assessment
       setSubmitting(true)
       try {
-        await fetch(`/api/assessments/${assessment.id}/complete`, {
-          method: 'POST',
-        })
+        await fetch(`/api/assessments/${assessment.id}/complete`, { method: 'POST' })
         router.push('/dashboard/assessments')
       } catch {
         setSubmitting(false)
@@ -181,8 +200,9 @@ export default function TakeAssessmentPage() {
   const progressPct = ((currentIndex + 1) / questions.length) * 100
   const selectedOptionId = answers[question.id]
   const isLastQuestion = currentIndex === questions.length - 1
+  const minutesLeft = Math.max(1, Math.ceil((questions.length - currentIndex) * 0.5))
 
-  // Group questions by category for sidebar
+  // Build category sidebar data — groups questions by briCategory in order
   const categories: { key: string; label: string; questions: Question[]; answeredCount: number }[] = []
   const categoryMap: Record<string, number> = {}
   for (const q of questions) {
@@ -209,7 +229,9 @@ export default function TakeAssessmentPage() {
       {/* Breadcrumb */}
       <div className={styles.breadcrumb}>
         <Link href="/dashboard/assessments">Assessments</Link>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
         <span>Business Readiness Assessment</span>
       </div>
 
@@ -220,28 +242,33 @@ export default function TakeAssessmentPage() {
           <p>Complete all dimensions for your full BRI score</p>
         </div>
         <div>
-          <Link href="/dashboard/assessments" className={`${styles.btn} ${styles.btnSecondary}`} style={{ textDecoration: 'none' }}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '16px', height: '16px' }}><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+          <Link href="/dashboard/assessments" className={`${styles.btn} ${styles.btnSecondary}`}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+            </svg>
             Exit Assessment
           </Link>
         </div>
       </div>
 
-      {/* Step Indicator */}
+      {/* Step Progress Indicator */}
       <div className={styles.stepIndicator}>
         <div className={styles.stepLabel}>Question {currentIndex + 1} of {questions.length}</div>
         <div className={styles.stepProgressTrack}>
           <div className={styles.stepProgressFill} style={{ width: `${progressPct}%` }} />
         </div>
         <div className={styles.stepTime}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '13px', height: '13px', display: 'inline', verticalAlign: '-2px', marginRight: '3px' }}><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
-          ~{Math.max(1, Math.ceil((questions.length - currentIndex) * 0.5))} min left
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '13px', height: '13px', display: 'inline', verticalAlign: '-2px', marginRight: '3px' }}>
+            <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+          </svg>
+          ~{minutesLeft} {minutesLeft === 1 ? 'minute' : 'minutes'} left
         </div>
       </div>
 
-      {/* Assessment Layout */}
+      {/* Two-column layout: category sidebar + question card */}
       <div className={styles.assessmentLayout}>
-        {/* Left: Category Progress */}
+
+        {/* Left: Category Progress Sidebar */}
         <div className={styles.categorySidebar}>
           <div className={styles.categorySidebarTitle}>Assessment Progress</div>
           {categories.map(cat => {
@@ -250,22 +277,40 @@ export default function TakeAssessmentPage() {
             const isUpcoming = !isActive && !isComplete && cat.answeredCount === 0
 
             return (
-              <div key={cat.key} className={`${styles.categoryItem} ${isActive ? styles.categoryItemActive : ''} ${isUpcoming ? styles.categoryItemUpcoming : ''}`}>
-                <div className={`${styles.categoryIcon} ${isComplete ? styles.categoryIconComplete : isActive ? styles.categoryIconActive : styles.categoryIconUpcoming}`}>
+              <div
+                key={cat.key}
+                className={[
+                  styles.categoryItem,
+                  isActive ? styles.categoryItemActive : '',
+                  isUpcoming ? styles.categoryItemUpcoming : '',
+                ].join(' ')}
+              >
+                <div className={[
+                  styles.categoryIcon,
+                  isComplete ? styles.categoryIconComplete : isActive ? styles.categoryIconActive : styles.categoryIconUpcoming,
+                ].join(' ')}>
                   {isComplete ? (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
                   ) : isActive ? (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+                    </svg>
                   ) : (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
                   )}
                 </div>
                 <div>
                   <div className={styles.categoryName}>{cat.label}</div>
                   <div className={styles.categoryProgress}>
-                    {isComplete ? `${cat.questions.length} of ${cat.questions.length} complete` :
-                      isActive ? `${cat.answeredCount} of ${cat.questions.length} in progress` :
-                        `0 of ${cat.questions.length} upcoming`}
+                    {isComplete
+                      ? `${cat.questions.length} of ${cat.questions.length} complete`
+                      : isActive
+                        ? `${cat.answeredCount} of ${cat.questions.length} in progress`
+                        : `0 of ${cat.questions.length} upcoming`}
                   </div>
                 </div>
               </div>
@@ -273,16 +318,19 @@ export default function TakeAssessmentPage() {
           })}
         </div>
 
-        {/* Right: Question Card */}
+        {/* Right: Question Card + Contextual Note */}
         <div>
           <div className={styles.questionCard}>
+
             {/* Category Tag */}
             <div className={styles.questionCategoryTag}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" />
+              </svg>
               {categoryLabel}
             </div>
 
-            {/* Question */}
+            {/* Question text */}
             <div className={styles.questionText}>{question.text}</div>
             {question.helpText && (
               <div className={styles.questionHelp}>{question.helpText}</div>
@@ -292,21 +340,42 @@ export default function TakeAssessmentPage() {
             <div className={styles.answerOptions}>
               {question.options.map((option, i) => {
                 const isSelected = selectedOptionId === option.id
-                const hintIndex = Math.min(i, HINT_COLORS.length - 1)
-                const colorClass = styles[HINT_COLORS[hintIndex]]
-                const labelColorClass = styles[HINT_LABEL_COLORS[hintIndex]]
-                const letters = ['A', 'B', 'C', 'D', 'E']
+                const hintIndex = Math.min(i, HINT_OPTION_CLASSES.length - 1)
 
                 return (
                   <div
                     key={option.id}
-                    className={`${styles.answerOption} ${colorClass} ${isSelected ? styles.answerOptionSelected : ''}`}
+                    className={[
+                      styles.answerOption,
+                      HINT_OPTION_CLASSES[hintIndex],
+                      isSelected ? styles.answerOptionSelected : '',
+                    ].join(' ')}
                     onClick={() => handleSelect(option.id)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleSelect(option.id) }}
+                    aria-pressed={isSelected}
                   >
-                    <div className={styles.answerLetter}>{letters[i] || String(i + 1)}</div>
+                    <div className={styles.answerLetter}>{OPTION_LETTERS[i] ?? String(i + 1)}</div>
                     <div>
                       <div className={styles.answerMainText}>{option.text}</div>
-                      <div className={`${styles.answerHintLabel} ${labelColorClass}`}>
+                      <div className={`${styles.answerHintLabel} ${HINT_LABEL_CLASSES[hintIndex]}`}>
+                        {/* Small icon matching mocksite hint labels */}
+                        {hintIndex === 0 && (
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '10px', height: '10px' }}>
+                            <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" /><polyline points="17 18 23 18 23 12" />
+                          </svg>
+                        )}
+                        {hintIndex === 1 && (
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '10px', height: '10px' }}>
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                          </svg>
+                        )}
+                        {(hintIndex === 2 || hintIndex === 3) && (
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '10px', height: '10px' }}>
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
                         {HINT_LABELS[hintIndex]}
                       </div>
                     </div>
@@ -315,15 +384,27 @@ export default function TakeAssessmentPage() {
               })}
             </div>
 
-            {/* Footer */}
+            {/* Footer: Save & Exit / Back / Next */}
             <div className={styles.questionFooter}>
               <div className={styles.questionFooterLeft}>
-                <Link href="/dashboard/assessments" className={styles.saveExitLink}>Save &amp; Exit</Link>
-                <span className={styles.questionNumberBadge}>Question {currentIndex + 1} of {questions.length}</span>
+                <Link href="/dashboard/assessments" className={styles.saveExitLink}>
+                  Save &amp; Exit
+                </Link>
+                <span className={styles.questionNumberBadge}>
+                  Question {currentIndex + 1} of {questions.length}
+                </span>
               </div>
               <div className={styles.questionFooterRight}>
-                <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={handleBack} disabled={currentIndex === 0} style={{ opacity: currentIndex === 0 ? 0.5 : 1 }}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '16px', height: '16px' }}><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+                <button
+                  className={`${styles.btn} ${styles.btnSecondary}`}
+                  onClick={handleBack}
+                  disabled={currentIndex === 0}
+                  style={{ opacity: currentIndex === 0 ? 0.5 : 1 }}
+                  aria-label="Previous question"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+                  </svg>
                   Back
                 </button>
                 <button
@@ -331,27 +412,44 @@ export default function TakeAssessmentPage() {
                   onClick={handleNext}
                   disabled={!selectedOptionId || submitting}
                   style={{ opacity: !selectedOptionId || submitting ? 0.5 : 1 }}
+                  aria-label={isLastQuestion ? 'Complete assessment' : 'Next question'}
                 >
                   {submitting ? 'Completing...' : isLastQuestion ? 'Complete' : 'Next'}
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '16px', height: '16px' }}><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+                  </svg>
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Contextual note */}
-          {question.helpText && (
-            <div style={{ marginTop: '16px', padding: '14px 18px', background: 'var(--surface)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '1px', color: 'var(--accent)' }}><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
-              <div>
-                <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>Why this matters</div>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                  This question feeds directly into your BRI {categoryLabel} sub-score and impacts how buyers evaluate your business during due diligence.
-                </div>
+          {/* Contextual "Why this matters" note */}
+          <div style={{
+            marginTop: '16px',
+            padding: '14px 18px',
+            background: 'var(--surface)',
+            border: '1px solid var(--border-light)',
+            borderRadius: 'var(--radius-sm)',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '12px',
+          }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '1px', color: 'var(--accent)' }}>
+              <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
+            <div>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>
+                Why this matters
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                {question.helpText
+                  ? `This question feeds directly into your BRI ${categoryLabel} sub-score and impacts how buyers evaluate your business during due diligence.`
+                  : `Your answer to this question contributes to the ${categoryLabel} dimension of your Business Readiness Index — a key factor buyers use to assess acquisition risk.`}
               </div>
             </div>
-          )}
+          </div>
         </div>
+
       </div>
     </>
   )

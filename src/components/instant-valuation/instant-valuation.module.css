@@ -1,0 +1,406 @@
+/* ===== Instant Valuation Page ===== */
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin-bottom: 24px;
+}
+.breadcrumb a {
+  color: var(--text-tertiary);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.breadcrumb a:hover {
+  color: var(--accent);
+}
+.breadcrumbSep {
+  color: var(--border);
+}
+.breadcrumbCurrent {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Hero */
+.valuationHero {
+  background: linear-gradient(135deg, #1D1D1F 0%, #2D2D30 100%);
+  border-radius: var(--radius-lg);
+  padding: 40px 44px;
+  margin-bottom: 24px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+.confettiLayer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+}
+.confettiDot {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.18;
+  animation: floatUp 6s ease-in-out 3;
+}
+@keyframes floatUp {
+  0%   { transform: translateY(0px) scale(1); opacity: 0.18; }
+  50%  { transform: translateY(-12px) scale(1.1); opacity: 0.28; }
+  100% { transform: translateY(0px) scale(1); opacity: 0.18; }
+}
+.heroInner {
+  position: relative;
+  z-index: 1;
+}
+.heroEyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: rgba(255, 255, 255, 0.45);
+  margin-bottom: 12px;
+}
+.heroHeading {
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: 12px;
+  letter-spacing: -0.2px;
+}
+.heroValue {
+  font-size: 60px;
+  font-weight: 800;
+  letter-spacing: -3px;
+  color: white;
+  line-height: 1;
+  margin-bottom: 16px;
+}
+.heroSub {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.65);
+}
+.heroBadge svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+/* Content cards */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  margin-bottom: 20px;
+}
+.cardTitle {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+}
+.cardLabel {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+}
+
+/* Equation block */
+.equationBlock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 20px;
+  background: var(--surface-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.eqCell {
+  text-align: center;
+}
+.eqCellLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-tertiary);
+  margin-bottom: 5px;
+}
+.eqCellValue {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  color: var(--text-primary);
+}
+.eqOp {
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--text-tertiary);
+}
+.eqResult .eqCellValue {
+  color: var(--accent);
+}
+.calcNote {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+.calcSource {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.calcSource svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* Uplift list */
+.upliftList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.upliftItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+.upliftItem:last-child {
+  border-bottom: none;
+}
+.upliftIconWrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.upliftIconWrap svg {
+  width: 18px;
+  height: 18px;
+}
+.upliftIconGreen { background: var(--green-light); color: var(--green); }
+.upliftIconBlue { background: var(--accent-light); color: var(--accent); }
+.upliftIconOrange { background: var(--orange-light); color: var(--orange); }
+.upliftIconPurple { background: var(--purple-light); color: var(--purple); }
+.upliftBody {
+  flex: 1;
+}
+.upliftText {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  line-height: 1.5;
+}
+.upliftLink {
+  font-size: 12px;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+.upliftLink:hover {
+  text-decoration: underline;
+}
+
+/* Chain flow (consequence chain) */
+.chainFlow {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.chainNode {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px 0;
+}
+.chainNodeDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+.chainNodeContent {
+  flex: 1;
+}
+.chainNodeLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-tertiary);
+  margin-bottom: 3px;
+}
+.chainNodeValue {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+}
+.chainNodeDesc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 3px;
+}
+.chainArrow {
+  padding-left: 26px;
+  margin: -4px 0;
+  color: var(--border);
+}
+.chainArrow svg {
+  width: 16px;
+  height: 16px;
+}
+.chainCta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--accent-light);
+  border: 1px solid rgba(0, 113, 227, 0.15);
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+}
+.chainCtaText {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.chainCtaLink {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.chainCtaLink:hover {
+  text-decoration: underline;
+}
+.chainCtaLink svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Next steps */
+.nextStepsSection {
+  margin-top: 4px;
+}
+.nextStepsTitle {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  letter-spacing: -0.3px;
+}
+.nextStepsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.nextStepItem {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.15s;
+}
+.nextStepItem:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+.nextStepIconWrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.nextStepIconWrap svg {
+  width: 20px;
+  height: 20px;
+}
+.nextStepIconPrimary { background: var(--accent); color: white; }
+.nextStepIconSecondary { background: var(--green-light); color: var(--green); }
+.nextStepIconTertiary { background: var(--surface-secondary); color: var(--text-secondary); }
+.nextStepBody {
+  flex: 1;
+}
+.nextStepTitle {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.nextStepDesc {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.nextStepArrow {
+  color: var(--text-tertiary);
+}
+.nextStepArrow svg {
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 768px) {
+  .valuationHero {
+    padding: 28px 24px;
+  }
+  .heroValue {
+    font-size: 42px;
+  }
+  .equationBlock {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .card {
+    padding: 20px 20px;
+  }
+}

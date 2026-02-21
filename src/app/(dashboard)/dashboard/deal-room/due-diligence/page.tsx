@@ -55,7 +55,7 @@ const FINANCIAL_ITEMS: ReqItem[] = [
   { state: 'done', name: 'Revenue by customer (top 20)', status: 'done', statusLabel: 'Provided', date: 'Feb 5', viewed: true, btnLabel: 'View' },
   { state: 'done', name: 'EBITDA reconciliation & add-backs (3 years)', status: 'done', statusLabel: 'Provided', date: 'Feb 7', viewed: true, btnLabel: 'View' },
   { state: 'done', name: 'Bank statements (24 months)', status: 'done', statusLabel: 'Provided', date: 'Feb 8', viewed: true, btnLabel: 'View' },
-  { state: 'prog', name: 'Monthly revenue detail (36 months)', note: 'Exporting from accounting software', status: 'prog', statusLabel: 'In Progress', date: 'Due Feb 22', dateState: 'warn', viewed: false, btnLabel: 'Upload' },
+  { state: 'prog', name: 'Monthly revenue detail (36 months)', note: 'Exporting from QuickBooks', status: 'prog', statusLabel: 'In Progress', date: 'Due Feb 22', dateState: 'warn', viewed: false, btnLabel: 'Upload' },
   { state: 'none', name: 'Capital expenditure schedule', status: 'none', statusLabel: 'Not Started', date: 'Due Feb 25', dateState: 'overdue', btnLabel: 'Upload' },
 ]
 
@@ -274,11 +274,11 @@ export default function DueDiligencePage() {
       {/* Breadcrumb */}
       <div className={styles.breadcrumb}>
         <Link href="/dashboard/deal-room">Deal Room</Link>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 14, height: 14, opacity: 0.5 }}>
           <polyline points="9 18 15 12 9 6"/>
         </svg>
         <Link href="/dashboard/deal-room">{buyerName}</Link>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 14, height: 14, opacity: 0.5 }}>
           <polyline points="9 18 15 12 9 6"/>
         </svg>
         <span>Due Diligence</span>
@@ -290,7 +290,7 @@ export default function DueDiligencePage() {
           <h1>Due Diligence Tracker</h1>
           <p>{buyerName} &mdash; 34 of 47 items complete</p>
         </div>
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div className={styles.headerActions}>
           <button className={`${styles.btn} ${styles.btnSecondary}`}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
@@ -387,7 +387,7 @@ export default function DueDiligencePage() {
             <div>
               <div className={styles.coachEyebrow}>AI Coach Insight</div>
               <div className={styles.coachText}>
-                Based on the buyer&apos;s request pattern, they&apos;re focused heavily on{' '}
+                Based on ServiceMaster&apos;s request pattern, they&apos;re focused heavily on{' '}
                 <strong>customer concentration data</strong>. Make sure your top-20 customer detail
                 includes contract terms and renewal dates &mdash; PE firms always ask for this in round 2.
               </div>
